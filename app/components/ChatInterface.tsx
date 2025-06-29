@@ -11,12 +11,16 @@ interface Message {
 
 interface ChatInterfaceProps {
   cohereApiKey: string;
+  sqlContext?: string;
+  userContext?: string;
 }
 
-export default function ChatInterface({ cohereApiKey }: ChatInterfaceProps) {
+export default function ChatInterface({ cohereApiKey, sqlContext, userContext }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDatabaseQuerying, setIsDatabaseQuerying] = useState(false);
+  const [dbProgress, setDbProgress] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -50,6 +54,8 @@ export default function ChatInterface({ cohereApiKey }: ChatInterfaceProps) {
         body: JSON.stringify({
           message: inputText.trim(),
           apiKey: cohereApiKey,
+          sqlContext: sqlContext || '',
+          userContext: userContext || '',
         }),
       });
 
