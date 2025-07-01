@@ -102,8 +102,15 @@ if (decision.shouldUseRAG) {
   console.log('\n=== RAG System Execution ===');
   const store = await initializeVectorStore(apiKey);
   const retriever = store.asRetriever({ k: 3 });
-  const docs = await retriever.invoke(question);
-  ragContext = docs.map(doc => doc.pageContent).join('\n\n');
+const docs = await retriever.invoke(question);
+  // Filter out irrelevant RAG context
+  const filteredDocs = docs.filter(doc => !(
+    doc.pageContent.includes('Cohere provides state-of-the-art language models') ||
+    doc.pageContent.includes('Retrieval Augmented Generation (RAG) is a technique') ||
+    doc.pageContent.includes('LangGraph is a library for building stateful, multi-actor applications') ||
+    doc.pageContent.includes('LangChain is a framework for developing applications powered by language models')
+  ));
+  ragContext = filteredDocs.map(doc => doc.pageContent).join('\n\n');
   console.log(`Retrieved RAG Context: ${ragContext.substring(0, 200)}...`);
 }
 
@@ -143,15 +150,6 @@ if (decision.shouldUseDatabase) {
       console.log('Data structure:', typeof cleanData, Object.keys(cleanData || {}));
       console.log('Number of employee records:', cleanData?.items?.length || 0);
       
-      // DEBUG: Show unique employee numbers being sent to LLM
-      if (cleanData?.items) {
-        const empNos = cleanData.items.map(item => item.empno).filter(empno => empno !== undefined);
-        const uniqueEmpNos = [...new Set(empNos)].sort((a, b) => a - b);
-        console.log('DEBUG: Unique empnos in data being sent to LLM:', uniqueEmpNos);
-        console.log('DEBUG: Count of unique empnos:', uniqueEmpNos.length);
-        console.log('DEBUG: All empnos (including duplicates):', empNos);
-        console.log('DEBUG: Total empno count (with duplicates):', empNos.length);
-      }
     } catch (processingError) {
       databaseResults = `Error processing database results: ${processingError.message}`;
       databaseExecuted = false;
@@ -175,9 +173,6 @@ if (decision.shouldUseDatabase) {
   console.log('\n=== Final Response Generation ===');
   console.log(`RAG Context available: ${!!ragContext}`);
   console.log(`Database Results available: ${!!databaseResults}`);
-  if (databaseResults) {
-    console.log(`Database Results (first 500 chars): ${databaseResults.substring(0, 500)}...`);
-  }
   
   if (ragContext && databaseResults) {
     context = `RAG Context: ${ragContext}\n\nDatabase Results: ${databaseResults}`;
@@ -228,7 +223,6 @@ if (decision.shouldUseDatabase) {
   }
   
   console.log(`Final context length: ${context.length}`);
-  console.log(`Final context preview: ${context.substring(0, 200)}...`);
   
   console.log('\n=== Calling LLM ===');
   
@@ -238,25 +232,9 @@ if (decision.shouldUseDatabase) {
     question
   };
   
-  console.log('Prompt input:');
+  console.log('Prompt input prepared.');
   console.log('Question:', question);
   console.log('Context length:', context.length);
-  
-  // DEBUG: Count occurrences in context to check for duplication
-  if (context.includes('empno')) {
-    const empnoMatches = context.match(/"empno":\s*\d+/g) || [];
-    console.log('DEBUG: Number of empno occurrences in context:', empnoMatches.length);
-    if (empnoMatches.length > 14) {
-      console.log('WARNING: More than 14 empno occurrences detected - possible duplication!');
-      console.log('DEBUG: First 5 empno values:', empnoMatches.slice(0, 5));
-    }
-  }
-  
-  if (context.length < 1000) {
-    console.log('Context content (full):', context);
-  } else {
-    console.log('Context content (preview):', context.substring(0, 500) + '...[truncated]');
-  }
   
   const response = await finalPrompt.pipe(llm).pipe(new StringOutputParser()).invoke(promptInput);
   

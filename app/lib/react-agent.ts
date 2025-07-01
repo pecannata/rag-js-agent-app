@@ -92,10 +92,12 @@ export function parseReActDecision(response: string, userQuery?: string): ReActD
                            decisionUpper.includes('DATABASE') || 
                            decisionUpper.includes('BOTH');
                            
-  // Only use RAG if specifically mentioned for knowledge base queries
+  // Use RAG for knowledge queries or when explicitly mentioned
   const shouldUseRAG = actionUpper.includes('USE_RAG') || 
+                       actionUpper.includes('USE_DATABASE_WITH_RAG') ||
+                       actionUpper.includes('USE_BOTH') ||
                        decisionUpper.includes('RAG') ||
-                       (actionUpper.includes('BOTH') && decisionUpper.includes('BOTH'));
+                       decisionUpper.includes('BOTH');
   
   return {
     thought,
@@ -121,18 +123,43 @@ export async function makeReActDecision(
   
   try {
     const query = context.userQuery.toLowerCase();
-    // Directly ensure no RAG usage for employee-related queries
-    const isDatabaseSpecific = query.includes('empno') || 
-                               query.includes('employee') ||
-                               query.includes('employees');
     
-    if (isDatabaseSpecific) {
+    // Check if this is a database-relevant query
+    const isDatabaseRelevant = query.includes('empno') || 
+                              query.includes('employee') ||
+                              query.includes('employees') ||
+                              query.includes('sql') ||
+                              query.includes('database') ||
+                              query.includes('table');
+    
+    // Check if this is a RAG-relevant query
+    const isRAGRelevant = query.includes('langchain') || 
+                         query.includes('langgraph') ||
+                         query.includes('cohere') ||
+                         query.includes('rag') ||
+                         query.includes('react') ||
+                         query.includes('framework') ||
+                         query.includes('tool');
+    
+    // If it's clearly both database and RAG relevant, use both
+    if (isDatabaseRelevant && isRAGRelevant) {
       return {
-        thought: 'Direct database relevance detected.',
-        action: 'USE_DATABASE_ONLY',
+        thought: 'Query appears to need both database data and RAG knowledge.',
+        action: 'USE_BOTH',
         shouldUseDatabase: true,
-        shouldUseRAG: false,
-        reasoning: 'Question specifically requests employee numbers from the database.'
+        shouldUseRAG: true,
+        reasoning: 'Question involves both database content and requires additional context knowledge.'
+      };
+    }
+    
+    // If it's primarily database-focused, use database but also allow RAG for context
+    if (isDatabaseRelevant) {
+      return {
+        thought: 'Database relevance detected, also checking for additional context needs.',
+        action: 'USE_DATABASE_WITH_RAG',
+        shouldUseDatabase: true,
+        shouldUseRAG: true, // Allow RAG to provide additional context
+        reasoning: 'Question involves database content and may benefit from additional knowledge context.'
       };
     }
     
