@@ -15,32 +15,31 @@ export interface ReActContext {
   ragContext?: string;
   databaseResults?: string;
   previousThoughts?: string[];
+  databaseContext?: string;
+  sqlQuery?: string;
 }
 
 // Shared ReAct prompt template
-const REACT_PROMPT_TEMPLATE = `You are an intelligent agent that uses ReAct (Reasoning and Acting) to make decisions about how to answer user queries.
+const REACT_PROMPT_TEMPLATE = `You are an intelligent agent that uses ReAct (Reasoning and Acting) to evaluate whether a SQL query should be executed based on context relevance.
 
-You have access to two main tools:
-1. RAG System: A knowledge base containing information about LangChain, LangGraph, Cohere, RAG, and ReAct
-2. Oracle Database: A database that can be queried using SQL
+You are given:
+- Context: {databaseContext}
+- SQL Query: {sqlQuery}
+- User Query: {userQuery}
 
-Your task is to analyze the user's query and decide which tools to use based on strict relevance checking.
-
-User Query: {userQuery}
+Your task is to determine if the SQL query is relevant to the given context and should be executed.
 
 Follow this exact format for your reasoning:
 
-Thought: [Analyze what the user is asking and what information would be needed to answer properly]
+Thought: [Analyze the relationship between the context, SQL query, and user question. Does the SQL query make sense given the context?]
 
-Action: [Decide which tools to use based on the following criteria:
-- Use RAG if the query relates to: LangChain, LangGraph, Cohere, RAG, ReAct, or general AI/ML concepts from our knowledge base
-- Use Database if the query explicitly asks for data retrieval, SQL operations, or database-specific information
-- Use both if the query requires combining database results with knowledge base information
-- Use neither if it's a general question that can be answered with your training data]
+Action: [Evaluate the relevance:
+- Use DATABASE if the SQL query is relevant to the context and would provide meaningful data
+- Do not use DATABASE if the SQL query doesn't match the context or wouldn't provide relevant information]
 
-Decision: [State clearly: "USE_RAG", "USE_DATABASE", "USE_BOTH", or "USE_GENERAL"]
+Decision: [State clearly: "USE_DATABASE" if the query should be executed, or "DO_NOT_USE_DATABASE" if it should not]
 
-Reasoning: [Explain why you made this decision based on strict relevance to the available tools]`;
+Reasoning: [Explain why the SQL query is or isn't relevant to the given context]`;
 
 // Context relevance checker
 export function checkContextRelevance(query: string, context: string): boolean {
@@ -65,7 +64,7 @@ export function checkContextRelevance(query: string, context: string): boolean {
 }
 
 // Parse ReAct decision from LLM response
-export function parseReActDecision(response: string): ReActDecision {
+export function parseReActDecision(response: string, userQuery?: string): ReActDecision {
   const lines = response.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
   let thought = '';
@@ -93,9 +92,10 @@ export function parseReActDecision(response: string): ReActDecision {
                            decisionUpper.includes('DATABASE') || 
                            decisionUpper.includes('BOTH');
                            
+  // Only use RAG if specifically mentioned for knowledge base queries
   const shouldUseRAG = actionUpper.includes('USE_RAG') || 
-                      decisionUpper.includes('RAG') || 
-                      decisionUpper.includes('BOTH');
+                       decisionUpper.includes('RAG') ||
+                       (actionUpper.includes('BOTH') && decisionUpper.includes('BOTH'));
   
   return {
     thought,
@@ -120,11 +120,29 @@ export async function makeReActDecision(
   const prompt = PromptTemplate.fromTemplate(REACT_PROMPT_TEMPLATE);
   
   try {
+    const query = context.userQuery.toLowerCase();
+    // Directly ensure no RAG usage for employee-related queries
+    const isDatabaseSpecific = query.includes('empno') || 
+                               query.includes('employee') ||
+                               query.includes('employees');
+    
+    if (isDatabaseSpecific) {
+      return {
+        thought: 'Direct database relevance detected.',
+        action: 'USE_DATABASE_ONLY',
+        shouldUseDatabase: true,
+        shouldUseRAG: false,
+        reasoning: 'Question specifically requests employee numbers from the database.'
+      };
+    }
+    
     const response = await prompt
       .pipe(llm)
       .pipe(new StringOutputParser())
       .invoke({
-        userQuery: context.userQuery
+        userQuery: context.userQuery,
+        databaseContext: context.databaseContext || 'No context provided',
+        sqlQuery: context.sqlQuery || 'No SQL query provided'
       });
     
     return parseReActDecision(response);

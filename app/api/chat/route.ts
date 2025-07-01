@@ -6,6 +6,8 @@ import { Document } from '@langchain/core/documents';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 import { PromptTemplate } from '@langchain/core/prompts';
+import { makeReActDecision, formatReActProcess, ReActContext } from '../../lib/react-agent';
+import { executeSQLQuery, formatDatabaseResults, validateSQLQuery, DatabaseProgress, processUniqueEmployeeData } from '../../lib/database-utils';
 
 // Sample documents for the RAG system
 const sampleDocuments = [
@@ -62,26 +64,125 @@ async function createSmartRAGChain(apiKey: string) {
   return { llm };
 }
 
-// Process question with smart RAG approach
-async function processQuestion(question: string, apiKey: string) {
+// Process question with ReAct decision-making
+async function processQuestionWithReAct(
+  question: string, 
+  apiKey: string,
+  onProgress?: (progress: DatabaseProgress) => void
+) {
   const { llm } = await createSmartRAGChain(apiKey);
   
-  // Check if question relates to our knowledge base
-  const isKnowledgeBaseQuestion = question.toLowerCase().includes('langchain') || 
-      question.toLowerCase().includes('langgraph') ||
-      question.toLowerCase().includes('cohere') ||
-      question.toLowerCase().includes('rag') ||
-      question.toLowerCase().includes('react') ||
-      question.toLowerCase().includes('retrieval');
+  // Make ReAct decision with database context and SQL query
+  const reactContext: ReActContext = {
+    userQuery: question,
+    databaseContext: 'Employee data',
+    sqlQuery: 'select * from emp'
+  };
+  
+  const decision = await makeReActDecision(reactContext, apiKey);
+  
+  // Log ReAct decision to console
+  console.log('\n=== ReAct Decision Process ===');
+  console.log(`User Query: ${question}`);
+  console.log(`\n--- ReAct Process ---`);
+  console.log(`Thought: ${decision.thought}`);
+  console.log(`Action: ${decision.action}`);
+  console.log(`Reasoning: ${decision.reasoning}`);
+  console.log(`Should Use Database: ${decision.shouldUseDatabase}`);
+  console.log(`Should Use RAG: ${decision.shouldUseRAG}`);
+  
+  let ragContext = '';
+let databaseResults = '';
+let databaseExecuted = false;
+let uniqueEmpNos;
 
-  if (isKnowledgeBaseQuestion) {
-    // Use RAG for knowledge base questions
-    const store = await initializeVectorStore(apiKey);
-    const retriever = store.asRetriever({ k: 3 });
-    const docs = await retriever.invoke(question);
-    const context = docs.map(doc => doc.pageContent).join('\n\n');
-    
-    const ragPrompt = PromptTemplate.fromTemplate(
+// Execute based on ReAct decision
+if (decision.shouldUseRAG) {
+  // Use RAG for knowledge base questions
+  console.log('\n=== RAG System Execution ===');
+  const store = await initializeVectorStore(apiKey);
+  const retriever = store.asRetriever({ k: 3 });
+  const docs = await retriever.invoke(question);
+  ragContext = docs.map(doc => doc.pageContent).join('\n\n');
+  console.log(`Retrieved RAG Context: ${ragContext.substring(0, 200)}...`);
+}
+
+if (decision.shouldUseDatabase) {
+  // For this implementation, we'll use a default query when database is needed
+  // In practice, this would be determined by ReAct reasoning
+  const defaultQuery = 'select * from emp';
+
+  console.log('\n=== Database Query Execution ===');
+  console.log(`Executing SQL Query: ${defaultQuery}`);
+
+  const dbResult = await executeSQLQuery(defaultQuery, onProgress);
+  if (dbResult.success) {
+    // Send the full results to LLM, but ensure clean JSON structure
+    try {
+      // Parse and re-stringify to ensure clean JSON without duplication
+      let cleanData;
+      if (dbResult.data && dbResult.data.results && dbResult.data.results[0]) {
+        // Take only the first result set to avoid duplication
+        cleanData = {
+          columns: dbResult.data.results[0].columns,
+          items: dbResult.data.results[0].items
+        };
+      } else if (dbResult.data && dbResult.data.columns && dbResult.data.items) {
+        cleanData = {
+          columns: dbResult.data.columns,
+          items: dbResult.data.items
+        };
+      } else {
+        cleanData = dbResult.data;
+      }
+      
+      databaseResults = JSON.stringify(cleanData, null, 2);
+      databaseExecuted = true;
+      console.log('Database query executed successfully');
+      console.log('Clean database results prepared for LLM');
+      console.log('Data structure:', typeof cleanData, Object.keys(cleanData || {}));
+      console.log('Number of employee records:', cleanData?.items?.length || 0);
+      
+      // DEBUG: Show unique employee numbers being sent to LLM
+      if (cleanData?.items) {
+        const empNos = cleanData.items.map(item => item.empno).filter(empno => empno !== undefined);
+        const uniqueEmpNos = [...new Set(empNos)].sort((a, b) => a - b);
+        console.log('DEBUG: Unique empnos in data being sent to LLM:', uniqueEmpNos);
+        console.log('DEBUG: Count of unique empnos:', uniqueEmpNos.length);
+        console.log('DEBUG: All empnos (including duplicates):', empNos);
+        console.log('DEBUG: Total empno count (with duplicates):', empNos.length);
+      }
+    } catch (processingError) {
+      databaseResults = `Error processing database results: ${processingError.message}`;
+      databaseExecuted = false;
+      console.log('Error processing database results:', processingError);
+    }
+  } else {
+    databaseResults = `Database error: ${dbResult.error}`;
+    databaseExecuted = false;
+    console.log('Database query was not run');
+    console.log(`Error: ${dbResult.error}`);
+  }
+} else {
+  console.log('\n=== Database Query Skipped ===');
+  console.log('ReAct decision determined database query is not needed');
+}
+  
+  // Generate final response
+  let finalPrompt;
+  let context = '';
+  
+  console.log('\n=== Final Response Generation ===');
+  console.log(`RAG Context available: ${!!ragContext}`);
+  console.log(`Database Results available: ${!!databaseResults}`);
+  if (databaseResults) {
+    console.log(`Database Results (first 500 chars): ${databaseResults.substring(0, 500)}...`);
+  }
+  
+  if (ragContext && databaseResults) {
+    context = `RAG Context: ${ragContext}\n\nDatabase Results: ${databaseResults}`;
+    console.log('Using both RAG and Database context');
+    finalPrompt = PromptTemplate.fromTemplate(
       `You are a helpful AI assistant. Use the following context to provide a comprehensive answer to the question.
       
       Context: {context}
@@ -90,56 +191,150 @@ async function processQuestion(question: string, apiKey: string) {
       
       Answer:`
     );
-    
-    const response = await ragPrompt.pipe(llm).pipe(new StringOutputParser()).invoke({
-      context,
-      question
-    });
-    
-    return response;
+  } else if (ragContext) {
+    context = ragContext;
+    console.log('Using only RAG context');
+    finalPrompt = PromptTemplate.fromTemplate(
+      `You are a helpful AI assistant. Use the following context to provide a comprehensive answer to the question.
+      
+      Context: {context}
+      
+      Question: {question}
+      
+      Answer:`
+    );
+  } else if (databaseResults) {
+    context = databaseResults;
+    console.log('Using only Database context');
+    finalPrompt = PromptTemplate.fromTemplate(
+      `You are a helpful AI assistant. Use the following database information to answer the question.
+      
+      Database Information: {context}
+      
+      Question: {question}
+      
+      Answer:`
+    );
   } else {
-    // Use general knowledge for other questions
-    const generalPrompt = PromptTemplate.fromTemplate(
+    // Use general knowledge
+    console.log('Using general knowledge only');
+    finalPrompt = PromptTemplate.fromTemplate(
       `You are a helpful AI assistant. Answer the following question using your general knowledge. Be informative and accurate.
       
       Question: {question}
       
       Answer:`
     );
-    
-    const response = await generalPrompt.pipe(llm).pipe(new StringOutputParser()).invoke({
-      question
-    });
-    
-    return response;
   }
+  
+  console.log(`Final context length: ${context.length}`);
+  console.log(`Final context preview: ${context.substring(0, 200)}...`);
+  
+  console.log('\n=== Calling LLM ===');
+  
+  // Debug: Show the exact prompt being sent to the LLM
+  const promptInput = {
+    context,
+    question
+  };
+  
+  console.log('Prompt input:');
+  console.log('Question:', question);
+  console.log('Context length:', context.length);
+  
+  // DEBUG: Count occurrences in context to check for duplication
+  if (context.includes('empno')) {
+    const empnoMatches = context.match(/"empno":\s*\d+/g) || [];
+    console.log('DEBUG: Number of empno occurrences in context:', empnoMatches.length);
+    if (empnoMatches.length > 14) {
+      console.log('WARNING: More than 14 empno occurrences detected - possible duplication!');
+      console.log('DEBUG: First 5 empno values:', empnoMatches.slice(0, 5));
+    }
+  }
+  
+  if (context.length < 1000) {
+    console.log('Context content (full):', context);
+  } else {
+    console.log('Context content (preview):', context.substring(0, 500) + '...[truncated]');
+  }
+  
+  const response = await finalPrompt.pipe(llm).pipe(new StringOutputParser()).invoke(promptInput);
+  
+  // Prepare debug information (raw prompt context only)
+  let debugInfo = {};
+  if (context.length > 0) {
+    debugInfo = {
+      promptContext: context
+    };
+  }
+  
+  return {
+    response,
+    decision,
+    databaseExecuted,
+    databaseResults,
+    ragContext,
+    debugInfo
+  };
 }
 
-// ReAct-style reasoning function
-function processWithReAct(userMessage: string): string {
-  // Simple ReAct-style processing - in a real implementation, this would be more sophisticated
-  const thoughts = [];
-  
-  // Thought: Analyze the user's question
-  thoughts.push(`Thought: The user is asking about: "${userMessage}"`);
-  
-  // Action: Determine if this requires retrieval
-  if (userMessage.toLowerCase().includes('langchain') || 
-      userMessage.toLowerCase().includes('langgraph') ||
-      userMessage.toLowerCase().includes('cohere') ||
-      userMessage.toLowerCase().includes('rag') ||
-      userMessage.toLowerCase().includes('react')) {
-    thoughts.push('Action: This question relates to our knowledge base, so I should retrieve relevant information.');
-  } else {
-    thoughts.push('Action: This is a general question, I can answer based on my training.');
+// Process database query with ReAct decision
+async function processDatabaseQueryWithReAct(
+  userQuery: string,
+  databaseContext: string,
+  sqlQuery: string,
+  apiKey: string,
+  onProgress?: (progress: DatabaseProgress) => void
+) {
+  // Validate SQL query first
+  const validation = validateSQLQuery(sqlQuery);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.message,
+      databaseExecuted: false
+    };
   }
   
-  return thoughts.join('\n');
+  // Make ReAct decision for database query
+  const reactContext: ReActContext = {
+    userQuery,
+    databaseContext,
+    sqlQuery
+  };
+  
+  const decision = await makeReActDecision(reactContext, apiKey);
+  
+  let result;
+  if (decision.shouldUseDatabase) {
+    result = await executeSQLQuery(sqlQuery, onProgress);
+    return {
+      success: result.success,
+      data: result.data,
+      formattedResults: formatDatabaseResults(result),
+      decision,
+      databaseExecuted: result.success,
+      error: result.error
+    };
+  } else {
+    return {
+      success: false,
+      error: 'ReAct decision determined database query is not relevant',
+      decision,
+      databaseExecuted: false
+    };
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, apiKey } = await request.json();
+    const { 
+      message, 
+      apiKey, 
+      type = 'chat',
+      databaseContext,
+      sqlQuery 
+    } = await request.json();
 
     if (!apiKey) {
       return NextResponse.json(
@@ -155,19 +350,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process with ReAct-style reasoning
-    const reactThoughts = processWithReAct(message);
-    
-    // Process question with smart RAG approach
-    const response = await processQuestion(message, apiKey);
+    if (type === 'react-only') {
+      // Handle ReAct decision only, don't execute database query
+      if (!sqlQuery) {
+        return NextResponse.json(
+          { error: 'SQL query is required for ReAct decision' },
+          { status: 400 }
+        );
+      }
 
-    // Combine ReAct thoughts with RAG response for demonstration
-    const finalResponse = `${response}\n\n--- ReAct Process ---\n${reactThoughts}`;
+      // Make ReAct decision without executing the query
+      const reactContext: ReActContext = {
+        userQuery: message,
+        databaseContext: databaseContext || '',
+        sqlQuery
+      };
+      
+      const decision = await makeReActDecision(reactContext, apiKey);
+      const reactProcess = formatReActProcess(decision);
+      
+      return NextResponse.json({
+        success: true,
+        reactProcess,
+        shouldUseDatabase: decision.shouldUseDatabase,
+        shouldUseRAG: decision.shouldUseRAG
+      });
+    } else if (type === 'database') {
+      // Handle database query with ReAct
+      if (!sqlQuery) {
+        return NextResponse.json(
+          { error: 'SQL query is required for database operations' },
+          { status: 400 }
+        );
+      }
 
-    return NextResponse.json({ 
-      response: finalResponse,
-      success: true 
-    });
+      const result = await processDatabaseQueryWithReAct(
+        message,
+        databaseContext || '',
+        sqlQuery,
+        apiKey
+      );
+
+      const reactProcess = result.decision ? formatReActProcess(result.decision) : '';
+      
+      return NextResponse.json({
+        success: result.success,
+        response: result.formattedResults || result.error,
+        databaseExecuted: result.databaseExecuted,
+        reactProcess,
+        data: result.data
+      });
+    } else {
+      // Handle regular chat with ReAct
+      const result = await processQuestionWithReAct(message, apiKey);
+      const reactProcess = formatReActProcess(result.decision);
+      
+      // Only show the AI response and ReAct process, not database results
+      let finalResponse = result.response;
+      finalResponse += `\n\n${reactProcess}`;
+
+      return NextResponse.json({ 
+        response: finalResponse,
+        success: true,
+        databaseExecuted: result.databaseExecuted,
+        debugInfo: result.debugInfo
+      });
+    }
 
   } catch (error) {
     console.error('Error in chat API:', error);
