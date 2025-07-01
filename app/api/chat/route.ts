@@ -117,14 +117,13 @@ const docs = await retriever.invoke(question);
 }
 
 if (decision.shouldUseDatabase) {
-  // For this implementation, we'll use a default query when database is needed
-  // In practice, this would be determined by ReAct reasoning
-  const defaultQuery = 'select * from emp';
+  // Use the actual SQL query from the ReAct context
+  const queryToExecute = sqlQuery || 'select * from emp';
 
   console.log('\n=== Database Query Execution ===');
-  console.log(`Executing SQL Query: ${defaultQuery}`);
+  console.log(`Executing SQL Query: ${queryToExecute}`);
 
-  const dbResult = await executeSQLQuery(defaultQuery, onProgress);
+  const dbResult = await executeSQLQuery(queryToExecute, onProgress);
   if (dbResult.success) {
     // Send the full results to LLM, but ensure clean JSON structure
     try {

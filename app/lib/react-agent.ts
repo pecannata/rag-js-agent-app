@@ -20,33 +20,40 @@ export interface ReActContext {
 }
 
 // Shared ReAct prompt template
-const REACT_PROMPT_TEMPLATE = `You are an intelligent agent that uses ReAct (Reasoning and Acting) to evaluate whether a database query should be executed and whether RAG knowledge should be used.
+const REACT_PROMPT_TEMPLATE = `You are a precise semantic alignment checker. You must decide if the database query fits the described context and user question.
 
-You are given:
+You have the following inputs:
 - Context: {databaseContext}
 - SQL Query: {sqlQuery}
 - User Query: {userQuery}
 
-Your task is to determine what resources are needed to answer the user's question properly.
+DECISION RULES:
+1. Identify the context of the data.
+2. Verify the SQL query pertains to the context domain.
+3. Ensure the user query aligns with the same domain as the context.
+4. All three inputs must strictly belong to one domain.
 
-CRITICAL: Only use the database if the SQL query is semantically relevant to the stated context. For example:
-- If context is "Cat data" but SQL queries employee tables, DO NOT use database
-- If context is "Employee data" and SQL queries employee tables, USE database
-- If context is "Product data" but SQL queries customer tables, DO NOT use database
+MISALIGNED EXAMPLES:
+- "Cat data" context + movies SQL → MISALIGNED
+- "Cat data" context + customers user query → MISALIGNED
 
-Follow this exact format:
+ALIGNED EXAMPLES:
+- "Movie data" context + movies SQL + user asks about movies → ALIGNED
+- "Customer data" context + customers SQL + user asks about customers → ALIGNED
 
-Thought: [Analyze: Does the SQL query match the stated context? Does the user question relate to the context? Are they all aligned?]
+IF ANY INPUT DIFFERS IN DOMAIN, SELECT USE_NEITHER.
 
-Action: [Choose one:
-- USE_DATABASE: if SQL query matches context and answers user question
-- USE_RAG: if question needs knowledge base information
-- USE_BOTH: if both database and knowledge are needed
-- USE_NEITHER: if neither database nor RAG are needed]
+Format your output strictly like this:
 
-Decision: [Restate your action clearly]
+Thought: [Analyze: Is the domain the same for context, SQL, and user? Determine any misalignment.]
 
-Reasoning: [Explain the semantic alignment between context, SQL query, and user question]`;
+Action: [Based purely on domain check:
+- USE_DATABASE: Context, SQL, and user query are all the same domain.
+- USE_NEITHER: At least one input is a different domain.]
+
+Decision: [Conclude your action as USE_DATABASE or USE_NEITHER]
+
+Reasoning: [Details on why they align or misalign. Context: X, SQL: Y, User query: Z -> Result alignment: [yes/no]]`;
 
 // Context relevance checker
 export function checkContextRelevance(query: string, context: string): boolean {
