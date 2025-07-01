@@ -235,7 +235,7 @@ export default function ChatInterface({ apiKey, isApiKeyActive, databaseQuery, o
                 {message.debugInfo && message.debugInfo.promptContext && (
                   <div className="mt-3 pt-3 border-t border-yellow-200 bg-yellow-50 -mx-4 -mb-2 p-4">
                     <details className="cursor-pointer">
-                      <summary className="text-sm font-medium text-yellow-800 mb-2">🔍 Debug Info - LLM Prompt Context</summary>
+                      <summary className="text-sm font-medium text-yellow-800 mb-2">🔍 This is the Augmentation</summary>
                       <div className="mt-2">
                         <p className="text-xs font-medium text-yellow-700 mb-1">Exact Context Sent to LLM:</p>
                         <pre className="text-xs bg-white p-2 rounded border max-h-64 overflow-y-auto">
