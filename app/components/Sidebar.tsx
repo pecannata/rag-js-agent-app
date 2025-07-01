@@ -110,6 +110,18 @@ export default function Sidebar({ apiKey, setApiKey, isApiKeyActive, setIsApiKey
         )}
       </div>
 
+      {/* Model Information */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+          <span className="text-sm font-medium text-gray-700">LLM Model</span>
+        </div>
+        <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+          <div className="font-medium text-blue-800">command-r-plus</div>
+          <div className="text-blue-600 mt-1">Enhanced reasoning & performance</div>
+        </div>
+      </div>
+
       {/* Database ReAct Section */}
       <div className="mb-6 border-t border-gray-200 pt-6">
         <h3 className="text-lg font-bold mb-4 text-gray-800">Database ReAct Agent</h3>

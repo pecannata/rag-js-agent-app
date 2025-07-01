@@ -57,7 +57,7 @@ async function createSmartRAGChain(apiKey: string) {
   // Initialize Cohere LLM
   const llm = new ChatCohere({
     apiKey: apiKey,
-    model: 'command',
+    model: 'command-r-plus',
     temperature: 0.7
   });
 

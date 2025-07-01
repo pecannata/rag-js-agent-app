@@ -115,7 +115,7 @@ export async function makeReActDecision(
 ): Promise<ReActDecision> {
   const llm = new ChatCohere({
     apiKey: apiKey,
-    model: 'command',
+    model: 'command-r-plus',
     temperature: 0.1 // Low temperature for consistent decision making
   });
 
