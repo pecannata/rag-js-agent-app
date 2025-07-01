@@ -14,6 +14,8 @@ export default function Home() {
   const [apiKey, setApiKey] = useState<string>('');
   const [isApiKeyActive, setIsApiKeyActive] = useState<boolean>(false);
   const [databaseQuery, setDatabaseQuery] = useState<DatabaseQuery | null>(null);
+  const [sidebarContext, setSidebarContext] = useState<string>('Employee data');
+  const [sidebarSqlQuery, setSidebarSqlQuery] = useState<string>('select * from emp');
 
   // Handle database query from sidebar - only get ReAct decision, don't execute
   const handleDatabaseQuery = async (context: string, query: string): Promise<string> => {
@@ -54,6 +56,8 @@ export default function Home() {
         isApiKeyActive={isApiKeyActive}
         setIsApiKeyActive={setIsApiKeyActive}
         onDatabaseQuery={handleDatabaseQuery}
+        onContextChange={setSidebarContext}
+        onSqlQueryChange={setSidebarSqlQuery}
       />
       
       {/* Main Chat Interface */}
@@ -63,6 +67,8 @@ export default function Home() {
           isApiKeyActive={isApiKeyActive}
           databaseQuery={databaseQuery}
           onDatabaseQueryProcessed={() => setDatabaseQuery(null)}
+          sidebarContext={sidebarContext}
+          sidebarSqlQuery={sidebarSqlQuery}
         />
       </div>
     </div>

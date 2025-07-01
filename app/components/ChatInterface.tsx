@@ -27,9 +27,11 @@ interface ChatInterfaceProps {
   isApiKeyActive: boolean;
   databaseQuery: DatabaseQuery | null;
   onDatabaseQueryProcessed: () => void;
+  sidebarContext?: string;
+  sidebarSqlQuery?: string;
 }
 
-export default function ChatInterface({ apiKey, isApiKeyActive, databaseQuery, onDatabaseQueryProcessed }: ChatInterfaceProps) {
+export default function ChatInterface({ apiKey, isApiKeyActive, databaseQuery, onDatabaseQueryProcessed, sidebarContext, sidebarSqlQuery }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState<string>('How many employees are there?');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -61,6 +63,8 @@ export default function ChatInterface({ apiKey, isApiKeyActive, databaseQuery, o
         body: JSON.stringify({
           message: inputMessage,
           apiKey: apiKey,
+          databaseContext: sidebarContext,
+          sqlQuery: sidebarSqlQuery
         }),
       });
 

@@ -8,9 +8,11 @@ interface SidebarProps {
   isApiKeyActive: boolean;
   setIsApiKeyActive: (active: boolean) => void;
   onDatabaseQuery: (context: string, query: string) => Promise<string>;
+  onContextChange?: (context: string) => void;
+  onSqlQueryChange?: (query: string) => void;
 }
 
-export default function Sidebar({ apiKey, setApiKey, isApiKeyActive, setIsApiKeyActive, onDatabaseQuery }: SidebarProps) {
+export default function Sidebar({ apiKey, setApiKey, isApiKeyActive, setIsApiKeyActive, onDatabaseQuery, onContextChange, onSqlQueryChange }: SidebarProps) {
   const [inputKey, setInputKey] = useState<string>('');
   
   // Database ReAct state
@@ -134,7 +136,10 @@ export default function Sidebar({ apiKey, setApiKey, isApiKeyActive, setIsApiKey
           <input
             type="text"
             value={databaseContext}
-            onChange={(e) => setDatabaseContext(e.target.value)}
+            onChange={(e) => {
+              setDatabaseContext(e.target.value);
+              onContextChange?.(e.target.value);
+            }}
             placeholder="Enter context for decision making"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
@@ -147,7 +152,10 @@ export default function Sidebar({ apiKey, setApiKey, isApiKeyActive, setIsApiKey
           </label>
           <textarea
             value={sqlQuery}
-            onChange={(e) => setSqlQuery(e.target.value)}
+            onChange={(e) => {
+              setSqlQuery(e.target.value);
+              onSqlQueryChange?.(e.target.value);
+            }}
             placeholder="Enter your SQL query"
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"

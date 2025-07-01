@@ -68,6 +68,8 @@ async function createSmartRAGChain(apiKey: string) {
 async function processQuestionWithReAct(
   question: string, 
   apiKey: string,
+  databaseContext?: string,
+  sqlQuery?: string,
   onProgress?: (progress: DatabaseProgress) => void
 ) {
   const { llm } = await createSmartRAGChain(apiKey);
@@ -75,8 +77,8 @@ async function processQuestionWithReAct(
   // Make ReAct decision with database context and SQL query
   const reactContext: ReActContext = {
     userQuery: question,
-    databaseContext: 'Employee data',
-    sqlQuery: 'select * from emp'
+    databaseContext: databaseContext || 'No context provided',
+    sqlQuery: sqlQuery || 'No SQL query provided'
   };
   
   const decision = await makeReActDecision(reactContext, apiKey);
@@ -380,7 +382,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Handle regular chat with ReAct
-      const result = await processQuestionWithReAct(message, apiKey);
+      const result = await processQuestionWithReAct(message, apiKey, databaseContext, sqlQuery);
       const reactProcess = formatReActProcess(result.decision);
       
       // Only show the AI response and ReAct process, not database results

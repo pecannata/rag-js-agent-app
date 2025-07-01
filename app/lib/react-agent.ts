@@ -20,26 +20,33 @@ export interface ReActContext {
 }
 
 // Shared ReAct prompt template
-const REACT_PROMPT_TEMPLATE = `You are an intelligent agent that uses ReAct (Reasoning and Acting) to evaluate whether a SQL query should be executed based on context relevance.
+const REACT_PROMPT_TEMPLATE = `You are an intelligent agent that uses ReAct (Reasoning and Acting) to evaluate whether a database query should be executed and whether RAG knowledge should be used.
 
 You are given:
 - Context: {databaseContext}
 - SQL Query: {sqlQuery}
 - User Query: {userQuery}
 
-Your task is to determine if the SQL query is relevant to the given context and should be executed.
+Your task is to determine what resources are needed to answer the user's question properly.
 
-Follow this exact format for your reasoning:
+CRITICAL: Only use the database if the SQL query is semantically relevant to the stated context. For example:
+- If context is "Cat data" but SQL queries employee tables, DO NOT use database
+- If context is "Employee data" and SQL queries employee tables, USE database
+- If context is "Product data" but SQL queries customer tables, DO NOT use database
 
-Thought: [Analyze the relationship between the context, SQL query, and user question. Does the SQL query make sense given the context?]
+Follow this exact format:
 
-Action: [Evaluate the relevance:
-- Use DATABASE if the SQL query is relevant to the context and would provide meaningful data
-- Do not use DATABASE if the SQL query doesn't match the context or wouldn't provide relevant information]
+Thought: [Analyze: Does the SQL query match the stated context? Does the user question relate to the context? Are they all aligned?]
 
-Decision: [State clearly: "USE_DATABASE" if the query should be executed, or "DO_NOT_USE_DATABASE" if it should not]
+Action: [Choose one:
+- USE_DATABASE: if SQL query matches context and answers user question
+- USE_RAG: if question needs knowledge base information
+- USE_BOTH: if both database and knowledge are needed
+- USE_NEITHER: if neither database nor RAG are needed]
 
-Reasoning: [Explain why the SQL query is or isn't relevant to the given context]`;
+Decision: [Restate your action clearly]
+
+Reasoning: [Explain the semantic alignment between context, SQL query, and user question]`;
 
 // Context relevance checker
 export function checkContextRelevance(query: string, context: string): boolean {
@@ -88,13 +95,24 @@ export function parseReActDecision(response: string, userQuery?: string): ReActD
   const actionUpper = action.toUpperCase();
   const decisionUpper = decision.toUpperCase();
   
+  // Handle USE_NEITHER case explicitly
+  if (actionUpper.includes('USE_NEITHER') || decisionUpper.includes('USE_NEITHER')) {
+    return {
+      thought,
+      action,
+      shouldUseDatabase: false,
+      shouldUseRAG: false,
+      reasoning
+    };
+  }
+  
   const shouldUseDatabase = actionUpper.includes('USE_DATABASE') || 
                            decisionUpper.includes('DATABASE') || 
+                           actionUpper.includes('USE_BOTH') ||
                            decisionUpper.includes('BOTH');
                            
   // Use RAG for knowledge queries or when explicitly mentioned
   const shouldUseRAG = actionUpper.includes('USE_RAG') || 
-                       actionUpper.includes('USE_DATABASE_WITH_RAG') ||
                        actionUpper.includes('USE_BOTH') ||
                        decisionUpper.includes('RAG') ||
                        decisionUpper.includes('BOTH');
@@ -122,47 +140,7 @@ export async function makeReActDecision(
   const prompt = PromptTemplate.fromTemplate(REACT_PROMPT_TEMPLATE);
   
   try {
-    const query = context.userQuery.toLowerCase();
-    
-    // Check if this is a database-relevant query
-    const isDatabaseRelevant = query.includes('empno') || 
-                              query.includes('employee') ||
-                              query.includes('employees') ||
-                              query.includes('sql') ||
-                              query.includes('database') ||
-                              query.includes('table');
-    
-    // Check if this is a RAG-relevant query
-    const isRAGRelevant = query.includes('langchain') || 
-                         query.includes('langgraph') ||
-                         query.includes('cohere') ||
-                         query.includes('rag') ||
-                         query.includes('react') ||
-                         query.includes('framework') ||
-                         query.includes('tool');
-    
-    // If it's clearly both database and RAG relevant, use both
-    if (isDatabaseRelevant && isRAGRelevant) {
-      return {
-        thought: 'Query appears to need both database data and RAG knowledge.',
-        action: 'USE_BOTH',
-        shouldUseDatabase: true,
-        shouldUseRAG: true,
-        reasoning: 'Question involves both database content and requires additional context knowledge.'
-      };
-    }
-    
-    // If it's primarily database-focused, use database but also allow RAG for context
-    if (isDatabaseRelevant) {
-      return {
-        thought: 'Database relevance detected, also checking for additional context needs.',
-        action: 'USE_DATABASE_WITH_RAG',
-        shouldUseDatabase: true,
-        shouldUseRAG: true, // Allow RAG to provide additional context
-        reasoning: 'Question involves database content and may benefit from additional knowledge context.'
-      };
-    }
-    
+    // Always use the LLM-based ReAct decision for proper context evaluation
     const response = await prompt
       .pipe(llm)
       .pipe(new StringOutputParser())
