@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import DataTable from './DataTable';
+import MarkdownTable from './MarkdownTable';
 
 interface Message {
   role: 'user' | 'ai';
@@ -26,7 +28,7 @@ interface ChatProps {
 }
 
 export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig }: ChatProps) {
-  const [input, setInput] = useState('How many employees are there?'); // Default message
+  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [expandedAugmentation, setExpandedAugmentation] = useState<{ [key: number]: boolean }>({});
 
@@ -120,32 +122,16 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
             ) : (
               <div className="bg-green-100 p-4 rounded-lg">
                 <div className="font-semibold text-green-800 mb-2">AI:</div>
-                <div className="text-gray-800 whitespace-pre-wrap">{message.content}</div>
+                <div className="text-gray-800">
+                  <MarkdownTable content={message.content} />
+                </div>
                 
-                {/* Augmentation Data Accordion */}
+                {/* Augmentation Data - Smart Display */}
                 {message.augmentationData && (
-                  <div className="mt-4">
-                    <button
-                      onClick={() => setExpandedAugmentation({
-                        ...expandedAugmentation,
-                        [index]: !expandedAugmentation[index]
-                      })}
-                      className="w-full flex items-center justify-between p-2 bg-green-200 border border-green-300 rounded-md hover:bg-green-300 text-green-800"
-                    >
-                      <span className="font-medium">This is the Augmentation</span>
-                      <span className={`transform transition-transform ${expandedAugmentation[index] ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
-                    </button>
-                    
-                    {expandedAugmentation[index] && (
-                      <div className="mt-2 p-3 bg-white border border-green-300 rounded-md">
-                        <pre className="text-xs text-gray-700 whitespace-pre-wrap overflow-x-auto">
-                          {JSON.stringify(message.augmentationData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
+                  <DataTable 
+                    data={message.augmentationData} 
+                    title="Database Results"
+                  />
                 )}
               </div>
             )}

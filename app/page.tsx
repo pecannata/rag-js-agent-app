@@ -22,12 +22,12 @@ export default function Home() {
   const [apiKey, setApiKey] = useState('');
   const [isKeyValid, setIsKeyValid] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [sqlQuery, setSqlQuery] = useState('select * from emp'); // Default SQL query
+  const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
     domainSimilarityThreshold: 0.7,
     enableDatabaseQueries: true,
-    contextKeywords: ['Employee']
+    contextKeywords: []
   });
 
   // Load API key from localStorage on mount

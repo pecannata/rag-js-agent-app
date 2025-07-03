@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ReActConfig {
   temperature: number;
@@ -37,6 +37,74 @@ export default function Sidebar({
   );
   const [dbTestResult, setDbTestResult] = useState<string | null>(null);
   const [isTestingDb, setIsTestingDb] = useState(false);
+  const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([]);
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+
+  // Manual keyword generation function
+  const handleGenerateKeywords = async () => {
+    if (!sqlQuery.trim()) {
+      setDbTestResult('❌ Please enter a SQL query first');
+      return;
+    }
+    
+    if (!isKeyValid) {
+      setDbTestResult('❌ Please set your API key first');
+      return;
+    }
+
+    setIsGeneratingKeywords(true);
+    setSuggestedKeywords([]); // Clear previous suggestions
+    
+    try {
+      const response = await fetch('/api/keywords', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sqlQuery: sqlQuery,
+          apiKey: apiKey
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.keywords) {
+        setSuggestedKeywords(data.keywords);
+        setDbTestResult(`🎯 Generated ${data.keywords.length} keywords from SQL`);
+      } else {
+        console.error('Failed to generate keywords:', data.error);
+        setDbTestResult(`❌ Failed to generate keywords: ${data.error || 'Unknown error'}`);
+        setSuggestedKeywords([]);
+      }
+    } catch (error) {
+      console.error('Error generating keywords:', error);
+      setDbTestResult(`❌ Keyword generation failed: ${(error as Error).message}`);
+      setSuggestedKeywords([]);
+    } finally {
+      setIsGeneratingKeywords(false);
+    }
+  };
+
+  // Handle accepting suggested keywords
+  const handleAcceptSuggestedKeywords = () => {
+    const combinedKeywords = [
+      ...reactConfig.contextKeywords,
+      ...suggestedKeywords.filter(k => !reactConfig.contextKeywords.includes(k))
+    ];
+    
+    setContextKeywordsText(combinedKeywords.join(', '));
+    onReActConfigChange({
+      ...reactConfig,
+      contextKeywords: combinedKeywords
+    });
+    setSuggestedKeywords([]); // Clear suggestions after accepting
+  };
+
+  // Handle rejecting suggested keywords
+  const handleRejectSuggestedKeywords = () => {
+    setSuggestedKeywords([]);
+  };
 
   const handleSave = () => {
     if (inputKey.trim()) {
@@ -228,24 +296,31 @@ export default function Sidebar({
         <div className="grid grid-cols-2 gap-2 mt-3">
           <button
             onClick={handleTestDatabase}
-            disabled={isTestingDb}
+            disabled={isTestingDb || isGeneratingKeywords}
             className="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {isTestingDb ? 'Testing...' : 'Test DB'}
           </button>
           <button
             onClick={handleDirectQuery}
-            disabled={isTestingDb || !sqlQuery.trim()}
+            disabled={isTestingDb || isGeneratingKeywords || !sqlQuery.trim()}
             className="bg-purple-500 text-white px-3 py-2 rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {isTestingDb ? 'Executing...' : 'Run Query'}
           </button>
           <button
-            onClick={handleDomainTest}
-            disabled={isTestingDb || !sqlQuery.trim() || !isKeyValid}
-            className="col-span-2 bg-orange-500 text-white px-3 py-2 rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            onClick={handleGenerateKeywords}
+            disabled={isTestingDb || isGeneratingKeywords || !sqlQuery.trim() || !isKeyValid}
+            className="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            {isTestingDb ? 'Testing...' : 'Test ReAct Domain Check'}
+            {isGeneratingKeywords ? '🧠 Analyzing...' : '🧠 Keywords'}
+          </button>
+          <button
+            onClick={handleDomainTest}
+            disabled={isTestingDb || isGeneratingKeywords || !sqlQuery.trim() || !isKeyValid}
+            className="bg-orange-500 text-white px-3 py-2 rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            {isTestingDb ? 'Testing...' : 'ReAct Test'}
           </button>
         </div>
         
@@ -254,6 +329,42 @@ export default function Sidebar({
           <div className="mt-3 p-3 border rounded-md bg-gray-50">
             <div className="text-xs text-gray-700 whitespace-pre-wrap">
               {dbTestResult}
+            </div>
+          </div>
+        )}
+
+        {/* Suggested Keywords from SQL */}
+        {isGeneratingKeywords && (
+          <div className="mt-3 p-3 border border-yellow-300 rounded-md bg-yellow-50">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm text-yellow-700">Analyzing SQL for keywords...</span>
+            </div>
+          </div>
+        )}
+
+        {suggestedKeywords.length > 0 && (
+          <div className="mt-3 p-3 border border-blue-300 rounded-md bg-blue-50">
+            <div className="text-sm font-medium text-blue-800 mb-2">🧠 Suggested Keywords from SQL:</div>
+            <div className="text-sm text-blue-700 mb-3">
+              <strong>Keywords:</strong> {suggestedKeywords.join(', ')}
+            </div>
+            <div className="text-xs text-blue-600 mb-3">
+              Should these keywords be added to your Context Keywords?
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAcceptSuggestedKeywords}
+                className="flex-1 bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+              >
+                ✅ Add Keywords
+              </button>
+              <button
+                onClick={handleRejectSuggestedKeywords}
+                className="flex-1 bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
+              >
+                ❌ Reject
+              </button>
             </div>
           </div>
         )}
@@ -278,12 +389,13 @@ export default function Sidebar({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Context Keywords (comma-separated)
               </label>
-              <input
-                type="text"
+              <textarea
                 value={contextKeywordsText}
                 onChange={(e) => handleContextKeywordsChange(e.target.value)}
                 placeholder="Employee"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none overflow-y-auto"
+                rows={4}
+                style={{ maxHeight: '120px' }}
               />
             </div>
             

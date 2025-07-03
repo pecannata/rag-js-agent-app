@@ -48,6 +48,7 @@ function searchKnowledge(query: string): string {
   return 'No specific information found in knowledge base.';
 }
 
+
 // Oracle database tool
 async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
