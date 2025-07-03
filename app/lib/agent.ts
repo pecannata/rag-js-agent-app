@@ -1,6 +1,7 @@
 import { ChatCohere } from '@langchain/cohere';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getJson } from 'serpapi';
 
 const execAsync = promisify(exec);
 
@@ -48,6 +49,35 @@ function searchKnowledge(query: string): string {
   return 'No specific information found in knowledge base.';
 }
 
+
+// Search tool using SerpAPI
+async function searchWeb(query: string, apiKey?: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    if (!apiKey) {
+      console.log('❌ SerpAPI key not provided - web search skipped');
+      return { success: false, error: 'SerpAPI key not provided' };
+    }
+    
+    console.log('🌐 SERPAPI CALL INITIATED');
+    console.log('🔍 SerpAPI Query:', query);
+    console.log('🔑 SerpAPI Key:', '...' + apiKey.slice(-8));
+    
+    const result = await getJson({
+      engine: "google",
+      q: query,
+      api_key: apiKey,
+      num: 3 // Limit to 3 results for efficiency
+    });
+    
+    console.log('✅ SERPAPI CALL COMPLETED SUCCESSFULLY');
+    console.log('📊 SerpAPI Results Count:', result.organic_results?.length || 0);
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('❌ SERPAPI CALL FAILED:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
 
 // Oracle database tool
 async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -201,7 +231,8 @@ Response:`;
     message: string, 
     history: any[] = [], 
     sqlQuery?: string,
-    config?: ReActConfig
+    config?: ReActConfig,
+    serpApiKey?: string
   ): Promise<{ response: string; augmentationData?: any; domainAnalysis?: any }> {
     try {
       // Create context from history
@@ -271,26 +302,211 @@ Response:`;
         };
       }
 
+      // Multi-step ReAct reasoning for complex queries
+      let webSearchContext = '';
+      if (serpApiKey) {
+        console.log('🧠 Starting multi-step ReAct analysis...');
+        
+        const stepAnalysisPrompt = `You are a ReAct (Reasoning and Acting) agent that breaks down complex queries into executable steps.
+
+User Query: "${message}"
+Database Available: ${databaseResult ? 'Yes' : 'No'}
+Database Result: ${databaseResult ? JSON.stringify(databaseResult.data).substring(0, 500) + '...' : 'None'}
+
+Analyze this query and break it down into steps. Identify what information:
+1. Can be answered from the database (already executed)
+2. Requires current/real-time web search (population, prices, weather, etc.)
+3. Can be answered from LLM knowledge (general facts, relationships, etc.)
+
+For web search needs, focus on:
+- Current population data
+- Recent statistics
+- Time-sensitive information
+- Real-time data
+
+Provide your analysis in this exact JSON format:
+{
+  "steps": [
+    {
+      "step": 1,
+      "description": "What this step accomplishes",
+      "method": "database|websearch|knowledge",
+      "needsExecution": true/false,
+      "searchQuery": "specific search query if websearch needed",
+      "confidence": 0.0-1.0
+    }
+  ],
+  "needsWebSearch": true/false,
+  "webSearchSteps": ["list of steps that need web search"]
+}
+
+Response:`;
+
+        try {
+          console.log('🕰️ Starting LLM analysis with timeout...');
+          
+          // Create a timeout promise (reduced to 15 seconds)
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('LLM analysis timeout after 15 seconds')), 15000);
+          });
+          
+          // Race between LLM call and timeout
+          const analysisResponse = await Promise.race([
+            this.domainCheckerLlm.invoke(stepAnalysisPrompt),
+            timeoutPromise
+          ]);
+          
+          console.log('✅ LLM analysis completed');
+          const analysisText = analysisResponse.content as string;
+          
+          console.log('📝 Step Analysis Response:', analysisText.substring(0, 500) + '...');
+          
+          // Parse JSON response with better error handling
+          let stepAnalysis;
+          try {
+            const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              stepAnalysis = JSON.parse(jsonMatch[0]);
+            } else {
+              throw new Error('No JSON found in LLM response');
+            }
+          } catch (parseError) {
+            console.error('❌ JSON parsing failed:', parseError);
+            throw new Error('Failed to parse LLM analysis response');
+          }
+          
+          console.log('🎯 Multi-step Analysis:', {
+            totalSteps: stepAnalysis.steps?.length || 0,
+            needsWebSearch: stepAnalysis.needsWebSearch,
+            webSearchSteps: stepAnalysis.webSearchSteps
+          });
+          
+          augmentationData.stepAnalysis = stepAnalysis;
+            
+            // Execute web search steps
+            if (stepAnalysis.needsWebSearch && stepAnalysis.steps) {
+              const webSearchSteps = stepAnalysis.steps.filter(step => 
+                step.method === 'websearch' && step.needsExecution && step.confidence >= 0.7
+              );
+              
+              if (webSearchSteps.length > 0) {
+                console.log(`🌐 Executing ${webSearchSteps.length} web search step(s)...`);
+                
+                const webSearchResults = [];
+                
+                for (const step of webSearchSteps) {
+                  let searchQuery = step.searchQuery || message;
+                  
+                  // Let LLM enhance search query with database context if available
+                  if (databaseResult && databaseResult.success && step.searchQuery) {
+                    const currentYear = new Date().getFullYear();
+                    const contextEnhancementPrompt = `You are a search query optimizer. Given a search query and database results, enhance the search query to be more specific and effective.
+
+Current Year: ${currentYear}
+Original Search Query: "${step.searchQuery}"
+Database Results Sample: ${JSON.stringify(databaseResult.data).substring(0, 1000)}...
+
+Optimize the search query by:
+1. Adding specific entities found in the database results
+2. Making it more targeted for current/real-time information
+3. Including relevant geographic or demographic terms from the data
+4. Adding temporal context (use ${currentYear} as the current year) if appropriate
+5. Do NOT hardcode any year - use ${currentYear} if you need to reference the current year
+
+Return ONLY the optimized search query, nothing else.`;
+                    
+                    try {
+                      const enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
+                      const enhancedQuery = enhancementResponse.content as string;
+                      searchQuery = enhancedQuery.trim();
+                      console.log(`🔧 Enhanced search query: "${searchQuery}"`);
+                    } catch (error) {
+                      console.log(`⚠️ Query enhancement failed, using original: "${searchQuery}"`);
+                    }
+                  }
+                  
+                  // Add current year if not already present
+                  const currentYear = new Date().getFullYear().toString();
+                  const hasYear = searchQuery.includes(currentYear) || 
+                                searchQuery.includes((parseInt(currentYear) - 1).toString()) ||
+                                searchQuery.includes((parseInt(currentYear) + 1).toString());
+                  
+                  if (!hasYear) {
+                    searchQuery += ` ${currentYear}`;
+                  }
+                  
+                  console.log(`🔍 Step ${step.step}: Searching for "${searchQuery}"`);
+                  const webResult = await searchWeb(searchQuery, serpApiKey);
+                  
+                  if (webResult.success && webResult.data) {
+                    const organicResults = webResult.data.organic_results || [];
+                    const searchSummary = organicResults.slice(0, 3).map((result: any) => 
+                      `${result.title}: ${result.snippet}`
+                    ).join('\n');
+                    
+                    webSearchResults.push({
+                      step: step.step,
+                      description: step.description,
+                      query: searchQuery,
+                      results: organicResults.slice(0, 3),
+                      summary: searchSummary
+                    });
+                  }
+                }
+                
+                if (webSearchResults.length > 0) {
+                  const combinedSummary = webSearchResults.map(result => 
+                    `Step ${result.step} (${result.description}):\n${result.summary}`
+                  ).join('\n\n');
+                  
+                  webSearchContext = `\n\nCurrent Information from Multi-step Web Search:\n${combinedSummary}`;
+                  augmentationData.webSearch = {
+                    method: 'multi-step',
+                    steps: webSearchResults,
+                    combinedSummary: combinedSummary,
+                    stepAnalysis: stepAnalysis
+                  };
+                }
+              } else {
+                console.log('🚫 No high-confidence web search steps to execute');
+              }
+            } else {
+              console.log('🚫 Step analysis indicates no web search needed');
+            }
+        } catch (error) {
+          console.error('❌ Multi-step analysis error:', error);
+          // Fallback to simple detection
+          await this.executeSimpleWebSearch(message, databaseResult, serpApiKey, augmentationData);
+        }
+      }
+
       // Include database data in context if available
       let databaseContext = '';
       if (databaseResult && databaseResult.success) {
         databaseContext = `\n\nDatabase Query Result:\n${JSON.stringify(databaseResult.data, null, 2)}`;
       }
 
-      // Create ReAct-style prompt
+      // Create ReAct-style prompt with explicit web search prioritization
+      const hasWebSearchData = webSearchContext.includes('Current Information from');
+      const webSearchInstruction = hasWebSearchData ? 
+        `\n\nIMPORTANT: You have access to CURRENT, REAL-TIME information from web search below. You MUST prioritize and use this current data over any training data you may have. When providing population figures, dates, or other time-sensitive information, use ONLY the web search results provided. Do NOT mention limitations about your training data when current web search data is available.` : '';
+      
       const reactPrompt = `You are a helpful AI assistant that uses ReAct (Reasoning and Acting) methodology. You think step by step and can access tools when needed.
 
 Available capabilities:
 - Mathematical calculations
 - Knowledge base search (LangChain, ReAct, Cohere, RAG, LangGraph, Next.js)
 - Oracle database queries (when contextually relevant)
-- General conversation and assistance
+- Web search for current information (when SerpAPI key is available)
+- General conversation and assistance${webSearchInstruction}
 
-${context}Human: ${message}${knowledgeContext}${databaseContext}
+${context}Human: ${message}${knowledgeContext}${databaseContext}${webSearchContext}
 
 Thought: Let me analyze this request and provide a helpful response using the available information.
 
 Assistant:`;
+      
+      console.log('📝 Final prompt length:', reactPrompt.length);
 
       const response = await this.llm.invoke(reactPrompt);
       
@@ -305,6 +521,74 @@ Assistant:`;
         response: 'I apologize, but I encountered an error processing your request. Please check your API key and try again.',
         augmentationData: { error: (error as Error).message }
       };
+    }
+  }
+
+  // Fallback simple web search method
+  private async executeSimpleWebSearch(
+    message: string, 
+    databaseResult: any, 
+    serpApiKey: string, 
+    augmentationData: any
+  ): Promise<void> {
+    console.log('🔄 Fallback: Using simple keyword detection for web search');
+    
+    const simpleKeywords = ['current', 'latest', 'recent', 'today', '2024', '2025', 'population', 'price', 'weather'];
+    const needsSearch = simpleKeywords.some(keyword => message.toLowerCase().includes(keyword));
+    
+    if (needsSearch) {
+      let searchQuery = message;
+      
+      // Let LLM enhance search query with database context if available
+      if (databaseResult && databaseResult.success) {
+        const contextEnhancementPrompt = `You are a search query optimizer. Given a search query and database results, enhance the search query to be more specific and effective.
+
+Original Search Query: "${searchQuery}"
+Database Results Sample: ${JSON.stringify(databaseResult.data).substring(0, 1000)}...
+
+Optimize the search query by:
+1. Adding specific entities found in the database results
+2. Making it more targeted for current/real-time information
+3. Including relevant geographic or demographic terms from the data
+4. Adding temporal context (current year) if appropriate
+
+Return ONLY the optimized search query, nothing else.`;
+        
+        try {
+          const enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
+          const enhancedQuery = enhancementResponse.content as string;
+          searchQuery = enhancedQuery.trim();
+          console.log(`🔧 Fallback enhanced search query: "${searchQuery}"`);
+        } catch (error) {
+          console.log(`⚠️ Fallback query enhancement failed, using original: "${searchQuery}"`);
+        }
+      }
+      
+      // Add current year if not already present
+      const currentYear = new Date().getFullYear().toString();
+      const hasYear = searchQuery.includes(currentYear) || 
+                    searchQuery.includes((parseInt(currentYear) - 1).toString()) ||
+                    searchQuery.includes((parseInt(currentYear) + 1).toString());
+      
+      if (!hasYear) {
+        searchQuery += ` ${currentYear}`;
+      }
+      
+      const webResult = await searchWeb(searchQuery, serpApiKey);
+      
+      if (webResult.success && webResult.data) {
+        const organicResults = webResult.data.organic_results || [];
+        const searchSummary = organicResults.slice(0, 3).map((result: any) => 
+          `${result.title}: ${result.snippet}`
+        ).join('\n');
+        
+        augmentationData.webSearch = {
+          method: 'fallback',
+          query: searchQuery,
+          results: organicResults.slice(0, 3),
+          summary: searchSummary
+        };
+      }
     }
   }
 }

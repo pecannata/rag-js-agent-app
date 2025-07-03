@@ -21,6 +21,7 @@ interface Message {
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
   const [isKeyValid, setIsKeyValid] = useState(false);
+  const [serpApiKey, setSerpApiKey] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
@@ -30,12 +31,17 @@ export default function Home() {
     contextKeywords: []
   });
 
-  // Load API key from localStorage on mount
+  // Load API keys from localStorage on mount
   useEffect(() => {
     const savedKey = localStorage.getItem('cohere-api-key');
     if (savedKey) {
       setApiKey(savedKey);
       setIsKeyValid(true);
+    }
+    
+    const savedSerpApiKey = localStorage.getItem('serpapi-key');
+    if (savedSerpApiKey) {
+      setSerpApiKey(savedSerpApiKey);
     }
   }, []);
 
@@ -51,6 +57,16 @@ export default function Home() {
     setIsKeyValid(false);
   };
 
+  const handleSaveSerpApiKey = (key: string) => {
+    setSerpApiKey(key);
+    localStorage.setItem('serpapi-key', key);
+  };
+
+  const handleClearSerpApiKey = () => {
+    setSerpApiKey('');
+    localStorage.removeItem('serpapi-key');
+  };
+
   return (
     <div className="flex h-screen">
       {/* Left Sidebar */}
@@ -59,6 +75,10 @@ export default function Home() {
         isKeyValid={isKeyValid}
         onSaveApiKey={handleSaveApiKey}
         onClearApiKey={handleClearApiKey}
+        serpApiKey={serpApiKey}
+        onSerpApiKeyChange={setSerpApiKey}
+        onSaveSerpApiKey={handleSaveSerpApiKey}
+        onClearSerpApiKey={handleClearSerpApiKey}
         sqlQuery={sqlQuery}
         onSqlQueryChange={setSqlQuery}
         reactConfig={reactConfig}
@@ -74,6 +94,7 @@ export default function Home() {
           setMessages={setMessages}
           sqlQuery={sqlQuery}
           reactConfig={reactConfig}
+          serpApiKey={serpApiKey}
         />
       </div>
     </div>

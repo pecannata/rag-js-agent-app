@@ -25,10 +25,11 @@ interface ChatProps {
   setMessages: (messages: Message[]) => void;
   sqlQuery: string;
   reactConfig: ReActConfig;
+  serpApiKey: string;
 }
 
-export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig }: ChatProps) {
-  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state.'); // Default message
+export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey }: ChatProps) {
+  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [expandedAugmentation, setExpandedAugmentation] = useState<{ [key: number]: boolean }>({});
 
@@ -53,7 +54,8 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
           apiKey: apiKey,
           history: messages,
           sqlQuery: sqlQuery,
-          config: reactConfig
+          config: reactConfig,
+          serpApiKey: serpApiKey
         }),
       });
 
@@ -148,23 +150,33 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
 
       {/* Input Area */}
       <div className="bg-white border-t border-gray-200 p-4">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            type="text"
+        <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={isKeyValid ? "Ask me anything..." : "Configure API key first"}
             disabled={!isKeyValid || isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 resize-none overflow-y-auto"
+            rows={4}
+            style={{ minHeight: '100px', maxHeight: '200px' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
           />
           <button
             type="submit"
             disabled={!input.trim() || !isKeyValid || isLoading}
-            className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed h-fit"
           >
             {isLoading ? 'Sending...' : 'Send'}
           </button>
         </form>
+        <div className="mt-2 text-xs text-gray-500">
+          Press Enter to send, Shift+Enter for new line
+        </div>
       </div>
     </div>
   );

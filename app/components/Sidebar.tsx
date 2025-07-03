@@ -14,6 +14,10 @@ interface SidebarProps {
   isKeyValid: boolean;
   onSaveApiKey: (key: string) => void;
   onClearApiKey: () => void;
+  serpApiKey: string;
+  onSerpApiKeyChange: (key: string) => void;
+  onSaveSerpApiKey: (key: string) => void;
+  onClearSerpApiKey: () => void;
   sqlQuery: string;
   onSqlQueryChange: (query: string) => void;
   reactConfig: ReActConfig;
@@ -25,6 +29,10 @@ export default function Sidebar({
   isKeyValid, 
   onSaveApiKey, 
   onClearApiKey,
+  serpApiKey,
+  onSerpApiKeyChange,
+  onSaveSerpApiKey,
+  onClearSerpApiKey,
   sqlQuery,
   onSqlQueryChange,
   reactConfig,
@@ -275,6 +283,43 @@ export default function Sidebar({
         {apiKey && (
           <div className="mt-2 text-xs text-gray-600">
             Key: ...{apiKey.slice(-8)}
+          </div>
+        )}
+      </div>
+
+      {/* SerpAPI Key Input Section */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          SerpAPI Key (Optional - for current population data)
+        </label>
+        <input
+          type="password"
+          value={serpApiKey}
+          onChange={(e) => onSerpApiKeyChange(e.target.value)}
+          placeholder="Enter your SerpAPI key (optional)"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => onSaveSerpApiKey(serpApiKey)}
+            disabled={!serpApiKey.trim()}
+            className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Save
+          </button>
+          <button
+            onClick={onClearSerpApiKey}
+            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+          >
+            Clear
+          </button>
+        </div>
+        <div className="mt-1 text-xs text-gray-500">
+          Used for real-time population data. Get your key at serpapi.com
+        </div>
+        {serpApiKey && (
+          <div className="mt-2 text-xs text-gray-600">
+            SerpAPI Key: ...{serpApiKey.slice(-8)}
           </div>
         )}
       </div>

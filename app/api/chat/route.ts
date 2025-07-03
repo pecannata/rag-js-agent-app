@@ -3,7 +3,7 @@ import { RagAgent, ReActConfig } from '../../lib/agent';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, apiKey, history, sqlQuery, config } = await request.json();
+    const { message, apiKey, history, sqlQuery, config, serpApiKey } = await request.json();
 
     if (!apiKey) {
       return NextResponse.json(
@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
       message, 
       history || [], 
       sqlQuery,
-      config
+      config,
+      serpApiKey
     );
     
     return NextResponse.json({
