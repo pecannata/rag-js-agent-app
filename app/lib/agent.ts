@@ -483,7 +483,15 @@ Return ONLY the optimized search query, nothing else.`;
       // Include database data in context if available
       let databaseContext = '';
       if (databaseResult && databaseResult.success) {
+        console.log('📊 Database result available for LLM context');
+        console.log('📊 Database data preview:', JSON.stringify(databaseResult.data).substring(0, 200) + '...');
         databaseContext = `\n\nDatabase Query Result:\n${JSON.stringify(databaseResult.data, null, 2)}`;
+      } else {
+        console.log('❌ No database result available for LLM context');
+        if (databaseResult) {
+          console.log('❌ Database result status:', databaseResult.success);
+          console.log('❌ Database result error:', databaseResult.error);
+        }
       }
 
       // Create ReAct-style prompt with explicit web search prioritization
@@ -507,7 +515,13 @@ Thought: Let me analyze this request and provide a helpful response using the av
 Assistant:`;
       
       console.log('📝 Final prompt length:', reactPrompt.length);
-
+      console.log('📝 Database context included:', databaseContext.length > 0);
+      console.log('📝 Web search context included:', webSearchContext.length > 0);
+      console.log('📝 Knowledge context included:', knowledgeContext.length > 0);
+      
+      // Log a sample of the prompt to see what's being sent to LLM
+      console.log('📝 Prompt preview (last 500 chars):', reactPrompt.slice(-500));
+      
       const response = await this.llm.invoke(reactPrompt);
       
       return {

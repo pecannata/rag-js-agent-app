@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DataTable from './DataTable';
 import MarkdownTable from './MarkdownTable';
 
@@ -26,12 +26,20 @@ interface ChatProps {
   sqlQuery: string;
   reactConfig: ReActConfig;
   serpApiKey: string;
+  initialMessage?: string;
 }
 
-export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey }: ChatProps) {
+export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey, initialMessage }: ChatProps) {
   const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [expandedAugmentation, setExpandedAugmentation] = useState<{ [key: number]: boolean }>({});
+
+  // Update input when initialMessage changes
+  useEffect(() => {
+    if (initialMessage) {
+      setInput(initialMessage);
+    }
+  }, [initialMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
