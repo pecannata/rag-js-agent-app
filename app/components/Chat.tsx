@@ -28,7 +28,7 @@ interface ChatProps {
 }
 
 export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig }: ChatProps) {
-  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager.'); // Default message
+  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [expandedAugmentation, setExpandedAugmentation] = useState<{ [key: number]: boolean }>({});
 
