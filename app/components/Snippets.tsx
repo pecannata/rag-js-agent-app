@@ -25,10 +25,21 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
   });
   const [searchFilter, setSearchFilter] = useState('');
 
-  // Load snippets from API on mount
+  // Load snippets from API and filter from localStorage on mount
   useEffect(() => {
     loadSnippets();
+    
+    // Load saved filter from localStorage
+    const savedFilter = localStorage.getItem('snippets-filter');
+    if (savedFilter) {
+      setSearchFilter(savedFilter);
+    }
   }, []);
+
+  // Save filter to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('snippets-filter', searchFilter);
+  }, [searchFilter]);
 
   const loadSnippets = async () => {
     try {
