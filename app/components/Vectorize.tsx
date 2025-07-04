@@ -22,6 +22,16 @@ export default function Vectorize({ }: VectorizeProps) {
   const [chunkSize, setChunkSize] = useState<number>(1000);
   const [overlap, setOverlap] = useState<number>(200);
   const [showChunks, setShowChunks] = useState<boolean>(false);
+  const [sqlStatements, setSqlStatements] = useState<string>('');
+  const [showSql, setShowSql] = useState<boolean>(false);
+  const [documentName, setDocumentName] = useState<string>('');
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
+  const [executionResults, setExecutionResults] = useState<{success: number, failed: number, errors: string[]}>({success: 0, failed: 0, errors: []});
+  const [isGeneratingVectors, setIsGeneratingVectors] = useState<boolean>(false);
+  const [vectorResults, setVectorResults] = useState<{success: number, failed: number, errors: string[]}>({success: 0, failed: 0, errors: []});
+  const [vectorStatements, setVectorStatements] = useState<string>('');
+  const [showVectorSql, setShowVectorSql] = useState<boolean>(false);
+  const [showExtractedContent, setShowExtractedContent] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,10 +39,12 @@ export default function Vectorize({ }: VectorizeProps) {
     if (file) {
       if (file.type === 'application/pdf') {
         setSelectedFile(file);
+        setDocumentName(file.name.replace('.pdf', '').replace(/'/g, ''));
         setError(null);
       } else {
         setError('Please select a PDF file');
         setSelectedFile(null);
+        setDocumentName('');
       }
     }
   };
@@ -105,67 +117,259 @@ export default function Vectorize({ }: VectorizeProps) {
     setChunks([]);
     setError(null);
     setShowChunks(false);
+    setDocumentName('');
+    setIsExecuting(false);
+    setExecutionResults({success: 0, failed: 0, errors: []});
+    setIsGeneratingVectors(false);
+    setVectorResults({success: 0, failed: 0, errors: []});
+    setVectorStatements('');
+    setShowVectorSql(false);
+    setShowExtractedContent(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const createChunks = (text: string, size: number, overlapSize: number): Chunk[] => {
-    // Remove document header and focus on actual content
-    const contentStart = text.indexOf('\n\n');
-    const actualContent = contentStart > 0 ? text.substring(contentStart + 2) : text;
+  const createChunksWithPython = async (text: string, chunkSize: number, overlap: number): Promise<Chunk[]> => {
+    console.log('🐍 Using Python langchain chunking');
+    console.log('Input parameters:', { textLength: text.length, chunkSize, overlap });
     
-    if (!actualContent.trim()) {
-      return [];
-    }
+    try {
+      const response = await fetch('/api/chunk-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          chunkSize,
+          overlap
+        })
+      });
 
-    const chunks: Chunk[] = [];
-    let startIndex = 0;
-    let chunkId = 1;
-
-    while (startIndex < actualContent.length) {
-      const endIndex = Math.min(startIndex + size, actualContent.length);
-      let chunkText = actualContent.substring(startIndex, endIndex);
+      const result = await response.json();
       
-      // Try to break at word boundaries unless we're at the end
-      if (endIndex < actualContent.length) {
-        const lastSpaceIndex = chunkText.lastIndexOf(' ');
-        if (lastSpaceIndex > size * 0.8) { // Only break at word if it's not too far back
-          chunkText = chunkText.substring(0, lastSpaceIndex);
-        }
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to chunk text');
       }
-      
-      const trimmedChunk = chunkText.trim();
-      if (trimmedChunk.length > 0) {
-        chunks.push({
-          id: chunkId++,
-          text: trimmedChunk,
-          charCount: trimmedChunk.length,
-          wordCount: trimmedChunk.split(/\s+/).length
-        });
-      }
-      
-      // Move to next chunk with overlap
-      const actualChunkLength = chunkText.length;
-      startIndex += Math.max(actualChunkLength - overlapSize, 1);
-    }
 
-    return chunks;
+      if (!result.success) {
+        throw new Error(result.error || 'Chunking failed');
+      }
+
+      console.log('✅ Python chunking successful:', result.metadata);
+      return result.chunks;
+      
+    } catch (error) {
+      console.error('❌ Python chunking failed:', error);
+      throw error;
+    }
   };
 
-  const handleCreateChunks = () => {
+  const handleCreateChunks = async () => {
     if (!pdfContent) {
       setError('No PDF content available to chunk');
       return;
     }
 
+    console.log('=== CHUNK CREATION STARTED ===');
+    console.log('Current chunk size state:', chunkSize);
+    console.log('Current overlap state:', overlap);
+    console.log('Document name:', documentName);
+    console.log('PDF content length:', pdfContent.length);
+
+    setError(null);
+    
     try {
-      const newChunks = createChunks(pdfContent, chunkSize, overlap);
+      const newChunks = await createChunksWithPython(pdfContent, chunkSize, overlap);
+      console.log('Created chunks:', newChunks.map(c => ({ id: c.id, preview: c.text.substring(0, 50) + '...' })));
       setChunks(newChunks);
       setShowChunks(true);
-      setError(null);
+
+      // Generate SQL statements for each chunk
+      const sqls = newChunks.map(chunk => {
+        // Properly escape the chunk text for SQL
+        const escapedText = chunk.text
+          .replace(/'/g, "''")  // Escape single quotes by doubling them
+          .replace(/\\/g, "\\\\")  // Escape backslashes
+          .replace(/\r?\n/g, ' ')  // Replace newlines with spaces
+          .replace(/\t/g, ' ')   // Replace tabs with spaces
+          .trim();
+        
+        return `insert into segs (id, seg, doc) values (${chunk.id}, '${escapedText}', '${documentName}')`;
+      }).join('\n');
+      console.log('Generated SQL statements preview:', sqls.split('\n').slice(0, 3));
+      setSqlStatements(sqls);
+      
+      // Generate vector embedding UPDATE statements for each chunk
+      const vectorSqls = newChunks.map(chunk => 
+        `update segs set vec = (SELECT VECTOR_EMBEDDING(ALL_MINILM_L12_V2 USING seg as data) FROM segs where id = ${chunk.id} and doc = '${documentName}') where id = ${chunk.id} and doc = '${documentName}'`
+      ).join('\n');
+      setVectorStatements(vectorSqls);
+      console.log('=== CHUNK CREATION COMPLETED ===');
     } catch (err) {
+      console.error('Chunking error:', err);
       setError('Failed to create chunks: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
+
+  const handleExecuteSQL = async () => {
+    if (!chunks.length) {
+      setError('No chunks available to execute');
+      return;
+    }
+
+    setIsExecuting(true);
+    setError(null);
+    
+    let successCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    try {
+      // Execute each SQL statement individually
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        // Properly escape the chunk text for SQL execution
+        const escapedText = chunk.text
+          .replace(/'/g, "''")
+          .replace(/\\/g, "\\\\")
+          .replace(/\r?\n/g, ' ')
+          .replace(/\t/g, ' ')
+          .trim();
+        
+        const sqlStatement = `insert into segs (id, seg, doc) values (${chunk.id}, '${escapedText}', '${documentName}')`;
+        
+        try {
+          console.log(`Executing SQL ${i + 1}/${chunks.length}:`, sqlStatement.substring(0, 100) + '...');
+          
+          const response = await fetch('/api/database', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sqlQuery: sqlStatement,
+              forceExecute: true // Bypass domain checking for direct SQL execution
+            })
+          });
+
+          const result = await response.json();
+          
+          if (result.success && result.executed) {
+            successCount++;
+            console.log(`✅ SQL ${i + 1} executed successfully`);
+          } else {
+            failedCount++;
+            const errorMsg = result.error || result.reason || 'Unknown execution error';
+            errors.push(`Chunk ${chunk.id}: ${errorMsg}`);
+            console.error(`❌ SQL ${i + 1} failed:`, errorMsg);
+          }
+        } catch (executeError) {
+          failedCount++;
+          const errorMsg = executeError instanceof Error ? executeError.message : 'Network error';
+          errors.push(`Chunk ${chunk.id}: ${errorMsg}`);
+          console.error(`❌ SQL ${i + 1} network error:`, executeError);
+        }
+        
+        // Small delay between executions to avoid overwhelming the database
+        if (i < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      setExecutionResults({ success: successCount, failed: failedCount, errors });
+      
+      if (failedCount === 0) {
+        setError(null);
+      } else if (successCount > 0) {
+        setError(`Partial success: ${successCount} succeeded, ${failedCount} failed`);
+      } else {
+        setError(`All executions failed. Check database connection.`);
+      }
+      
+    } catch (error) {
+      console.error('Execution process error:', error);
+      setError(`Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setExecutionResults({ success: successCount, failed: failedCount, errors });
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const handleGenerateVectors = async () => {
+    if (!chunks.length) {
+      setError('No chunks available to generate vectors for');
+      return;
+    }
+
+    setIsGeneratingVectors(true);
+    setError(null);
+    
+    let successCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    try {
+      // Execute each vector UPDATE statement individually
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const vectorStatement = `update segs set vec = (SELECT VECTOR_EMBEDDING(ALL_MINILM_L12_V2 USING seg as data) FROM segs where id = ${chunk.id} and doc = '${documentName}') where id = ${chunk.id} and doc = '${documentName}'`;
+        
+        try {
+          console.log(`Generating vector ${i + 1}/${chunks.length} for chunk ${chunk.id}...`);
+          
+          const response = await fetch('/api/database', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sqlQuery: vectorStatement,
+              forceExecute: true // Bypass domain checking for direct SQL execution
+            })
+          });
+
+          const result = await response.json();
+          
+          if (result.success && result.executed) {
+            successCount++;
+            console.log(`✅ Vector ${i + 1} generated successfully for chunk ${chunk.id}`);
+          } else {
+            failedCount++;
+            const errorMsg = result.error || result.reason || 'Unknown vector generation error';
+            errors.push(`Chunk ${chunk.id}: ${errorMsg}`);
+            console.error(`❌ Vector ${i + 1} failed for chunk ${chunk.id}:`, errorMsg);
+          }
+        } catch (executeError) {
+          failedCount++;
+          const errorMsg = executeError instanceof Error ? executeError.message : 'Network error';
+          errors.push(`Chunk ${chunk.id}: ${errorMsg}`);
+          console.error(`❌ Vector ${i + 1} network error for chunk ${chunk.id}:`, executeError);
+        }
+        
+        // Small delay between executions to avoid overwhelming the database
+        if (i < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 200)); // Slightly longer delay for vector operations
+        }
+      }
+
+      setVectorResults({ success: successCount, failed: failedCount, errors });
+      
+      if (failedCount === 0) {
+        setError(null);
+      } else if (successCount > 0) {
+        setError(`Vector generation partial success: ${successCount} succeeded, ${failedCount} failed`);
+      } else {
+        setError(`All vector generations failed. Check database connection and VECTOR_EMBEDDING function.`);
+      }
+      
+    } catch (error) {
+      console.error('Vector generation process error:', error);
+      setError(`Vector generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setVectorResults({ success: successCount, failed: failedCount, errors });
+    } finally {
+      setIsGeneratingVectors(false);
     }
   };
 
@@ -173,7 +377,7 @@ export default function Vectorize({ }: VectorizeProps) {
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize Documents [NEW CODE ACTIVE] 🔥</h1>
         <p className="text-gray-600">Upload and process PDF documents for vectorization and analysis.</p>
       </div>
 
@@ -246,20 +450,37 @@ export default function Vectorize({ }: VectorizeProps) {
             </div>
           </div>
 
-          {/* PDF Content Display */}
+          {/* PDF Content Display - Accordion */}
           {pdfContent && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">📝 Extracted Content</h2>
+              <button
+                onClick={() => setShowExtractedContent(!showExtractedContent)}
+                className="w-full flex items-center justify-between text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              >
+                <h2 className="text-lg font-semibold text-gray-900">📝 Extracted Content</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">
+                    {pdfContent.length.toLocaleString()} characters
+                  </span>
+                  <div className={`transform transition-transform duration-200 ${
+                    showExtractedContent ? 'rotate-180' : 'rotate-0'
+                  }`}>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
               
-              <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                  {pdfContent}
-                </pre>
-              </div>
-              
-              <div className="mt-4 text-sm text-gray-500">
-                Character count: {pdfContent.length.toLocaleString()}
-              </div>
+              {showExtractedContent && (
+                <div className="mt-4">
+                  <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                      {pdfContent}
+                    </pre>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -278,12 +499,15 @@ export default function Vectorize({ }: VectorizeProps) {
                     <input
                       type="number"
                       value={chunkSize}
-                      onChange={(e) => setChunkSize(Math.max(100, parseInt(e.target.value) || 1000))}
-                      min="100"
-                      max="5000"
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const newValue = inputValue === '' ? '' : parseInt(inputValue);
+                        console.log('Chunk size input changed:', inputValue, '=>', newValue);
+                        setChunkSize(isNaN(newValue) ? 1000 : newValue);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Recommended: 500-2000 characters</p>
+                    <p className="text-xs text-gray-500 mt-1">Current: {chunkSize} characters | Set any chunk size you prefer (e.g., 500, 1000, 2000, 5000+)</p>
                   </div>
                   
                   <div>
@@ -293,12 +517,15 @@ export default function Vectorize({ }: VectorizeProps) {
                     <input
                       type="number"
                       value={overlap}
-                      onChange={(e) => setOverlap(Math.max(0, Math.min(chunkSize / 2, parseInt(e.target.value) || 200)))}
-                      min="0"
-                      max={Math.floor(chunkSize / 2)}
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const newValue = inputValue === '' ? '' : parseInt(inputValue);
+                        console.log('Overlap input changed:', inputValue, '=>', newValue);
+                        setOverlap(isNaN(newValue) ? 200 : Math.max(0, newValue));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Overlap between chunks to preserve context</p>
+                    <p className="text-xs text-gray-500 mt-1">Current: {overlap} characters | Overlap between chunks to preserve context</p>
                   </div>
                 </div>
                 
@@ -309,16 +536,66 @@ export default function Vectorize({ }: VectorizeProps) {
                     disabled={!pdfContent}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
                   >
-                    ✂️ Create Chunks
+                    ✂️ Create Chunks (Size: {chunkSize}, Overlap: {overlap})
                   </button>
                   
                   {chunks.length > 0 && (
-                    <button
-                      onClick={() => setShowChunks(!showChunks)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      {showChunks ? '🙈 Hide Chunks' : '👁️ Show Chunks'} ({chunks.length})
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setShowChunks(!showChunks)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        {showChunks ? '🙈 Hide Chunks' : '👁️ Show Chunks'} ({chunks.length})
+                      </button>
+                      <button
+                        onClick={() => setShowSql(!showSql)}
+                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                      >
+                        {showSql ? '🙈 Hide SQL' : '💾 Show SQL'}
+                      </button>
+                      <button
+                        onClick={handleExecuteSQL}
+                        disabled={isExecuting}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          isExecuting
+                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                        }`}
+                      >
+                        {isExecuting ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Executing...
+                          </div>
+                        ) : (
+                          '🚀 Execute SQL'
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setShowVectorSql(!showVectorSql)}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                      >
+                        {showVectorSql ? '🙈 Hide Vector SQL' : '🧠 Show Vector SQL'}
+                      </button>
+                      <button
+                        onClick={handleGenerateVectors}
+                        disabled={isGeneratingVectors || executionResults.success === 0}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          isGeneratingVectors || executionResults.success === 0
+                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        }`}
+                      >
+                        {isGeneratingVectors ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Generating...
+                          </div>
+                        ) : (
+                          '🧠 Generate Vectors'
+                        )}
+                      </button>
+                    </>
                   )}
                 </div>
                 
@@ -353,6 +630,90 @@ export default function Vectorize({ }: VectorizeProps) {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+          
+          {/* SQL Display */}
+          {showSql && chunks.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">💾 SQL Insert Statements</h2>
+              <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                  {sqlStatements}
+                </pre>
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                {chunks.length} INSERT statements generated
+              </div>
+            </div>
+          )}
+          
+          {/* Vector SQL Display */}
+          {showVectorSql && chunks.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">🧠 Vector Embedding SQL Statements</h2>
+              <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                  {vectorStatements}
+                </pre>
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                {chunks.length} vector UPDATE statements generated
+              </div>
+            </div>
+          )}
+          
+          {/* Vector Generation Results */}
+          {(vectorResults.success > 0 || vectorResults.failed > 0) && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">🧠 Vector Generation Results</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="text-blue-800 font-semibold">✅ Vectors Generated</div>
+                  <div className="text-2xl font-bold text-blue-900">{vectorResults.success}</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="text-red-800 font-semibold">❌ Failed</div>
+                  <div className="text-2xl font-bold text-red-900">{vectorResults.failed}</div>
+                </div>
+              </div>
+              {vectorResults.errors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="text-red-800 font-semibold mb-2">Vector Generation Error Details:</h3>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {vectorResults.errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Execution Results */}
+          {(executionResults.success > 0 || executionResults.failed > 0) && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Execution Results</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="text-green-800 font-semibold">✅ Successful</div>
+                  <div className="text-2xl font-bold text-green-900">{executionResults.success}</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="text-red-800 font-semibold">❌ Failed</div>
+                  <div className="text-2xl font-bold text-red-900">{executionResults.failed}</div>
+                </div>
+              </div>
+              {executionResults.errors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="text-red-800 font-semibold mb-2">Error Details:</h3>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {executionResults.errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
           
@@ -398,8 +759,8 @@ export default function Vectorize({ }: VectorizeProps) {
                 <span>✅ Document chunking with user controls</span>
               </div>
               <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>🚧 Vector embeddings generation (Cohere API)</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>✅ Vector embeddings generation (Oracle VECTOR_EMBEDDING)</span>
               </div>
               <div className="flex items-center gap-3 text-gray-600">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
