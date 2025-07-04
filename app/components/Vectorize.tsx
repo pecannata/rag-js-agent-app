@@ -51,6 +51,9 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [summaryResult, setSummaryResult] = useState<SummaryResult | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState<boolean>(false);
+  const [isTestingQuery, setIsTestingQuery] = useState<boolean>(false);
+  const [queryTestResult, setQueryTestResult] = useState<any>(null);
+  const [queryTestError, setQueryTestError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +231,54 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     }
   };
 
+  const handleTestQuery = async () => {
+    if (!apiKey) {
+      setQueryTestError('API key is required for SQL query testing');
+      return;
+    }
+
+    setIsTestingQuery(true);
+    setQueryTestError(null);
+    setQueryTestResult(null);
+
+    try {
+      console.log('Testing SQL query via Chat API...');
+      
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'How many employees',
+          apiKey: apiKey,
+          history: [],
+          sqlQuery: 'select * from emp',
+          config: {
+            temperature: 0.7,
+            domainSimilarityThreshold: 0.7,
+            enableDatabaseQueries: true,
+            contextKeywords: ['Employee', 'emp']
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Query test failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setQueryTestResult(result);
+      console.log('✅ Query test completed successfully');
+      
+    } catch (error) {
+      console.error('Query test error:', error);
+      setQueryTestError(error instanceof Error ? error.message : 'Failed to test query');
+    } finally {
+      setIsTestingQuery(false);
+    }
+  };
+
   const handleClearFile = () => {
     setSelectedFile(null);
     setPdfContent('');
@@ -247,6 +298,9 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     setSummaryResult(null);
     setSummaryError(null);
     setShowSummary(false);
+    setIsTestingQuery(false);
+    setQueryTestResult(null);
+    setQueryTestError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -873,6 +927,90 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
               )}
             </div>
           )}
+
+          {/* SQL Query Test Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 SQL Query Test (Chat API)</h2>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Test SQL queries using the same infrastructure as the Chat tab. This uses the RAG agent with domain analysis.
+              </p>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-blue-900 mb-2">Test Query:</h3>
+                <div className="space-y-2 text-sm text-blue-800">
+                  <div><strong>User Message:</strong> "How many employees"</div>
+                  <div><strong>SQL Query:</strong> "select * from emp"</div>
+                  <div><strong>Context Keywords:</strong> ["Employee", "emp"]</div>
+                </div>
+              </div>
+              
+              {!apiKey && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ API key required for SQL query testing. Please set your Cohere API key in the sidebar.
+                  </p>
+                </div>
+              )}
+              
+              {apiKey && (
+                <button
+                  onClick={handleTestQuery}
+                  disabled={isTestingQuery}
+                  className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
+                >
+                  {isTestingQuery ? "🔍 Testing Query..." : "🔍 Test SQL Query"}
+                </button>
+              )}
+              
+              {/* Query Test Error Display */}
+              {queryTestError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-700">❌ Query Test Error: {queryTestError}</p>
+                </div>
+              )}
+              
+              {/* Query Test Results */}
+              {queryTestResult && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-green-900 mb-2">✅ Query Test Results:</h3>
+                  
+                  {/* AI Response */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-green-800 mb-1">AI Response:</h4>
+                    <div className="bg-white border border-green-200 rounded p-3 text-sm text-gray-700">
+                      {queryTestResult.response}
+                    </div>
+                  </div>
+                  
+                  {/* Domain Analysis */}
+                  {queryTestResult.domainAnalysis && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-green-800 mb-1">Domain Analysis:</h4>
+                      <div className="bg-white border border-green-200 rounded p-3 text-xs">
+                        <div><strong>Should Execute:</strong> {queryTestResult.domainAnalysis.shouldExecute ? '✅ Yes' : '❌ No'}</div>
+                        <div><strong>Confidence:</strong> {queryTestResult.domainAnalysis.confidence}</div>
+                        <div><strong>Reasoning:</strong> {queryTestResult.domainAnalysis.reasoning}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Augmentation Data */}
+                  {queryTestResult.augmentationData && (
+                    <div>
+                      <h4 className="text-sm font-medium text-green-800 mb-1">Augmentation Data:</h4>
+                      <div className="bg-white border border-green-200 rounded p-3 max-h-48 overflow-auto">
+                        <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                          {JSON.stringify(queryTestResult.augmentationData, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Document Chunking Section */}
           {selectedFile && (
