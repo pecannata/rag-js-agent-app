@@ -363,6 +363,9 @@ Response:`;
 
         try {
           console.log('🕰️ Starting LLM analysis with timeout...');
+          console.log('🔍 Query being analyzed:', message);
+          console.log('🗃️ Database available:', databaseResult ? 'Yes' : 'No');
+          console.log('🔑 SerpAPI key available:', serpApiKey ? 'Yes (...' + serpApiKey.slice(-4) + ')' : 'No');
           
           // Create a timeout promise (reduced to 15 seconds)
           const timeoutPromise = new Promise((_, reject) => {
@@ -495,7 +498,10 @@ Return ONLY the optimized search query, nothing else.`;
         } catch (error) {
           console.error('❌ Multi-step analysis error:', error);
           // Fallback to simple detection
-          await this.executeSimpleWebSearch(message, databaseResult, serpApiKey, augmentationData);
+          const fallbackResult = await this.executeSimpleWebSearch(message, databaseResult, serpApiKey, augmentationData);
+          if (fallbackResult) {
+            webSearchContext = fallbackResult;
+          }
         }
       }
 
@@ -516,7 +522,15 @@ Return ONLY the optimized search query, nothing else.`;
       // Create ReAct-style prompt with explicit web search prioritization
       const hasWebSearchData = webSearchContext.includes('Current Information from');
       const webSearchInstruction = hasWebSearchData ? 
-        `\n\nIMPORTANT: You have access to CURRENT, REAL-TIME information from web search below. You MUST prioritize and use this current data over any training data you may have. When providing population figures, dates, or other time-sensitive information, use ONLY the web search results provided. Do NOT mention limitations about your training data when current web search data is available.` : '';
+        `\n\n🌐 REAL-TIME DATA AVAILABLE: You have access to current, authoritative information from web search. When this data is available:
+        
+        • Treat web search results as your PRIMARY and AUTHORITATIVE source
+        • Present the information with confidence as current facts
+        • Use specific numbers and details from the search results
+        • Avoid hedging language that suggests uncertainty when you have current data
+        • Trust the search results over any general knowledge from training
+        
+        The goal is to provide users with the most current, accurate information available through live data sources.` : '';
       
       const reactPrompt = `You are a helpful AI assistant that uses ReAct (Reasoning and Acting) methodology. You think step by step and can access tools when needed.
 
@@ -563,11 +577,22 @@ Assistant:`;
     databaseResult: any, 
     serpApiKey: string, 
     augmentationData: any
-  ): Promise<void> {
+  ): Promise<string | null> {
     console.log('🔄 Fallback: Using simple keyword detection for web search');
     
+    // Enhanced keyword detection for population and current data
     const simpleKeywords = ['current', 'latest', 'recent', 'today', '2024', '2025', 'population', 'price', 'weather'];
-    const needsSearch = simpleKeywords.some(keyword => message.toLowerCase().includes(keyword));
+    const populationKeywords = ['population', 'current population', 'state population', 'census', 'demographics'];
+    
+    const needsSearch = simpleKeywords.some(keyword => message.toLowerCase().includes(keyword)) ||
+                       populationKeywords.some(keyword => message.toLowerCase().includes(keyword));
+    
+    console.log('🔍 Fallback keyword check:', {
+      message: message.substring(0, 100) + '...',
+      foundKeywords: simpleKeywords.filter(k => message.toLowerCase().includes(k)),
+      foundPopulationKeywords: populationKeywords.filter(k => message.toLowerCase().includes(k)),
+      needsSearch: needsSearch
+    });
     
     if (needsSearch) {
       let searchQuery = message;
@@ -621,7 +646,13 @@ Return ONLY the optimized search query, nothing else.`;
           results: organicResults.slice(0, 3),
           summary: searchSummary
         };
+        
+        // Return the web search context for inclusion in LLM prompt
+        return `\n\nCurrent Information from Web Search (Fallback):\n${searchSummary}`;
       }
     }
+    
+    // No search needed or search failed
+    return null;
   }
 }
