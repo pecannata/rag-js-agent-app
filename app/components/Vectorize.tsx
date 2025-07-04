@@ -268,8 +268,9 @@ export default function Vectorize({ }: VectorizeProps) {
     }
   };
 
-  const handleExecuteSQL = async () => {
-    if (!chunks.length) {
+  const handleExecuteSQL = async (chunksToExecute?: Chunk[]) => {
+    const chunksForExecution = chunksToExecute || chunks;
+    if (!chunksForExecution.length) {
       setError('No chunks available to execute');
       throw new Error("No chunks available to execute");
     }
@@ -283,8 +284,8 @@ export default function Vectorize({ }: VectorizeProps) {
 
     try {
       // Execute each SQL statement individually
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
+      for (let i = 0; i < chunksForExecution.length; i++) {
+        const chunk = chunksForExecution[i];
         // Properly escape the chunk text for SQL execution
         const escapedText = chunk.text
           .replace(/'/g, "''")
@@ -296,7 +297,7 @@ export default function Vectorize({ }: VectorizeProps) {
         const sqlStatement = `insert into segs (id, seg, doc) values (${chunk.id}, '${escapedText}', '${documentName}')`;
         
         try {
-          console.log(`Executing SQL ${i + 1}/${chunks.length}:`, sqlStatement.substring(0, 100) + '...');
+          console.log(`Executing SQL ${i + 1}/${chunksForExecution.length}:`, sqlStatement.substring(0, 100) + '...');
           
           const response = await fetch('/api/database', {
             method: 'POST',
@@ -328,7 +329,7 @@ export default function Vectorize({ }: VectorizeProps) {
         }
         
         // Small delay between executions to avoid overwhelming the database
-        if (i < chunks.length - 1) {
+        if (i < chunksForExecution.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
@@ -442,7 +443,7 @@ export default function Vectorize({ }: VectorizeProps) {
       // Step 4: Execute SQL
       console.log('💾 Step 4: Executing SQL statements...');
       try {
-        await handleExecuteSQL();
+        await handleExecuteSQL(createdChunks);
         console.log('✅ handleExecuteSQL completed successfully');
       } catch (sqlError) {
         console.error('❌ SQL execution failed:', sqlError);
@@ -719,7 +720,7 @@ export default function Vectorize({ }: VectorizeProps) {
                           Running Complete Pipeline...
                         </div>
                       ) : (
-                        '🚀 Run All (Process → Chunk → Delete → Execute → Vectorize)'
+                        '🚀 Run All (Chunk → Delete → Execute → Vectorize)'
                       )}
                     </button>
                   </div>
