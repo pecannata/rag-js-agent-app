@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { writeFile, unlink } from 'fs/promises';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
   console.log('=== PDF API ROUTE CALLED ===');
@@ -37,45 +43,87 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    console.log('All validations passed, creating PDF placeholder...');
+    console.log('All validations passed, starting PDF processing...');
 
-    // For now, create a placeholder response with file metadata
-    // Real PDF parsing will be implemented separately to avoid Next.js compatibility issues
-    const placeholderText = `📄 PDF Document Received Successfully!
-
-[Document: ${file.name}]
-[Size: ${(file.size / 1024 / 1024).toFixed(2)} MB]
-[Type: ${file.type}]
-[Upload Time: ${new Date().toISOString()}]
-
-🔧 PDF Text Extraction Status:
-The PDF file has been successfully uploaded and validated. 
-
-Next Steps for Full Implementation:
-• Set up dedicated PDF processing service
-• Implement text extraction pipeline
-• Add vector embedding generation
-• Enable semantic search capabilities
-
-File Details:
-- Original filename: ${file.name}
-- File size: ${file.size.toLocaleString()} bytes
-- MIME type: ${file.type}
-- Upload timestamp: ${new Date().toLocaleString()}
-
-💡 This placeholder demonstrates the working file upload pipeline.
-The actual PDF text extraction will be implemented in the next phase.`;
-
-    console.log('Creating successful response with placeholder content');
-    return NextResponse.json({
-      success: true,
-      text: placeholderText,
-      pageCount: 1, // Placeholder
-      filename: file.name,
-      size: file.size,
-      uploadTime: new Date().toISOString(),
-      status: 'placeholder'
-    });
+    // Save the PDF file temporarily
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const tempFileName = `temp_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const tempFilePath = path.join(process.cwd(), 'temp', tempFileName);
+    
+    try {
+      // Ensure temp directory exists
+      await execAsync('mkdir -p temp');
+      
+      console.log('Saving PDF to temporary file:', tempFilePath);
+      await writeFile(tempFilePath, buffer);
+      
+      console.log('Executing Python PDF processor...');
+      // Execute Python script to extract text
+      const pythonCommand = `python3 scripts/pdf_processor.py "${tempFilePath}" --max-pages 50`;
+      const { stdout, stderr } = await execAsync(pythonCommand);
+      
+      if (stderr) {
+        console.error('Python script stderr:', stderr);
+      }
+      
+      console.log('Python script completed, parsing result...');
+      const result = JSON.parse(stdout);
+      
+      // Clean up temporary file
+      await unlink(tempFilePath);
+      
+      if (!result.success) {
+        console.log('PDF processing failed:', result.error);
+        return NextResponse.json({
+          success: false,
+          error: result.error,
+          text: `[PDF processing failed for ${file.name}]\n\nError: ${result.error}`,
+          filename: file.name,
+          size: file.size,
+          pageCount: 0
+        });
+      }
+      
+      console.log('PDF processing successful!');
+      console.log('- Pages:', result.pageCount);
+      console.log('- Processed pages:', result.processedPages);
+      console.log('- Text length:', result.text.length);
+      
+      // Add document header
+      const textWithHeader = `[Document: ${file.name}]\n[Size: ${(file.size / 1024 / 1024).toFixed(2)} MB]\n[Pages: ${result.pageCount}]\n[Processed: ${result.processedPages} pages]\n[Upload Time: ${new Date().toISOString()}]\n\n${result.text}`;
+      
+      return NextResponse.json({
+        success: true,
+        text: textWithHeader,
+        pageCount: result.pageCount,
+        processedPages: result.processedPages,
+        filename: file.name,
+        size: file.size,
+        uploadTime: new Date().toISOString(),
+        hasText: result.hasText,
+        pageTexts: result.pageTexts || [],
+        extractedLength: result.text.length
+      });
+      
+    } catch (processingError) {
+      console.error('PDF processing error:', processingError);
+      
+      // Try to clean up temp file if it exists
+      try {
+        await unlink(tempFilePath);
+      } catch (cleanupError) {
+        console.error('Failed to clean up temp file:', cleanupError);
+      }
+      
+      return NextResponse.json({
+        success: false,
+        error: `PDF processing failed: ${(processingError as Error).message}`,
+        text: `[PDF processing failed for ${file.name}]\n\nError: ${(processingError as Error).message}\n\nThis could be due to:\n- Python/PyPDF2 not installed\n- Corrupted PDF file\n- Password-protected PDF\n- Complex PDF format`,
+        filename: file.name,
+        size: file.size,
+        pageCount: 0
+      });
+    }
 
   } catch (error) {
     console.error('Request processing error:', error);
