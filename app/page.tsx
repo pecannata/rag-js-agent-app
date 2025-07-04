@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
+import Vectorize from './components/Vectorize';
 
 interface ReActConfig {
   temperature: number;
@@ -25,7 +26,7 @@ export default function Home() {
   const [serpApiKey, setSerpApiKey] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
-  const [activeTab, setActiveTab] = useState<'chat' | 'snippets'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
@@ -133,6 +134,16 @@ export default function Home() {
             >
               📝 Snippets
             </button>
+            <button
+              onClick={() => setActiveTab('vectorize')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'vectorize'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              📄 Vectorize
+            </button>
           </div>
         </div>
 
@@ -149,9 +160,13 @@ export default function Home() {
               serpApiKey={serpApiKey}
               initialMessage={initialMessage}
             />
-          ) : (
+          ) : activeTab === 'snippets' ? (
             <Snippets 
               onSelectSnippet={handleSelectSnippet}
+              apiKey={apiKey}
+            />
+          ) : (
+            <Vectorize 
               apiKey={apiKey}
             />
           )}
