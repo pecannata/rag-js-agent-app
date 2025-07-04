@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('File size:', file.size);
-    // Check file size (limit to 25MB for presentations)
-    if (file.size > 25 * 1024 * 1024) {
+    // Check file size (limit to 500MB for presentations)
+    if (file.size > 500 * 1024 * 1024) {
       console.log('File too large, returning error');
       return NextResponse.json({ 
         success: false,
-        error: 'File too large. Maximum size is 25MB' 
+        error: 'File too large. Maximum size is 500MB' 
       }, { status: 400 });
     }
 

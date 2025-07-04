@@ -2,11 +2,13 @@
 """
 Microsoft Word Document Text Extraction Script
 Extracts text from .docx files using python-docx and handles various edge cases.
+Includes OCR capability for extracting text from images.
 """
 
 import sys
 import json
 import argparse
+import io
 from pathlib import Path
 
 try:
@@ -19,6 +21,88 @@ except ImportError:
         "paragraphCount": 0
     }))
     sys.exit(1)
+
+# OCR dependencies - optional
+OCR_AVAILABLE = False
+try:
+    from PIL import Image
+    import pytesseract
+    OCR_AVAILABLE = True
+except ImportError:
+    pass  # OCR will be skipped if dependencies not available
+
+def extract_text_from_images_in_doc(doc):
+    """
+    Extract text from images embedded in Word document using OCR.
+    
+    Args:
+        doc: python-docx Document object
+        
+    Returns:
+        str: Extracted text from all images in the document
+    """
+    if not OCR_AVAILABLE:
+        print("OCR not available - skipping image text extraction", file=sys.stderr)
+        return ""
+    
+    ocr_text = ""
+    image_count = 0
+    
+    try:
+        # Access the document's relationships to find embedded images
+        for rel in doc.part.rels.values():
+            if "image" in rel.target_ref:
+                try:
+                    image_count += 1
+                    print(f"Processing image {image_count}: {rel.target_ref}", file=sys.stderr)
+                    
+                    # Get the image data
+                    image_part = rel.target_part
+                    image_data = image_part.blob
+                    
+                    # Convert to PIL Image
+                    image_stream = io.BytesIO(image_data)
+                    image = Image.open(image_stream)
+                    
+                    print(f"Image {image_count} size: {image.size}, mode: {image.mode}", file=sys.stderr)
+                    
+                    # Perform OCR with multiple configurations for better results
+                    ocr_configs = [
+                        '--psm 6',   # Uniform block of text
+                        '--psm 8',   # Single word
+                        '--psm 7',   # Single text line
+                        '--psm 11',  # Sparse text
+                        '--psm 13'   # Raw line
+                    ]
+                    
+                    best_text = ""
+                    for config in ocr_configs:
+                        try:
+                            extracted_text = pytesseract.image_to_string(image, config=config).strip()
+                            if len(extracted_text) > len(best_text):
+                                best_text = extracted_text
+                        except:
+                            continue
+                    
+                    if best_text:
+                        ocr_text += f"\n[OCR from Image {image_count}]\n{best_text}\n"
+                        print(f"OCR extracted from image {image_count}: {best_text[:100]}...", file=sys.stderr)
+                    else:
+                        print(f"No text found in image {image_count}", file=sys.stderr)
+                        
+                except Exception as e:
+                    print(f"Error processing image {image_count}: {e}", file=sys.stderr)
+                    continue
+    
+    except Exception as e:
+        print(f"Error accessing document images: {e}", file=sys.stderr)
+    
+    if image_count > 0:
+        print(f"Processed {image_count} images for OCR", file=sys.stderr)
+    else:
+        print("No images found in document", file=sys.stderr)
+    
+    return ocr_text
 
 def extract_text_from_docx(docx_path, max_paragraphs=1000):
     """
@@ -34,9 +118,17 @@ def extract_text_from_docx(docx_path, max_paragraphs=1000):
     try:
         doc = Document(docx_path)
         
+        print(f"OCR Available: {OCR_AVAILABLE}", file=sys.stderr)
+        
         extracted_text = ""
         paragraph_texts = []
         processed_paragraphs = 0
+        
+        # Extract text from embedded images using OCR
+        ocr_text = ""
+        if OCR_AVAILABLE:
+            print("Extracting text from images using OCR...", file=sys.stderr)
+            ocr_text = extract_text_from_images_in_doc(doc)
         
         for i, paragraph in enumerate(doc.paragraphs):
             if i >= max_paragraphs:
@@ -79,6 +171,10 @@ def extract_text_from_docx(docx_path, max_paragraphs=1000):
         if table_text.strip():
             extracted_text += f"\n{table_text}"
         
+        # Add OCR text from images if any was found
+        if ocr_text.strip():
+            extracted_text += f"\n{ocr_text}"
+        
         # Clean up the text
         cleaned_text = extracted_text.strip()
         if cleaned_text:
@@ -97,7 +193,9 @@ def extract_text_from_docx(docx_path, max_paragraphs=1000):
             "processedParagraphs": processed_paragraphs,
             "tableCount": table_count,
             "paragraphTexts": paragraph_texts,
-            "hasText": bool(cleaned_text.strip())
+            "hasText": bool(cleaned_text.strip()),
+            "ocrAvailable": OCR_AVAILABLE,
+            "ocrTextFound": bool(ocr_text.strip())
         }
         
     except FileNotFoundError:
