@@ -269,9 +269,10 @@ export default function Vectorize({ }: VectorizeProps) {
   };
 
   const handleExecuteSQL = async () => {
-    if (!chunks.length) {
+    const chunksForVectors = chunksToVectorize || chunks;
+    if (!chunksForVectors.length) {
       setError('No chunks available to execute');
-      throw new Error("No chunks available to execute");
+      throw new Error('No chunks available to generate vectors for');
     }
 
     setIsExecuting(true);
@@ -358,7 +359,7 @@ export default function Vectorize({ }: VectorizeProps) {
     if (!selectedFile) {
       console.log('❌ No file selected, stopping');
       setError('Please select a PDF file first');
-      throw new Error('Please select a PDF file first');
+      throw new Error('No chunks available to generate vectors for');
     }
 
     console.log('🚀 Run All started - Complete pipeline with delete');
@@ -478,7 +479,7 @@ export default function Vectorize({ }: VectorizeProps) {
     const chunksForVectors = chunksToVectorize || chunks;
     if (!chunksForVectors.length) {
       setError('No chunks available to generate vectors for');
-      throw new Error('Please select a PDF file first');
+      throw new Error('No chunks available to generate vectors for');
     }
 
     console.log(`🧠 Generating vectors for ${chunksForVectors.length} chunks...`);
@@ -597,16 +598,6 @@ export default function Vectorize({ }: VectorizeProps) {
                   </div>
                 </div>
               )}
-
-              {/* Process PDF Button */}
-              {selectedFile && (
-                <div className="mt-4">
-                  <button onClick={handleProcessPdf} disabled={isLoading || isRunningAll} className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500">
-                    {isLoading ? "⏳ Processing PDF..." : "📄 Process PDF"}
-                  </button>
-                </div>
-              )}
-
 
 
               {/* Error Display */}
@@ -727,7 +718,19 @@ export default function Vectorize({ }: VectorizeProps) {
                   {/* Individual Step Buttons */}
                   <div className="flex flex-wrap gap-2 justify-center">
                     <button
-                      onClick={() => handleCreateChunks()}
+                      onClick={handleProcessPdf}
+                      disabled={!selectedFile || isLoading || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedFile && !isLoading && !isRunningAll
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {isLoading ? '⏳' : '📄'} Process PDF
+                    </button>
+                    
+                    <button
+                      onClick={handleCreateChunks}
                       disabled={!pdfContent || isRunningAll}
                       className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                         pdfContent && !isRunningAll
@@ -764,7 +767,7 @@ export default function Vectorize({ }: VectorizeProps) {
                     </button>
                     
                     <button
-                      onClick={() => handleGenerateVectors()}
+                      onClick={handleGenerateVectors}
                       disabled={executionResults.success === 0 || isGeneratingVectors || isRunningAll}
                       className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                         executionResults.success > 0 && !isGeneratingVectors && !isRunningAll
