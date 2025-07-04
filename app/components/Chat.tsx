@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DataTable from './DataTable';
 import MarkdownTable from './MarkdownTable';
 
@@ -33,6 +33,7 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
   const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [expandedAugmentation, setExpandedAugmentation] = useState<{ [key: number]: boolean }>({});
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Update input when initialMessage changes
   useEffect(() => {
@@ -40,6 +41,15 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
       setInput(initialMessage);
     }
   }, [initialMessage]);
+
+  // Auto-scroll to bottom when messages change or loading state changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,9 +106,9 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center flex-shrink-0">
         <h1 className="text-2xl font-bold text-gray-800">Agentic RAG Chat</h1>
         <button
           onClick={handleClearChat}
@@ -109,7 +119,7 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {!isKeyValid && (
           <div className="text-center text-gray-500 py-8">
             Please configure your Cohere API key in the sidebar to start chatting.
@@ -154,10 +164,13 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
             <div className="text-gray-600">Thinking...</div>
           </div>
         )}
+        
+        {/* Scroll target */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
         <form onSubmit={handleSubmit} className="flex gap-2 items-end">
           <textarea
             value={input}
