@@ -54,6 +54,8 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [isTestingQuery, setIsTestingQuery] = useState<boolean>(false);
   const [queryTestResult, setQueryTestResult] = useState<any>(null);
   const [queryTestError, setQueryTestError] = useState<string | null>(null);
+  const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
+  const [userMessage, setUserMessage] = useState<string>('How many employees');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,21 +246,26 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     try {
       console.log('Testing SQL query via Chat API...');
       
+      const dynamicSqlQuery = `SELECT seg FROM segs WHERE doc = '${documentName}' 
+ORDER BY vector_distance(vec, 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${userMessage}' as data)), COSINE) 
+FETCH FIRST 2 ROWS ONLY`;
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'How many employees',
+          message: `${userMessage} (Document: ${documentName})`,
           apiKey: apiKey,
           history: [],
-          sqlQuery: 'select * from emp',
+          sqlQuery: dynamicSqlQuery,
           config: {
             temperature: 0.7,
             domainSimilarityThreshold: 0.7,
             enableDatabaseQueries: true,
-            contextKeywords: ['Employee', 'emp']
+            contextKeywords: [...userMessage.split(' ').filter(word => word.length > 2), documentName]
           }
         }),
       });
@@ -301,6 +308,8 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     setIsTestingQuery(false);
     setQueryTestResult(null);
     setQueryTestError(null);
+    setShowAnalysis(false);
+    setUserMessage('How many employees');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -930,7 +939,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
 
           {/* SQL Query Test Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 SQL Query Test (Chat API)</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 SQL Query Test using Agentic RAG Chat</h2>
             
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
@@ -938,11 +947,56 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
               </p>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-blue-900 mb-2">Test Query:</h3>
-                <div className="space-y-2 text-sm text-blue-800">
-                  <div><strong>User Message:</strong> "How many employees"</div>
-                  <div><strong>SQL Query:</strong> "select * from emp"</div>
-                  <div><strong>Context Keywords:</strong> ["Employee", "emp"]</div>
+                <h3 className="text-sm font-medium text-blue-900 mb-3">Test Query Configuration:</h3>
+                <div className="space-y-3">
+                  {/* User Message Input */}
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">User Message:</label>
+                    <input
+                      type="text"
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
+                      placeholder="Enter your question about the data"
+                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      disabled={isTestingQuery}
+                    />
+                  </div>
+                  
+                  {/* SQL Query (Dynamic) */}
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">SQL Query (auto-generated):</label>
+                    <div className="bg-white border border-blue-200 rounded p-2 text-sm text-gray-700 font-mono whitespace-pre-wrap">
+                      {documentName ? 
+                        `SELECT seg FROM segs WHERE doc = '${documentName}' 
+ORDER BY vector_distance(vec, 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${userMessage}' as data)), COSINE) 
+FETCH FIRST 2 ROWS ONLY` : 
+                        'SELECT seg FROM segs WHERE doc = \'<Document name>\' \nORDER BY vector_distance(vec, \n(SELECT vector_embedding(ALL_MINILM_L12_V2 using \'<User Message>\' as data)), COSINE) \nFETCH FIRST 2 ROWS ONLY'
+                      }
+                    </div>
+                  </div>
+                  
+                  {/* Context Keywords (Auto-generated) */}
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">Context Keywords (auto-generated):</label>
+                    <div className="bg-white border border-blue-200 rounded p-2 text-sm text-gray-700">
+                      {(() => {
+                        const messageKeywords = userMessage.split(' ').filter(word => word.length > 2);
+                        const allKeywords = documentName ? [...messageKeywords, documentName] : messageKeywords;
+                        return `[${allKeywords.map(word => `"${word}"`).join(', ')}]`;
+                      })()}
+                    </div>
+                  </div>
+                  
+                  {/* Document Context */}
+                  {documentName && (
+                    <div>
+                      <label className="block text-sm font-medium text-blue-800 mb-1">Document Context:</label>
+                      <div className="bg-white border border-blue-200 rounded p-2 text-sm text-gray-700">
+                        Querying document: <strong>{documentName}</strong>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -984,27 +1038,55 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
                     </div>
                   </div>
                   
-                  {/* Domain Analysis */}
-                  {queryTestResult.domainAnalysis && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium text-green-800 mb-1">Domain Analysis:</h4>
-                      <div className="bg-white border border-green-200 rounded p-3 text-xs">
-                        <div><strong>Should Execute:</strong> {queryTestResult.domainAnalysis.shouldExecute ? '✅ Yes' : '❌ No'}</div>
-                        <div><strong>Confidence:</strong> {queryTestResult.domainAnalysis.confidence}</div>
-                        <div><strong>Reasoning:</strong> {queryTestResult.domainAnalysis.reasoning}</div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Augmentation Data */}
-                  {queryTestResult.augmentationData && (
-                    <div>
-                      <h4 className="text-sm font-medium text-green-800 mb-1">Augmentation Data:</h4>
-                      <div className="bg-white border border-green-200 rounded p-3 max-h-48 overflow-auto">
-                        <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                          {JSON.stringify(queryTestResult.augmentationData, null, 2)}
-                        </pre>
-                      </div>
+                  {/* Domain Analysis & Augmentation Data Accordion */}
+                  {(queryTestResult.domainAnalysis || queryTestResult.augmentationData) && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <button
+                        onClick={() => setShowAnalysis(!showAnalysis)}
+                        className="w-full flex items-center justify-between text-left hover:bg-blue-100 p-2 rounded-lg transition-colors"
+                      >
+                        <h4 className="text-sm font-medium text-blue-900">📊 Domain Analysis & Augmentation Data</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-blue-600">
+                            {showAnalysis ? 'Hide Details' : 'Show Details'}
+                          </span>
+                          <div className={`transform transition-transform duration-200 ${
+                            showAnalysis ? 'rotate-180' : 'rotate-0'
+                          }`}>
+                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {showAnalysis && (
+                        <div className="mt-4 space-y-4">
+                          {/* Domain Analysis */}
+                          {queryTestResult.domainAnalysis && (
+                            <div>
+                              <h5 className="text-sm font-medium text-green-800 mb-2">Domain Analysis:</h5>
+                              <div className="bg-white border border-green-200 rounded p-3 text-xs">
+                                <div><strong>Should Execute:</strong> {queryTestResult.domainAnalysis.shouldExecute ? '✅ Yes' : '❌ No'}</div>
+                                <div><strong>Confidence:</strong> {queryTestResult.domainAnalysis.confidence}</div>
+                                <div><strong>Reasoning:</strong> {queryTestResult.domainAnalysis.reasoning}</div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Augmentation Data */}
+                          {queryTestResult.augmentationData && (
+                            <div>
+                              <h5 className="text-sm font-medium text-green-800 mb-2">Augmentation Data:</h5>
+                              <div className="bg-white border border-green-200 rounded p-3 max-h-48 overflow-auto">
+                                <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                                  {JSON.stringify(queryTestResult.augmentationData, null, 2)}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
