@@ -46,15 +46,19 @@ export default function Vectorize({ }: VectorizeProps) {
                      file.type === 'application/msword' || 
                      file.type === 'application/octet-stream' ||
                      file.name.toLowerCase().endsWith('.docx');
+      const isPptx = file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                     file.type === 'application/mspowerpoint' ||
+                     file.type === 'application/octet-stream' ||
+                     file.name.toLowerCase().endsWith('.pptx');
       
-      if (isPdf || isDocx) {
+      if (isPdf || isDocx || isPptx) {
         setSelectedFile(file);
         // Remove file extension and clean name for database
-        const cleanName = file.name.replace(/\.(pdf|docx)$/i, '').replace(/'/g, '');
+        const cleanName = file.name.replace(/\.(pdf|docx|pptx)$/i, '').replace(/'/g, '');
         setDocumentName(cleanName);
         setError(null);
       } else {
-        setError('Please select a PDF or Word document (.pdf or .docx)');
+        setError('Please select a PDF, Word document, or PowerPoint presentation (.pdf, .docx, or .pptx)');
         setSelectedFile(null);
         setDocumentName('');
       }
@@ -78,6 +82,10 @@ export default function Vectorize({ }: VectorizeProps) {
                      selectedFile.type === 'application/msword' || 
                      selectedFile.type === 'application/octet-stream' ||
                      selectedFile.name.toLowerCase().endsWith('.docx');
+      const isPptx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                     selectedFile.type === 'application/mspowerpoint' ||
+                     selectedFile.type === 'application/octet-stream' ||
+                     selectedFile.name.toLowerCase().endsWith('.pptx');
       
       if (isPdf) {
         formData.append('pdf', selectedFile);
@@ -85,11 +93,22 @@ export default function Vectorize({ }: VectorizeProps) {
       } else if (isDocx) {
         formData.append('docx', selectedFile);
         console.log('Uploading Word document:', selectedFile.name);
+      } else if (isPptx) {
+        formData.append('pptx', selectedFile);
+        console.log('Uploading PowerPoint presentation:', selectedFile.name);
       } else {
         throw new Error('Unsupported file type');
       }
 
-      const apiEndpoint = isPdf ? '/api/process-pdf' : '/api/process-docx';
+      let apiEndpoint;
+      if (isPdf) {
+        apiEndpoint = '/api/process-pdf';
+      } else if (isDocx) {
+        apiEndpoint = '/api/process-docx';
+      } else {
+        apiEndpoint = '/api/process-pptx';
+      }
+      
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
@@ -579,7 +598,7 @@ export default function Vectorize({ }: VectorizeProps) {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize Documents [NEW CODE ACTIVE] 🔥</h1>
-        <p className="text-gray-600">Upload and process PDF or Word documents for vectorization and analysis.</p>
+        <p className="text-gray-600">Upload and process PDF, Word, or PowerPoint documents for vectorization and analysis.</p>
       </div>
 
       {/* Main Content */}
@@ -595,7 +614,7 @@ export default function Vectorize({ }: VectorizeProps) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.docx"
+                  accept=".pdf,.docx,.pptx"
                   onChange={handleFileSelect}
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />

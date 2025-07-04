@@ -1,4 +1,5 @@
 # Python dependencies for document processing
 PyPDF2>=3.0.0
 python-docx>=0.8.11
+python-pptx>=1.0.0
 langchain>=0.1.0
