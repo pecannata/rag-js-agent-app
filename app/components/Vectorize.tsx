@@ -233,6 +233,11 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     }
   };
 
+  // Helper function to escape single quotes for SQL
+  const escapeSingleQuotes = (str: string): string => {
+    return str.replace(/'/g, "''");
+  };
+
   const handleTestQuery = async () => {
     if (!apiKey) {
       setQueryTestError('API key is required for SQL query testing');
@@ -246,9 +251,10 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     try {
       console.log('Testing SQL query via Chat API...');
       
+      const escapedUserMessage = escapeSingleQuotes(userMessage);
       const dynamicSqlQuery = `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
-(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${userMessage}' as data)), COSINE) 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapedUserMessage}' as data)), COSINE) 
 FETCH FIRST 2 ROWS ONLY`;
       
       const response = await fetch('/api/chat', {
@@ -905,14 +911,17 @@ FETCH FIRST 2 ROWS ONLY`;
                       <h3 className="text-sm font-medium text-gray-800 mb-2">🏷️ Key Topics:</h3>
                       <div className="flex flex-wrap gap-2">
                         {summaryResult.keyTopics.map((topic, index) => (
-                          <span 
+                          <button 
                             key={index}
-                            className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full border border-purple-200"
+                            onClick={() => setUserMessage(topic)}
+                            className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full border border-purple-200 hover:bg-purple-200 hover:border-purple-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
+                            title={`Click to use "${topic}" as SQL query message`}
                           >
                             {topic}
-                          </span>
+                          </button>
                         ))}
                       </div>
+                      <p className="text-xs text-gray-500 mt-2">💡 Click any topic above to use it as your SQL query message</p>
                     </div>
                   )}
                   
@@ -969,7 +978,7 @@ FETCH FIRST 2 ROWS ONLY`;
                       {documentName ? 
                         `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
-(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${userMessage}' as data)), COSINE) 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapeSingleQuotes(userMessage)}' as data)), COSINE) 
 FETCH FIRST 2 ROWS ONLY` : 
                         'SELECT seg FROM segs WHERE doc = \'<Document name>\' \nORDER BY vector_distance(vec, \n(SELECT vector_embedding(ALL_MINILM_L12_V2 using \'<User Message>\' as data)), COSINE) \nFETCH FIRST 2 ROWS ONLY'
                       }
