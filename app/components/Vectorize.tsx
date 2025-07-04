@@ -32,6 +32,9 @@ export default function Vectorize({ }: VectorizeProps) {
   const [vectorStatements, setVectorStatements] = useState<string>('');
   const [showVectorSql, setShowVectorSql] = useState<boolean>(false);
   const [showExtractedContent, setShowExtractedContent] = useState<boolean>(false);
+  const [isRunningAll, setIsRunningAll] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [deletionResults, setDeletionResults] = useState<{success: boolean, error?: string}>({success: false});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +128,7 @@ export default function Vectorize({ }: VectorizeProps) {
     setVectorStatements('');
     setShowVectorSql(false);
     setShowExtractedContent(false);
+    setIsRunningAll(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -213,6 +217,43 @@ export default function Vectorize({ }: VectorizeProps) {
     }
   };
 
+  const handleDeleteRecords = async () => {
+    console.log('🗑️ Delete Records button clicked!');
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const deleteSql = `delete from segs where doc = '${documentName.replace(/'/g, "''")}'`;
+      console.log('Executing delete SQL:', deleteSql);
+
+      const response = await fetch('/api/database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sqlQuery: deleteSql,
+          forceExecute: true
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.executed) {
+        setDeletionResults({ success: true });
+        console.log('✅ Delete executed successfully');
+      } else {
+        throw new Error(result.error || result.reason || 'Unknown delete error');
+      }
+    } catch (error) {
+      console.error('Delete process error:', error);
+      setError(`Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setDeletionResults({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleExecuteSQL = async () => {
     if (!chunks.length) {
       setError('No chunks available to execute');
@@ -294,6 +335,61 @@ export default function Vectorize({ }: VectorizeProps) {
       setExecutionResults({ success: successCount, failed: failedCount, errors });
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  const handleRunAll = async () => {
+    if (!selectedFile) {
+      setError('Please select a PDF file first');
+      return;
+    }
+
+    console.log('🚀 Run All started - Complete pipeline with delete');
+    setIsRunningAll(true);
+    setError(null);
+    
+    try {
+      console.log('🚀 RUNNING COMPLETE PIPELINE...');
+      
+      // Step 1: Process PDF
+      console.log('📄 Step 1: Processing PDF...');
+      await handleProcessPdf();
+      
+      // Wait a moment for PDF content to be set
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 2: Create Chunks
+      console.log('✂️ Step 2: Creating chunks...');
+      await handleCreateChunks();
+      
+      // Wait a moment for chunks to be created
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 3: Delete Existing Records (before inserting new ones)
+      console.log('🗑️ Step 3: Deleting existing records...');
+      await handleDeleteRecords();
+      
+      // Wait a moment for deletion
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 4: Execute SQL
+      console.log('💾 Step 4: Executing SQL statements...');
+      await handleExecuteSQL();
+      
+      // Wait a moment for SQL execution
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 5: Generate Vectors
+      console.log('🧠 Step 5: Generating vectors...');
+      await handleGenerateVectors();
+      
+      console.log('✅ PIPELINE COMPLETED SUCCESSFULLY!');
+      
+    } catch (error) {
+      console.error('❌ Pipeline failed:', error);
+      setError('Pipeline failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsRunningAll(false);
     }
   };
 
@@ -529,73 +625,116 @@ export default function Vectorize({ }: VectorizeProps) {
                   </div>
                 </div>
                 
-                {/* Create Chunks Button */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCreateChunks}
-                    disabled={!pdfContent}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
-                  >
-                    ✂️ Create Chunks (Size: {chunkSize}, Overlap: {overlap})
-                  </button>
+                {/* Pipeline Control Buttons */}
+                <div className="space-y-4">
+                  {/* Run All Button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleRunAll}
+                      disabled={!selectedFile || isRunningAll}
+                      className={`px-8 py-3 rounded-lg text-lg font-semibold transition-colors ${
+                        selectedFile && !isRunningAll
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {isRunningAll ? (
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Running Complete Pipeline...
+                        </div>
+                      ) : (
+                        '🚀 Run All (Process → Chunk → Execute → Vectorize)'
+                      )}
+                    </button>
+                  </div>
                   
+                  {/* Individual Step Buttons */}
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <button
+                      onClick={handleProcessPdf}
+                      disabled={!selectedFile || isLoading || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedFile && !isLoading && !isRunningAll
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {isLoading ? '⏳' : '📄'} Process PDF
+                    </button>
+                    
+                    <button
+                      onClick={handleCreateChunks}
+                      disabled={!pdfContent || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        pdfContent && !isRunningAll
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      ✂️ Chunk ({chunkSize})
+                    </button>
+                    
+                    <button
+                      onClick={handleDeleteRecords}
+                      disabled={isDeleting || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        !isDeleting && !isRunningAll
+                          ? 'bg-red-600 text-white hover:bg-red-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                      style={{ display: 'block !important' }} // Force visibility with !important
+                    >
+                      {isDeleting ? '⏳ Deleting...' : '🗑️ Delete Records'}
+                    </button>
+
+                    <button
+                      onClick={handleExecuteSQL}
+                      disabled={chunks.length === 0 || isExecuting || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        chunks.length > 0 && !isExecuting && !isRunningAll
+                          ? 'bg-purple-600 text-white hover:bg-purple-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {isExecuting ? '⏳' : '💾'} Execute SQL
+                    </button>
+                    
+                    <button
+                      onClick={handleGenerateVectors}
+                      disabled={executionResults.success === 0 || isGeneratingVectors || isRunningAll}
+                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                        executionResults.success > 0 && !isGeneratingVectors && !isRunningAll
+                          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {isGeneratingVectors ? '⏳' : '🧠'} Vectorize
+                    </button>
+                  </div>
+                  
+                  {/* View Buttons */}
                   {chunks.length > 0 && (
-                    <>
+                    <div className="flex flex-wrap gap-2 justify-center pt-2 border-t border-gray-200">
                       <button
                         onClick={() => setShowChunks(!showChunks)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors"
                       >
-                        {showChunks ? '🙈 Hide Chunks' : '👁️ Show Chunks'} ({chunks.length})
+                        {showChunks ? '🙈 Hide' : '👁️ Show'} Chunks ({chunks.length})
                       </button>
                       <button
                         onClick={() => setShowSql(!showSql)}
-                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors"
                       >
-                        {showSql ? '🙈 Hide SQL' : '💾 Show SQL'}
-                      </button>
-                      <button
-                        onClick={handleExecuteSQL}
-                        disabled={isExecuting}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          isExecuting
-                            ? 'bg-gray-400 text-white cursor-not-allowed'
-                            : 'bg-purple-600 text-white hover:bg-purple-700'
-                        }`}
-                      >
-                        {isExecuting ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Executing...
-                          </div>
-                        ) : (
-                          '🚀 Execute SQL'
-                        )}
+                        {showSql ? '🙈 Hide' : '👁️ Show'} SQL
                       </button>
                       <button
                         onClick={() => setShowVectorSql(!showVectorSql)}
-                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors"
                       >
-                        {showVectorSql ? '🙈 Hide Vector SQL' : '🧠 Show Vector SQL'}
+                        {showVectorSql ? '🙈 Hide' : '👁️ Show'} Vector SQL
                       </button>
-                      <button
-                        onClick={handleGenerateVectors}
-                        disabled={isGeneratingVectors || executionResults.success === 0}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          isGeneratingVectors || executionResults.success === 0
-                            ? 'bg-gray-400 text-white cursor-not-allowed'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                        }`}
-                      >
-                        {isGeneratingVectors ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Generating...
-                          </div>
-                        ) : (
-                          '🧠 Generate Vectors'
-                        )}
-                      </button>
-                    </>
+                    </div>
                   )}
                 </div>
                 
