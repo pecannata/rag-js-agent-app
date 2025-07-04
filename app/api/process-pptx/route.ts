@@ -107,7 +107,9 @@ export async function POST(request: NextRequest) {
         uploadTime: new Date().toISOString(),
         hasText: result.hasText,
         slideTexts: result.slideTexts || [],
-        extractedLength: result.text.length
+        extractedLength: result.text.length,
+        documentType: 'pptx',
+        readyForSummarization: true
       });
       
     } catch (processingError) {

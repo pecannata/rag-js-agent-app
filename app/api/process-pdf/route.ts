@@ -102,7 +102,9 @@ export async function POST(request: NextRequest) {
         uploadTime: new Date().toISOString(),
         hasText: result.hasText,
         pageTexts: result.pageTexts || [],
-        extractedLength: result.text.length
+        extractedLength: result.text.length,
+        documentType: 'pdf',
+        readyForSummarization: true
       });
       
     } catch (processingError) {

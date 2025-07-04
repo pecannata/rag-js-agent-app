@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { summarizeDocument } from '../lib/document-utils';
 
 interface VectorizeProps {
   apiKey: string;
@@ -13,7 +14,17 @@ interface Chunk {
   wordCount: number;
 }
 
-export default function Vectorize({ }: VectorizeProps) {
+interface SummaryResult {
+  summary: string;
+  keyTopics: string[];
+  timestamp: string;
+  documentInfo?: {
+    summaryLength: number;
+    chunksProcessed: number;
+  };
+}
+
+export default function Vectorize({ apiKey }: VectorizeProps) {
   console.log('🔥 Vectorize component loaded/re-rendered');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pdfContent, setPdfContent] = useState<string>('');
@@ -36,6 +47,10 @@ export default function Vectorize({ }: VectorizeProps) {
   const [isRunningAll, setIsRunningAll] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [deletionResults, setDeletionResults] = useState<{success: boolean, error?: string}>({success: false});
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
+  const [summaryResult, setSummaryResult] = useState<SummaryResult | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,6 +177,57 @@ export default function Vectorize({ }: VectorizeProps) {
     }
   };
 
+  const handleGenerateSummary = async () => {
+    if (!pdfContent) {
+      setSummaryError('No document content available to summarize');
+      return;
+    }
+
+    if (!apiKey) {
+      setSummaryError('API key is required for document summarization');
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    setSummaryError(null);
+    setSummaryResult(null);
+
+    try {
+      console.log('Generating summary for document:', documentName);
+      
+      const documentType = selectedFile?.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 
+                          selectedFile?.name.toLowerCase().endsWith('.docx') ? 'docx' : 'pptx';
+      
+      const result = await summarizeDocument(
+        pdfContent,
+        selectedFile?.name || documentName,
+        documentType,
+        apiKey,
+        {
+          size: selectedFile?.size || 0
+        }
+      );
+
+      if (result.success) {
+        setSummaryResult({
+          summary: result.summary,
+          keyTopics: result.keyTopics || [],
+          timestamp: result.timestamp,
+          documentInfo: result.documentInfo
+        });
+        setShowSummary(true);
+        console.log('✅ Summary generated successfully');
+      } else {
+        throw new Error(result.error || 'Failed to generate summary');
+      }
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      setSummaryError(error instanceof Error ? error.message : 'Failed to generate summary');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   const handleClearFile = () => {
     setSelectedFile(null);
     setPdfContent('');
@@ -177,6 +243,10 @@ export default function Vectorize({ }: VectorizeProps) {
     setShowVectorSql(false);
     setShowExtractedContent(false);
     setIsRunningAll(false);
+    setIsGeneratingSummary(false);
+    setSummaryResult(null);
+    setSummaryError(null);
+    setShowSummary(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -650,10 +720,18 @@ export default function Vectorize({ }: VectorizeProps) {
 
 
 
+
               {/* Error Display */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-sm text-red-700">❌ {error}</p>
+                </div>
+              )}
+              
+              {/* Summary Error Display */}
+              {summaryError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-700">❌ Summary Error: {summaryError}</p>
                 </div>
               )}
             </div>
@@ -661,7 +739,7 @@ export default function Vectorize({ }: VectorizeProps) {
 
           {/* PDF Content Display - Accordion */}
           {pdfContent && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
               <button
                 onClick={() => setShowExtractedContent(!showExtractedContent)}
                 className="w-full flex items-center justify-between text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
@@ -688,6 +766,109 @@ export default function Vectorize({ }: VectorizeProps) {
                       {pdfContent}
                     </pre>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AI Document Summarization Section */}
+          {pdfContent && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">🤖 AI Document Summarization</h2>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Uses your Cohere API key to generate an intelligent summary and extract key topics from the document.
+                </p>
+                
+                {!apiKey && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ API key required for summarization. Please set your Cohere API key in the sidebar.
+                    </p>
+                  </div>
+                )}
+                
+                {apiKey && (
+                  <button
+                    onClick={handleGenerateSummary}
+                    disabled={isGeneratingSummary || isRunningAll}
+                    className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
+                  >
+                    {isGeneratingSummary ? "🤖 Generating Summary..." : "🤖 Generate Summary"}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Document Summary Display */}
+          {summaryResult && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <button
+                onClick={() => setShowSummary(!showSummary)}
+                className="w-full flex items-center justify-between text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              >
+                <h2 className="text-lg font-semibold text-gray-900">🤖 AI Document Summary</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">
+                    Generated {summaryResult.timestamp && new Date(summaryResult.timestamp).toLocaleTimeString()}
+                  </span>
+                  <div className={`transform transition-transform duration-200 ${
+                    showSummary ? 'rotate-180' : 'rotate-0'
+                  }`}>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+              
+              {showSummary && (
+                <div className="mt-4 space-y-4">
+                  {/* Summary Text */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-800 mb-2">📄 Summary:</h3>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                        {summaryResult.summary}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Key Topics */}
+                  {summaryResult.keyTopics && summaryResult.keyTopics.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-800 mb-2">🏷️ Key Topics:</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {summaryResult.keyTopics.map((topic, index) => (
+                          <span 
+                            key={index}
+                            className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full border border-purple-200"
+                          >
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Summary Metadata */}
+                  {summaryResult.documentInfo && (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <h3 className="text-sm font-medium text-gray-800 mb-2">📊 Summary Statistics:</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div>
+                          <span className="font-medium">Summary Length:</span>
+                          <span className="ml-2">{summaryResult.documentInfo.summaryLength.toLocaleString()} characters</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Chunks Processed:</span>
+                          <span className="ml-2">{summaryResult.documentInfo.chunksProcessed}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

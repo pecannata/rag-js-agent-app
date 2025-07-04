@@ -111,7 +111,9 @@ export async function POST(request: NextRequest) {
         uploadTime: new Date().toISOString(),
         hasText: result.hasText,
         paragraphTexts: result.paragraphTexts || [],
-        extractedLength: result.text.length
+        extractedLength: result.text.length,
+        documentType: 'docx',
+        readyForSummarization: true
       });
       
     } catch (processingError) {
