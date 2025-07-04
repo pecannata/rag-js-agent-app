@@ -1,5 +1,9 @@
 # Python dependencies for document processing
-PyPDF2>=3.0.0
-python-docx>=0.8.11
-python-pptx>=1.0.0
-langchain>=0.1.0
+PyPDF2>=3.0.0          # PDF processing
+python-docx>=0.8.11     # Word document processing  
+python-pptx>=1.0.0      # PowerPoint presentation processing
+langchain>=0.1.0        # Text chunking
+
+# OCR dependencies (optional - for extracting text from images)
+Pillow>=8.0.0           # Image processing
+pytesseract>=0.3.8      # OCR engine

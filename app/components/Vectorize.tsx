@@ -229,7 +229,7 @@ export default function Vectorize({ }: VectorizeProps) {
     console.log('Current chunk size state:', chunkSize);
     console.log('Current overlap state:', overlap);
     console.log('Document name:', documentName);
-    console.log('PDF content length:', content.length);
+      console.log('Document content length:', content.length);
     console.log('Using content from:', contentToChunk ? 'parameter' : 'state');
 
     setError(null);
