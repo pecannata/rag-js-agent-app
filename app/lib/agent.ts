@@ -246,32 +246,51 @@ Response:`;
 
       // ReAct-based domain checking for database queries
       if (sqlQuery && config) {
-        console.log('\n🚀 Starting ReAct Domain Analysis...');
-        
-        domainAnalysis = await this.checkDomainSimilarity(
-          config.contextKeywords, 
-          message, 
-          config
-        );
-        
-        augmentationData.domainAnalysis = domainAnalysis;
-        
-        if (domainAnalysis.shouldExecute) {
-          console.log('✅ Domain analysis PASSED - Executing database query');
-          databaseResult = await executeOracleQuery(sqlQuery);
-          augmentationData.databaseQuery = {
-            query: sqlQuery,
-            result: databaseResult,
-            executed: true
+        // Check if context keywords are provided
+        if (!config.contextKeywords || config.contextKeywords.length === 0) {
+          console.log('❌ No context keywords provided - Skipping database query');
+          console.log('🛡️ Reason: Context keywords are required for domain similarity checking');
+          
+          domainAnalysis = {
+            shouldExecute: false,
+            reasoning: 'No context keywords provided. Context keywords are required to determine domain relevance.',
+            confidence: 0
           };
-        } else {
-          console.log('❌ Domain analysis FAILED - Skipping database query');
-          console.log('🛡️ Reason:', domainAnalysis.reasoning);
+          
+          augmentationData.domainAnalysis = domainAnalysis;
           augmentationData.databaseQuery = {
             query: sqlQuery,
             executed: false,
-            reason: domainAnalysis.reasoning
+            reason: 'No context keywords provided'
           };
+        } else {
+          console.log('\n🚀 Starting ReAct Domain Analysis...');
+          
+          domainAnalysis = await this.checkDomainSimilarity(
+            config.contextKeywords, 
+            message, 
+            config
+          );
+          
+          augmentationData.domainAnalysis = domainAnalysis;
+          
+          if (domainAnalysis.shouldExecute) {
+            console.log('✅ Domain analysis PASSED - Executing database query');
+            databaseResult = await executeOracleQuery(sqlQuery);
+            augmentationData.databaseQuery = {
+              query: sqlQuery,
+              result: databaseResult,
+              executed: true
+            };
+          } else {
+            console.log('❌ Domain analysis FAILED - Skipping database query');
+            console.log('🛡️ Reason:', domainAnalysis.reasoning);
+            augmentationData.databaseQuery = {
+              query: sqlQuery,
+              executed: false,
+              reason: domainAnalysis.reasoning
+            };
+          }
         }
       }
 
