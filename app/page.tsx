@@ -31,7 +31,7 @@ export default function Home() {
     temperature: 0.7,
     domainSimilarityThreshold: 0.7,
     enableDatabaseQueries: true,
-    contextKeywords: []
+    contextKeywords: ['Employee']
   });
 
   // Load API keys from localStorage on mount
