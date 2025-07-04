@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { summarizeDocument } from '../lib/document-utils';
+import DataTable from './DataTable';
+import MarkdownTable from './MarkdownTable';
 
 interface VectorizeProps {
   apiKey: string;
@@ -55,7 +57,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [queryTestResult, setQueryTestResult] = useState<any>(null);
   const [queryTestError, setQueryTestError] = useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
-  const [userMessage, setUserMessage] = useState<string>('How many employees');
+  const [userMessage, setUserMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,7 +317,7 @@ FETCH FIRST 2 ROWS ONLY`;
     setQueryTestResult(null);
     setQueryTestError(null);
     setShowAnalysis(false);
-    setUserMessage('How many employees');
+    setUserMessage('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -1037,24 +1039,34 @@ FETCH FIRST 2 ROWS ONLY` :
               {/* Query Test Results */}
               {queryTestResult && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-green-900 mb-2">✅ Query Test Results:</h3>
+                  <h3 className="text-sm font-medium text-green-900 mb-4">✅ Query Test Results:</h3>
                   
-                  {/* AI Response */}
+                  {/* AI Response with MarkdownTable formatting */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-green-800 mb-1">AI Response:</h4>
-                    <div className="bg-white border border-green-200 rounded p-3 text-sm text-gray-700">
-                      {queryTestResult.response}
+                    <h4 className="text-sm font-medium text-green-800 mb-2">🤖 AI Response:</h4>
+                    <div className="bg-white border border-green-200 rounded-lg p-4">
+                      <div className="text-gray-800">
+                        <MarkdownTable content={queryTestResult.response} />
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Domain Analysis & Augmentation Data Accordion */}
-                  {(queryTestResult.domainAnalysis || queryTestResult.augmentationData) && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  {/* Database Results using DataTable */}
+                  {queryTestResult.augmentationData && (
+                    <DataTable 
+                      data={queryTestResult.augmentationData} 
+                      title="📊 Database Query Results"
+                    />
+                  )}
+                  
+                  {/* Domain Analysis Accordion */}
+                  {queryTestResult.domainAnalysis && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                       <button
                         onClick={() => setShowAnalysis(!showAnalysis)}
                         className="w-full flex items-center justify-between text-left hover:bg-blue-100 p-2 rounded-lg transition-colors"
                       >
-                        <h4 className="text-sm font-medium text-blue-900">📊 Domain Analysis & Augmentation Data</h4>
+                        <h4 className="text-sm font-medium text-blue-900">🔍 Domain Analysis Details</h4>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-blue-600">
                             {showAnalysis ? 'Hide Details' : 'Show Details'}
@@ -1070,30 +1082,29 @@ FETCH FIRST 2 ROWS ONLY` :
                       </button>
                       
                       {showAnalysis && (
-                        <div className="mt-4 space-y-4">
-                          {/* Domain Analysis */}
-                          {queryTestResult.domainAnalysis && (
-                            <div>
-                              <h5 className="text-sm font-medium text-green-800 mb-2">Domain Analysis:</h5>
-                              <div className="bg-white border border-green-200 rounded p-3 text-xs">
-                                <div><strong>Should Execute:</strong> {queryTestResult.domainAnalysis.shouldExecute ? '✅ Yes' : '❌ No'}</div>
-                                <div><strong>Confidence:</strong> {queryTestResult.domainAnalysis.confidence}</div>
-                                <div><strong>Reasoning:</strong> {queryTestResult.domainAnalysis.reasoning}</div>
+                        <div className="mt-4">
+                          <div className="bg-white border border-blue-200 rounded-lg p-4">
+                            <div className="grid grid-cols-1 gap-3 text-sm">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-blue-800">Should Execute:</span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  queryTestResult.domainAnalysis.shouldExecute 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {queryTestResult.domainAnalysis.shouldExecute ? '✅ Yes' : '❌ No'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-blue-800">Confidence:</span>
+                                <span className="text-gray-700">{queryTestResult.domainAnalysis.confidence}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-blue-800 block mb-1">Reasoning:</span>
+                                <span className="text-gray-700 text-sm leading-relaxed">{queryTestResult.domainAnalysis.reasoning}</span>
                               </div>
                             </div>
-                          )}
-                          
-                          {/* Augmentation Data */}
-                          {queryTestResult.augmentationData && (
-                            <div>
-                              <h5 className="text-sm font-medium text-green-800 mb-2">Augmentation Data:</h5>
-                              <div className="bg-white border border-green-200 rounded p-3 max-h-48 overflow-auto">
-                                <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                                  {JSON.stringify(queryTestResult.augmentationData, null, 2)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       )}
                     </div>
