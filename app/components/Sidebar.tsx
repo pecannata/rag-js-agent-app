@@ -48,6 +48,11 @@ export default function Sidebar({
   const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([]);
   const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
 
+  // Sync contextKeywordsText with reactConfig.contextKeywords changes
+  useEffect(() => {
+    setContextKeywordsText(reactConfig.contextKeywords.join(', '));
+  }, [reactConfig.contextKeywords]);
+
   // Manual keyword generation function
   const handleGenerateKeywords = async () => {
     if (!sqlQuery.trim()) {

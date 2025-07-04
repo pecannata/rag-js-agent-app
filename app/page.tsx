@@ -70,9 +70,15 @@ export default function Home() {
     localStorage.removeItem('serpapi-key');
   };
 
-  const handleSelectSnippet = (snippetSqlQuery: string, snippetUserMessage: string) => {
+  const handleSelectSnippet = (snippetSqlQuery: string, snippetUserMessage: string, snippetKeywords: string[]) => {
     // Update the SQL query in sidebar
     setSqlQuery(snippetSqlQuery);
+    
+    // Update the ReAct config with snippet keywords
+    setReActConfig(prev => ({
+      ...prev,
+      contextKeywords: snippetKeywords
+    }));
     
     // Set the initial message for the chat input
     setInitialMessage(snippetUserMessage);
@@ -146,6 +152,7 @@ export default function Home() {
           ) : (
             <Snippets 
               onSelectSnippet={handleSelectSnippet}
+              apiKey={apiKey}
             />
           )}
         </div>

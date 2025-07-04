@@ -7,23 +7,28 @@ interface Snippet {
   name: string;
   sqlQuery: string;
   userMessage: string;
+  keywords: string[];
   createdAt: string;
 }
 
 interface SnippetsProps {
-  onSelectSnippet: (sqlQuery: string, userMessage: string) => void;
+  onSelectSnippet: (sqlQuery: string, userMessage: string, keywords: string[]) => void;
+  apiKey: string;
 }
 
-export default function Snippets({ onSelectSnippet }: SnippetsProps) {
+export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     sqlQuery: '',
-    userMessage: ''
+    userMessage: '',
+    keywords: [] as string[]
   });
   const [searchFilter, setSearchFilter] = useState('');
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+  const [keywordsText, setKeywordsText] = useState('');
 
   // Load snippets from API and filter from localStorage on mount
   useEffect(() => {
@@ -110,7 +115,8 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
 
     const success = await saveSnippetToAPI(snippet, action);
     if (success) {
-      setFormData({ name: '', sqlQuery: '', userMessage: '' });
+      setFormData({ name: '', sqlQuery: '', userMessage: '', keywords: [] });
+      setKeywordsText('');
       setEditingId(null);
       setIsCreating(false);
     }
@@ -120,10 +126,56 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
     setFormData({
       name: snippet.name,
       sqlQuery: snippet.sqlQuery,
-      userMessage: snippet.userMessage
+      userMessage: snippet.userMessage,
+      keywords: snippet.keywords || []
     });
+    setKeywordsText((snippet.keywords || []).join(', '));
     setEditingId(snippet.id);
     setIsCreating(true);
+  };
+
+  const handleGenerateKeywords = async () => {
+    if (!formData.sqlQuery.trim()) {
+      alert('Please enter a SQL query first');
+      return;
+    }
+    
+    setIsGeneratingKeywords(true);
+    
+    try {
+      const response = await fetch('/api/keywords', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sqlQuery: formData.sqlQuery,
+          apiKey: apiKey
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.keywords) {
+        const newKeywords = data.keywords;
+        setFormData({ ...formData, keywords: newKeywords });
+        setKeywordsText(newKeywords.join(', '));
+      } else {
+        console.error('Failed to generate keywords:', data.error);
+        alert('Failed to generate keywords: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error generating keywords:', error);
+      alert('Error generating keywords: ' + error);
+    } finally {
+      setIsGeneratingKeywords(false);
+    }
+  };
+
+  const handleKeywordsChange = (value: string) => {
+    setKeywordsText(value);
+    const keywords = value.split(',').map(k => k.trim()).filter(k => k);
+    setFormData({ ...formData, keywords });
   };
 
   const handleDelete = async (id: string) => {
@@ -136,13 +188,14 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', sqlQuery: '', userMessage: '' });
+    setFormData({ name: '', sqlQuery: '', userMessage: '', keywords: [] });
+    setKeywordsText('');
     setEditingId(null);
     setIsCreating(false);
   };
 
   const handleUseSnippet = (snippet: Snippet) => {
-    onSelectSnippet(snippet.sqlQuery, snippet.userMessage);
+    onSelectSnippet(snippet.sqlQuery, snippet.userMessage, snippet.keywords || []);
   };
 
   // Filter snippets based on SQL query content
@@ -248,6 +301,33 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
               />
             </div>
 
+            {/* Keywords Input */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Context Keywords (comma-separated)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateKeywords}
+                  disabled={isGeneratingKeywords || !formData.sqlQuery.trim()}
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingKeywords ? '🧠 Analyzing...' : '🧠 Generate'}
+                </button>
+              </div>
+              <textarea
+                value={keywordsText}
+                onChange={(e) => handleKeywordsChange(e.target.value)}
+                placeholder="Employee, Department, Manager"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                rows={2}
+              />
+              <div className="mt-1 text-xs text-gray-500">
+                These keywords help determine when to execute the SQL query
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex gap-2">
               <button
@@ -335,7 +415,7 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
                 </div>
 
                 {/* User Message Preview */}
-                <div>
+                <div className="mb-3">
                   <label className="block text-sm font-medium text-gray-600 mb-1">
                     User Message:
                   </label>
@@ -343,6 +423,18 @@ export default function Snippets({ onSelectSnippet }: SnippetsProps) {
                     {snippet.userMessage}
                   </div>
                 </div>
+
+                {/* Keywords Preview */}
+                {snippet.keywords && snippet.keywords.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Context Keywords:
+                    </label>
+                    <div className="bg-blue-50 p-2 rounded border text-sm text-blue-800">
+                      {snippet.keywords.join(', ')}
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
