@@ -41,21 +41,29 @@ export default function Vectorize({ }: VectorizeProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.type === 'application/pdf') {
+      const isPdf = file.type === 'application/pdf';
+      const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                     file.type === 'application/msword' || 
+                     file.type === 'application/octet-stream' ||
+                     file.name.toLowerCase().endsWith('.docx');
+      
+      if (isPdf || isDocx) {
         setSelectedFile(file);
-        setDocumentName(file.name.replace('.pdf', '').replace(/'/g, ''));
+        // Remove file extension and clean name for database
+        const cleanName = file.name.replace(/\.(pdf|docx)$/i, '').replace(/'/g, '');
+        setDocumentName(cleanName);
         setError(null);
       } else {
-        setError('Please select a PDF file');
+        setError('Please select a PDF or Word document (.pdf or .docx)');
         setSelectedFile(null);
         setDocumentName('');
       }
     }
   };
 
-  const handleProcessPdf = async (): Promise<string> => {
+  const handleProcessDocument = async (): Promise<string> => {
     if (!selectedFile) {
-      setError('Please select a PDF file first');
+      setError('Please select a document file first');
       throw new Error('No file selected');
     }
 
@@ -65,11 +73,24 @@ export default function Vectorize({ }: VectorizeProps) {
 
     try {
       const formData = new FormData();
-      formData.append('pdf', selectedFile);
+      const isPdf = selectedFile.type === 'application/pdf';
+      const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                     selectedFile.type === 'application/msword' || 
+                     selectedFile.type === 'application/octet-stream' ||
+                     selectedFile.name.toLowerCase().endsWith('.docx');
+      
+      if (isPdf) {
+        formData.append('pdf', selectedFile);
+        console.log('Uploading PDF:', selectedFile.name);
+      } else if (isDocx) {
+        formData.append('docx', selectedFile);
+        console.log('Uploading Word document:', selectedFile.name);
+      } else {
+        throw new Error('Unsupported file type');
+      }
 
-      console.log('Uploading PDF:', selectedFile.name);
-
-      const response = await fetch('/api/process-pdf', {
+      const apiEndpoint = isPdf ? '/api/process-pdf' : '/api/process-docx';
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
@@ -95,7 +116,7 @@ export default function Vectorize({ }: VectorizeProps) {
       }
 
       if (!response.ok) {
-        throw new Error(result.error || `Failed to process PDF: ${response.statusText}`);
+        throw new Error(result.error || `Failed to process document: ${response.statusText}`);
       }
 
       let extractedText = '';
@@ -103,7 +124,7 @@ export default function Vectorize({ }: VectorizeProps) {
         extractedText = result.text;
         setPdfContent(result.text);
       } else {
-        // Handle partial success (when PDF processing fails but we get fallback info)
+        // Handle partial success (when document processing fails but we get fallback info)
         extractedText = result.text || 'No text content extracted';
         setPdfContent(extractedText);
         if (result.error) {
@@ -113,8 +134,8 @@ export default function Vectorize({ }: VectorizeProps) {
       
       return extractedText;
     } catch (err) {
-      console.error('PDF processing error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to process PDF';
+      console.error('Document processing error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process document';
       setError(errorMessage);
       throw err;
     } finally {
@@ -181,8 +202,8 @@ export default function Vectorize({ }: VectorizeProps) {
   const handleCreateChunks = async (contentToChunk?: string): Promise<Chunk[]> => {
     const content = contentToChunk || pdfContent;
     if (!content) {
-      setError('No PDF content available to chunk');
-      throw new Error('No PDF content available to chunk');
+      setError('No document content available to chunk');
+      throw new Error('No document content available to chunk');
     }
 
     console.log('=== CHUNK CREATION STARTED ===');
@@ -373,33 +394,33 @@ export default function Vectorize({ }: VectorizeProps) {
       console.log('🚀 RUNNING COMPLETE PIPELINE...');
       console.log('📋 STEP 1 START: Processing PDF...');
       
-      // Step 1: Process PDF
-      console.log('📄 Step 1: Processing PDF...');
-      console.log('🔍 About to call handleProcessPdf()...');
+      // Step 1: Process Document
+      console.log('📄 Step 1: Processing document...');
+      console.log('🔍 About to call handleProcessDocument()...');
       
       let extractedContent;
       try {
-        console.log('⏳ Calling handleProcessPdf()...');
-        extractedContent = await handleProcessPdf();
-        console.log('✅ handleProcessPdf completed successfully');
+        console.log('⏳ Calling handleProcessDocument()...');
+        extractedContent = await handleProcessDocument();
+        console.log('✅ handleProcessDocument completed successfully');
         console.log('📝 Extracted content length:', extractedContent?.length || 0);
-      } catch (pdfError) {
-        console.error('❌ PDF processing failed:', pdfError);
-        console.error('📊 PDF error details:', {
-          name: pdfError?.name,
-          message: pdfError?.message,
-          stack: pdfError?.stack
+      } catch (documentError) {
+        console.error('❌ Document processing failed:', documentError);
+        console.error('📊 Document error details:', {
+          name: documentError?.name,
+          message: documentError?.message,
+          stack: documentError?.stack
         });
-        throw pdfError;
+        throw documentError;
       }
       
       // Verify we got content
       if (!extractedContent || extractedContent.trim().length === 0) {
-        console.log('⚠️ No PDF content extracted, stopping pipeline...');
-        throw new Error('PDF content not available after processing. Please try again.');
+        console.log('⚠️ No document content extracted, stopping pipeline...');
+        throw new Error('Document content not available after processing. Please try again.');
       }
       
-      console.log(`✅ PDF processed successfully, extracted ${extractedContent.length} characters`);
+      console.log(`✅ Document processed successfully, extracted ${extractedContent.length} characters`);
       console.log('📋 STEP 2 START: Creating chunks...');
       
       // Step 2: Create Chunks (using extracted content)
@@ -558,7 +579,7 @@ export default function Vectorize({ }: VectorizeProps) {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize Documents [NEW CODE ACTIVE] 🔥</h1>
-        <p className="text-gray-600">Upload and process PDF documents for vectorization and analysis.</p>
+        <p className="text-gray-600">Upload and process PDF or Word documents for vectorization and analysis.</p>
       </div>
 
       {/* Main Content */}
@@ -566,7 +587,7 @@ export default function Vectorize({ }: VectorizeProps) {
         <div className="max-w-4xl mx-auto">
           {/* File Upload Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">📁 Upload PDF</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📁 Upload Document</h2>
             
             <div className="space-y-4">
               {/* File Input */}
@@ -574,7 +595,7 @@ export default function Vectorize({ }: VectorizeProps) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.docx"
                   onChange={handleFileSelect}
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
@@ -599,11 +620,11 @@ export default function Vectorize({ }: VectorizeProps) {
                 </div>
               )}
 
-              {/* Process PDF Button */}
+              {/* Process Document Button */}
               {selectedFile && (
                 <div className="mt-4">
-                  <button onClick={handleProcessPdf} disabled={isLoading || isRunningAll} className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500">
-                    {isLoading ? "⏳ Processing PDF..." : "📄 Process PDF"}
+                  <button onClick={handleProcessDocument} disabled={isLoading || isRunningAll} className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500">
+                    {isLoading ? "⏳ Processing Document..." : "📄 Process Document"}
                   </button>
                 </div>
               )}
