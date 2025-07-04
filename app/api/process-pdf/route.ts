@@ -12,51 +12,70 @@ export async function POST(request: NextRequest) {
     
     if (!file) {
       console.log('No file provided, returning error');
-      const response = NextResponse.json({ 
+      return NextResponse.json({ 
         success: false,
         error: 'No file provided' 
       }, { status: 400 });
-      console.log('Returning response for no file');
-      return response;
     }
 
     console.log('File type:', file.type);
     if (file.type !== 'application/pdf') {
       console.log('Invalid file type, returning error');
-      const response = NextResponse.json({ 
+      return NextResponse.json({ 
         success: false,
         error: 'File must be a PDF' 
       }, { status: 400 });
-      console.log('Returning response for invalid file type');
-      return response;
     }
 
     console.log('File size:', file.size);
     // Check file size (limit to 10MB)
     if (file.size > 10 * 1024 * 1024) {
       console.log('File too large, returning error');
-      const response = NextResponse.json({ 
+      return NextResponse.json({ 
         success: false,
         error: 'File too large. Maximum size is 10MB' 
       }, { status: 400 });
-      console.log('Returning response for file too large');
-      return response;
     }
 
-    console.log('All validations passed, processing PDF...');
+    console.log('All validations passed, creating PDF placeholder...');
 
-    // For now, let's just return a simple success response to test the pipeline
-    console.log('Returning test success response');
-    const response = NextResponse.json({
+    // For now, create a placeholder response with file metadata
+    // Real PDF parsing will be implemented separately to avoid Next.js compatibility issues
+    const placeholderText = `📄 PDF Document Received Successfully!
+
+[Document: ${file.name}]
+[Size: ${(file.size / 1024 / 1024).toFixed(2)} MB]
+[Type: ${file.type}]
+[Upload Time: ${new Date().toISOString()}]
+
+🔧 PDF Text Extraction Status:
+The PDF file has been successfully uploaded and validated. 
+
+Next Steps for Full Implementation:
+• Set up dedicated PDF processing service
+• Implement text extraction pipeline
+• Add vector embedding generation
+• Enable semantic search capabilities
+
+File Details:
+- Original filename: ${file.name}
+- File size: ${file.size.toLocaleString()} bytes
+- MIME type: ${file.type}
+- Upload timestamp: ${new Date().toLocaleString()}
+
+💡 This placeholder demonstrates the working file upload pipeline.
+The actual PDF text extraction will be implemented in the next phase.`;
+
+    console.log('Creating successful response with placeholder content');
+    return NextResponse.json({
       success: true,
-      text: `Test processing of ${file.name}\n\nFile received successfully!\nName: ${file.name}\nSize: ${(file.size / 1024 / 1024).toFixed(2)} MB\nType: ${file.type}\n\n[Actual PDF parsing will be implemented once the JSON response pipeline is working]`,
-      pageCount: 1,
+      text: placeholderText,
+      pageCount: 1, // Placeholder
       filename: file.name,
-      size: file.size
+      size: file.size,
+      uploadTime: new Date().toISOString(),
+      status: 'placeholder'
     });
-    
-    console.log('Response created, returning...');
-    return response;
 
   } catch (error) {
     console.error('Request processing error:', error);
