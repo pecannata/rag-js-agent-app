@@ -91,21 +91,23 @@ Summary:`;
 
 ${documentInfo}
 
-This is a PowerPoint presentation. Please provide a structured summary that includes:
+This is a PowerPoint presentation. Please provide a comprehensive overall summary that captures the complete narrative and themes of the presentation. Focus on the big picture rather than individual slides.
 
-1. **Presentation Overview**: Main topic and presentation purpose
-2. **Key Messages**: Primary points and value propositions presented
-3. **Slide Breakdown**: Main sections and their key content
-4. **Visual Elements**: Important charts, images, or data mentioned
-5. **Conclusions**: Final recommendations, calls to action, or takeaways
-6. **Audience**: Intended audience and context if apparent
+Your summary should include:
 
-Focus on the narrative flow and key business messages.
+1. **Presentation Purpose**: What is the main objective and central message of this presentation?
+2. **Core Themes**: What are the primary topics and overarching themes throughout the presentation?
+3. **Key Arguments**: What are the main points, evidence, or value propositions being presented?
+4. **Supporting Information**: Important data, examples, or evidence that supports the main arguments
+5. **Strategic Insights**: What strategic direction, recommendations, or conclusions emerge from the presentation?
+6. **Target Audience**: Who is the intended audience and what action or understanding is expected?
+
+Treat the presentation as a cohesive story or argument rather than a collection of individual slides. Focus on how the ideas flow together and what the presenter is trying to communicate overall.
 
 Document Text:
 ${text}
 
-Summary:`;
+Overall Presentation Summary:`;
 
         default:
           return `${baseInstructions}
@@ -178,7 +180,32 @@ Section Summary:`;
       console.log('Combining chunk summaries into final summary...');
       const combinedSummaries = chunkSummaries.join('\n\n');
       
-      const finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a ${documentType} document.
+      // Create document type-specific final prompt
+      let finalPrompt;
+      if (documentType?.toLowerCase() === 'pptx' || documentType?.toLowerCase() === 'powerpoint') {
+        finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a PowerPoint presentation.
+
+Document: ${filename}
+Type: ${documentType}
+Total sections processed: ${chunks.length}
+
+Section Summaries:
+${combinedSummaries}
+
+Please create a unified, well-structured final summary that captures the complete narrative and themes of the presentation. Your summary should include:
+
+1. **Presentation Purpose**: What is the main objective and central message of this presentation?
+2. **Core Themes**: What are the primary topics and overarching themes throughout the presentation?
+3. **Key Arguments**: What are the main points, evidence, or value propositions being presented?
+4. **Supporting Information**: Important data, examples, or evidence that supports the main arguments
+5. **Strategic Insights**: What strategic direction, recommendations, or conclusions emerge from the presentation?
+6. **Target Audience**: Who is the intended audience and what action or understanding is expected?
+
+Treat the presentation as a cohesive story or argument rather than a collection of individual slides. Focus on how the ideas flow together and what the presenter is trying to communicate overall.
+
+Final Comprehensive Summary:`;
+      } else {
+        finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a ${documentType} document.
 
 Document: ${filename}
 Type: ${documentType}
@@ -195,6 +222,7 @@ Please create a unified, well-structured final summary that:
 5. **Provides actionable insights** from the complete document
 
 Final Comprehensive Summary:`;
+      }
 
       const finalResponse = await llm.invoke(finalPrompt);
       finalSummary = finalResponse.content as string;

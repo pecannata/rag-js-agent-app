@@ -5,6 +5,60 @@ import { summarizeDocument } from '../lib/document-utils';
 import DataTable from './DataTable';
 import MarkdownTable from './MarkdownTable';
 
+// Simple markdown renderer for summary content with bold formatting
+interface SummaryRendererProps {
+  content: string;
+}
+
+function SummaryRenderer({ content }: SummaryRendererProps) {
+  // Convert markdown-style bold text (**text** or **text:text**) to JSX
+  const renderContent = (text: string) => {
+    const parts = [];
+    let currentIndex = 0;
+    
+    // Regex to match **bold text** patterns
+    const boldRegex = /\*\*([^*]+)\*\*/g;
+    let match;
+    
+    while ((match = boldRegex.exec(text)) !== null) {
+      // Add text before the bold text
+      if (match.index > currentIndex) {
+        parts.push(
+          <span key={`text-${currentIndex}`}>
+            {text.slice(currentIndex, match.index)}
+          </span>
+        );
+      }
+      
+      // Add bold text
+      parts.push(
+        <strong key={`bold-${match.index}`} className="font-semibold text-gray-900">
+          {match[1]}
+        </strong>
+      );
+      
+      currentIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+      parts.push(
+        <span key={`text-${currentIndex}`}>
+          {text.slice(currentIndex)}
+        </span>
+      );
+    }
+    
+    return parts;
+  };
+
+  return (
+    <div className="whitespace-pre-wrap">
+      {renderContent(content)}
+    </div>
+  );
+}
+
 interface VectorizeProps {
   apiKey: string;
 }
@@ -738,7 +792,7 @@ FETCH FIRST 2 ROWS ONLY`;
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize Documents [NEW CODE ACTIVE] 🔥</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">📄 Vectorize and Analyze Documents</h1>
         <p className="text-gray-600">Upload and process PDF, Word, or PowerPoint documents for vectorization and analysis.</p>
       </div>
 
@@ -901,9 +955,9 @@ FETCH FIRST 2 ROWS ONLY`;
                   <div>
                     <h3 className="text-sm font-medium text-gray-800 mb-2">📄 Summary:</h3>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                        {summaryResult.summary}
-                      </p>
+                      <div className="text-sm text-gray-700 leading-relaxed">
+                        <SummaryRenderer content={summaryResult.summary} />
+                      </div>
                     </div>
                   </div>
                   
@@ -950,7 +1004,7 @@ FETCH FIRST 2 ROWS ONLY`;
 
           {/* SQL Query Test Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 SQL Query Test using Agentic RAG Chat</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 AI Vector Search using Agentic RAG Chat</h2>
             
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
@@ -1025,7 +1079,7 @@ FETCH FIRST 2 ROWS ONLY` :
                   disabled={isTestingQuery}
                   className="w-full px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
                 >
-                  {isTestingQuery ? "🔍 Testing Query..." : "🔍 Test SQL Query"}
+                  {isTestingQuery ? "🔍 Running Query..." : "🔍 Run Vector Query"}
                 </button>
               )}
               
@@ -1114,10 +1168,10 @@ FETCH FIRST 2 ROWS ONLY` :
             </div>
           </div>
 
-          {/* Document Chunking Section */}
+          {/* Document Vectorization Section */}
           {selectedFile && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">✂️ Document Chunking</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">🧠 Document Vectorization</h2>
               
               <div className="space-y-4">
                 {/* Chunking Controls */}
