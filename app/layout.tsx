@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
-
-// Check if Clerk is properly configured
-const hasValidClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_') && 
-                         !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.includes('YOUR_');
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +22,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const content = (
+  return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -36,16 +31,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-
-  // Only wrap with ClerkProvider if we have valid keys
-  if (hasValidClerkKeys) {
-    return (
-      <ClerkProvider>
-        {content}
-      </ClerkProvider>
-    );
-  }
-
-  // Return without ClerkProvider for development
-  return content;
 }
