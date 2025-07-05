@@ -85,7 +85,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     console.log('🔍 Executing Oracle database query:', sqlQuery);
     
     // Execute the SQLclScript.sh with the SQL query
-    const { stdout, stderr } = await execAsync(`bash ../SQLclScript.sh "${sqlQuery.replace(/"/g, '\\"')}"`);
+    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${sqlQuery.replace(/"/g, '\\"')}"`);
     
     if (stderr) {
       console.error('❌ Database query error:', stderr);
