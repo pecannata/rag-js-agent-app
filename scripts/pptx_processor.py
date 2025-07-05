@@ -193,12 +193,13 @@ def extract_text_from_shape(shape):
     
     return text_content
 
-def extract_text_from_pptx(pptx_path):
+def extract_text_from_pptx(pptx_path, slide_by_slide=False):
     """
     Extract text from PowerPoint file including OCR from images.
     
     Args:
         pptx_path (str): Path to the .pptx file
+        slide_by_slide (bool): If True, format output for slide-by-slide processing
         
     Returns:
         dict: Result containing success status, text, and metadata
@@ -262,7 +263,13 @@ def extract_text_from_pptx(pptx_path):
                     "text": combined_text,
                     "hasOcrText": bool(slide_ocr_text.strip())
                 })
-                extracted_text += f"\n--- Slide {i + 1} ---\n{combined_text}\n"
+                
+                if slide_by_slide:
+                    # For slide-by-slide mode, format each slide separately
+                    extracted_text += f"\n\n**Slide {i + 1}:**\n{combined_text}\n"
+                else:
+                    # For standard mode, use existing format
+                    extracted_text += f"\n--- Slide {i + 1} ---\n{combined_text}\n"
         
         # Clean up the text
         cleaned_text = extracted_text.strip()
@@ -303,10 +310,11 @@ def extract_text_from_pptx(pptx_path):
 def main():
     parser = argparse.ArgumentParser(description='Extract text from Microsoft PowerPoint (.pptx) files')
     parser.add_argument('pptx_path', help='Path to the .pptx file')
+    parser.add_argument('--slide-by-slide', action='store_true', help='Format output for slide-by-slide processing')
     
     args = parser.parse_args()
     
-    result = extract_text_from_pptx(args.pptx_path)
+    result = extract_text_from_pptx(args.pptx_path, slide_by_slide=args.slide_by_slide)
     print(json.dumps(result, indent=2))
 
 if __name__ == "__main__":

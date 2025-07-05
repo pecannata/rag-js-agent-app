@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     console.log('Parsing form data...');
     const formData = await request.formData();
     const file = formData.get('pptx') as File;
+    const slideBySlide = formData.get('slideBySlide') === 'true';
     
     console.log('File received:', file ? file.name : 'NO FILE');
     
@@ -66,7 +67,9 @@ export async function POST(request: NextRequest) {
       
       console.log('Executing Python PowerPoint processor...');
       // Execute Python script to extract text
-      const pythonCommand = `python3 scripts/pptx_processor.py "${tempFilePath}"`;
+      const slideBySlideFlag = slideBySlide ? ' --slide-by-slide' : '';
+      const pythonCommand = `python3 scripts/pptx_processor.py "${tempFilePath}"${slideBySlideFlag}`;
+      console.log('Python command:', pythonCommand);
       const { stdout, stderr } = await execAsync(pythonCommand);
       
       if (stderr) {

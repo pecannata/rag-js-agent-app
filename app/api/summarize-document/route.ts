@@ -87,7 +87,38 @@ Summary:`;
 
         case 'pptx':
         case 'powerpoint':
-          return `${baseInstructions}
+          // Check if slide-by-slide mode is enabled
+          const isSlideBySlide = metadata?.useSlideBySlide === true;
+          
+          if (isSlideBySlide) {
+            return `${baseInstructions}
+
+${documentInfo}
+
+This is a PowerPoint presentation formatted for slide-by-slide analysis. Please provide a structured summary that analyzes each slide individually and then provides an overall synthesis.
+
+Your summary should include:
+
+1. **Slide-by-Slide Analysis**: For each slide (marked with **Slide X:**), provide:
+   - Main topic/theme of the slide
+   - Key points or messages
+   - Important data or visuals mentioned
+   - How this slide contributes to the overall presentation
+
+2. **Overall Presentation Summary**: After analyzing individual slides, provide:
+   - **Presentation Purpose**: Main objective and central message
+   - **Narrative Flow**: How the slides build upon each other
+   - **Key Themes**: Primary topics throughout the presentation
+   - **Target Audience**: Intended audience and expected outcomes
+
+Format your response with clear headings and maintain the slide-by-slide structure for easy reference.
+
+Document Text:
+${text}
+
+Slide-by-Slide Summary:`;
+          } else {
+            return `${baseInstructions}
 
 ${documentInfo}
 
@@ -108,6 +139,7 @@ Document Text:
 ${text}
 
 Overall Presentation Summary:`;
+          }
 
         default:
           return `${baseInstructions}
@@ -183,7 +215,33 @@ Section Summary:`;
       // Create document type-specific final prompt
       let finalPrompt;
       if (documentType?.toLowerCase() === 'pptx' || documentType?.toLowerCase() === 'powerpoint') {
-        finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a PowerPoint presentation.
+        const isSlideBySlide = metadata?.useSlideBySlide === true;
+        
+        if (isSlideBySlide) {
+          finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a PowerPoint presentation processed in slide-by-slide mode.
+
+Document: ${filename}
+Type: ${documentType}
+Total sections processed: ${chunks.length}
+Mode: Slide-by-slide analysis
+
+Section Summaries:
+${combinedSummaries}
+
+Please create a unified, well-structured final summary that includes both slide-by-slide insights and overall synthesis:
+
+1. **Slide-by-Slide Insights**: Summarize the key findings from individual slide analyses
+2. **Narrative Flow**: How the slides connect and build upon each other
+3. **Core Themes**: Primary topics and overarching themes throughout the presentation
+4. **Key Messages**: Main points and value propositions being communicated
+5. **Strategic Direction**: Recommendations, conclusions, or next steps
+6. **Target Audience**: Intended audience and expected outcomes
+
+Maintain clarity about both individual slide contributions and the overall presentation story.
+
+Final Slide-by-Slide Summary:`;
+        } else {
+          finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a PowerPoint presentation.
 
 Document: ${filename}
 Type: ${documentType}
@@ -204,6 +262,7 @@ Please create a unified, well-structured final summary that captures the complet
 Treat the presentation as a cohesive story or argument rather than a collection of individual slides. Focus on how the ideas flow together and what the presenter is trying to communicate overall.
 
 Final Comprehensive Summary:`;
+        }
       } else {
         finalPrompt = `You are creating a final comprehensive summary from multiple section summaries of a ${documentType} document.
 

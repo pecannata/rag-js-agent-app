@@ -116,6 +116,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [rowCount, setRowCount] = useState<number>(2);
   const [isSavingSummary, setIsSavingSummary] = useState<boolean>(false);
   const [isSavingQuery, setIsSavingQuery] = useState<boolean>(false);
+  const [useSlideBySlide, setUseSlideBySlide] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +176,9 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
         console.log('Uploading Word document:', selectedFile.name);
       } else if (isPptx) {
         formData.append('pptx', selectedFile);
+        formData.append('slideBySlide', useSlideBySlide.toString());
         console.log('Uploading PowerPoint presentation:', selectedFile.name);
+        console.log('Slide-by-slide mode:', useSlideBySlide);
       } else {
         throw new Error('Unsupported file type');
       }
@@ -269,7 +272,8 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
         documentType,
         apiKey,
         {
-          size: selectedFile?.size || 0
+          size: selectedFile?.size || 0,
+          useSlideBySlide: useSlideBySlide
         }
       );
 
@@ -360,7 +364,10 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
 
     setIsSavingSummary(true);
     try {
-      await saveSummaryAsDocx(summaryResult, documentName);
+      const isPptx = selectedFile?.name.toLowerCase().endsWith('.pptx');
+      const summaryMode = isPptx && useSlideBySlide ? 'slide-by-slide' : 'standard';
+      
+      await saveSummaryAsDocx(summaryResult, documentName, summaryMode);
       console.log('✅ Summary saved as DOCX successfully');
     } catch (error) {
       console.error('❌ Failed to save summary as DOCX:', error);
@@ -415,6 +422,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
     setRowCount(2);
     setIsSavingSummary(false);
     setIsSavingQuery(false);
+    setUseSlideBySlide(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -954,6 +962,22 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                     <p className="text-sm text-yellow-800">
                       ⚠️ API key required for summarization. Please set your Cohere API key in the sidebar.
                     </p>
+                  </div>
+                )}
+                
+                {/* Slide-by-Slide Summary Toggle (only for PowerPoint) */}
+                {selectedFile && (selectedFile.name.toLowerCase().endsWith('.pptx')) && (
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      id="slide-summary-toggle"
+                      type="checkbox"
+                      checked={useSlideBySlide}
+                      onChange={(e) => setUseSlideBySlide(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="slide-summary-toggle" className="text-sm text-gray-700">
+                      Generate slide-by-slide summary instead of overall presentation summary
+                    </label>
                   </div>
                 )}
                 
