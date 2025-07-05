@@ -113,6 +113,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [queryTestError, setQueryTestError] = useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>('');
+  const [rowCount, setRowCount] = useState<number>(2);
   const [isSavingSummary, setIsSavingSummary] = useState<boolean>(false);
   const [isSavingQuery, setIsSavingQuery] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -314,7 +315,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
       const dynamicSqlQuery = `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
 (SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapedUserMessage}' as data)), COSINE) 
-FETCH FIRST 2 ROWS ONLY`;
+FETCH FIRST ${rowCount} ROWS ONLY`;
       
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -411,6 +412,7 @@ FETCH FIRST 2 ROWS ONLY`;
     setQueryTestError(null);
     setShowAnalysis(false);
     setUserMessage('');
+    setRowCount(2);
     setIsSavingSummary(false);
     setIsSavingQuery(false);
     if (fileInputRef.current) {
@@ -1088,6 +1090,21 @@ FETCH FIRST 2 ROWS ONLY`;
                     />
                   </div>
                   
+                  {/* Row Count Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">Number of Rows to Return:</label>
+                    <select
+                      value={rowCount}
+                      onChange={(e) => setRowCount(parseInt(e.target.value))}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      disabled={isTestingQuery}
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                        <option key={num} value={num}>{num} row{num !== 1 ? 's' : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
                   {/* SQL Query (Dynamic) */}
                   <div>
                     <label className="block text-sm font-medium text-blue-800 mb-1">SQL Query (auto-generated):</label>
@@ -1096,8 +1113,11 @@ FETCH FIRST 2 ROWS ONLY`;
                         `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
 (SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapeSingleQuotes(userMessage)}' as data)), COSINE) 
-FETCH FIRST 2 ROWS ONLY` : 
-                        'SELECT seg FROM segs WHERE doc = \'<Document name>\' \nORDER BY vector_distance(vec, \n(SELECT vector_embedding(ALL_MINILM_L12_V2 using \'<User Message>\' as data)), COSINE) \nFETCH FIRST 2 ROWS ONLY'
+FETCH FIRST ${rowCount} ROWS ONLY` : 
+                        `SELECT seg FROM segs WHERE doc = '<Document name>' 
+ORDER BY vector_distance(vec, 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '<User Message>' as data)), COSINE) 
+FETCH FIRST ${rowCount} ROWS ONLY`
                       }
                     </div>
                   </div>
