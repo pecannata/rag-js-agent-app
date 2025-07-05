@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RagAgent, ReActConfig } from '../../lib/agent';
+import { withAuth } from '@/lib/auth/with-auth';
+import { logApiActivity } from '@/lib/auth/api-auth';
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, user) => {
   try {
     const { message, apiKey, history, sqlQuery, config, serpApiKey } = await request.json();
 
@@ -31,6 +33,13 @@ export async function POST(request: NextRequest) {
       serpApiKey
     );
     
+    // Log chat activity
+    await logApiActivity(user.clerkUserId, 'chat_interaction', {
+      messageLength: message.length,
+      hasHistory: history && history.length > 0,
+      configUsed: config
+    }, request);
+    
     return NextResponse.json({
       response: result.response,
       augmentationData: result.augmentationData,
@@ -44,4 +53,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

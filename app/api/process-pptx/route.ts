@@ -3,11 +3,14 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
+import { withAuth } from '@/lib/auth/with-auth';
+import { logApiActivity } from '@/lib/auth/api-auth';
 
 const execAsync = promisify(exec);
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, user) => {
   console.log('=== PPTX API ROUTE CALLED ===');
+  console.log(`Processing PPTX for user: ${user.email}`);
   
   try {
     console.log('Parsing form data...');
@@ -98,6 +101,15 @@ export async function POST(request: NextRequest) {
       console.log('- Slides:', result.slideCount);
       console.log('- Text length:', result.text.length);
       
+      // Log successful processing activity
+      await logApiActivity(user.clerkUserId, 'document_processed', {
+        documentType: 'pptx',
+        filename: file.name,
+        fileSize: file.size,
+        slideCount: result.slideCount,
+        slideBySlide
+      }, request);
+      
       // Add document header
       const textWithHeader = `[Document: ${file.name}]\n[Size: ${(file.size / 1024 / 1024).toFixed(2)} MB]\n[Slides: ${result.slideCount}]\n[Upload Time: ${new Date().toISOString()}]\n\n${result.text}`;
       
@@ -162,4 +174,4 @@ export async function POST(request: NextRequest) {
     console.log('Error response created, returning...');
     return response;
   }
-}
+});

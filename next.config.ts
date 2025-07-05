@@ -2,14 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  serverExternalPackages: [],
   experimental: {
-    serverComponentsExternalPackages: [],
-  },
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
-    },
-    responseLimit: '500mb',
+    // For large file uploads in API routes
+    serverComponentsExternalPackages: ['oracledb']
   },
 };
 

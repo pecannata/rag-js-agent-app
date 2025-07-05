@@ -1,10 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
 import Vectorize from './components/Vectorize';
+import AuthHeader from './components/AuthHeader';
+import DevAuthHeader from './components/DevAuthHeader';
+
+// Check if Clerk is properly configured
+const hasValidClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_') && 
+                         !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.includes('YOUR_');
 
 interface ReActConfig {
   temperature: number;
@@ -21,6 +28,20 @@ interface Message {
 }
 
 export default function Home() {
+  // Only use Clerk hooks if properly configured
+  let isSignedIn = false;
+  let user = null;
+  
+  if (hasValidClerkKeys) {
+    try {
+      const userData = useUser();
+      isSignedIn = userData.isSignedIn;
+      user = userData.user;
+    } catch (error) {
+      console.warn('Clerk hooks not available');
+    }
+  }
+  
   const [apiKey, setApiKey] = useState('');
   const [isKeyValid, setIsKeyValid] = useState(false);
   const [serpApiKey, setSerpApiKey] = useState('');
@@ -91,10 +112,27 @@ export default function Home() {
     setTimeout(() => setInitialMessage(undefined), 100);
   };
 
+  // Show loading while checking authentication
+  if (isSignedIn === undefined) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen">
-      {/* Left Sidebar */}
-      <Sidebar 
+    <div className="flex flex-col h-screen">
+      {/* Authentication Header */}
+      {hasValidClerkKeys ? <AuthHeader /> : <DevAuthHeader />}
+      
+      {/* Main Content */}
+      <div className="flex flex-1">
+        {/* Left Sidebar */}
+        <Sidebar
         apiKey={apiKey}
         isKeyValid={isKeyValid}
         onSaveApiKey={handleSaveApiKey}
@@ -171,6 +209,7 @@ export default function Home() {
             />
           )}
         </div>
+      </div>
       </div>
     </div>
   );
