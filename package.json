@@ -14,6 +14,8 @@
     "@langchain/core": "^0.3.61",
     "@langchain/langgraph": "^0.3.6",
     "cohere-ai": "^7.17.1",
+    "docx": "^9.5.1",
+    "file-saver": "^2.0.5",
     "langchain": "^0.3.29",
     "next": "15.3.4",
     "react": "^19.0.0",
@@ -23,6 +25,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { summarizeDocument } from '../lib/document-utils';
+import { saveSummaryAsDocx, saveVectorQueryAsDocx } from '../lib/docx-utils';
 import DataTable from './DataTable';
 import MarkdownTable from './MarkdownTable';
 
@@ -112,6 +113,8 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [queryTestError, setQueryTestError] = useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>('');
+  const [isSavingSummary, setIsSavingSummary] = useState<boolean>(false);
+  const [isSavingQuery, setIsSavingQuery] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,6 +351,42 @@ FETCH FIRST 2 ROWS ONLY`;
     }
   };
 
+  const handleSaveSummary = async () => {
+    if (!summaryResult || !documentName) {
+      console.error('No summary data or document name available');
+      return;
+    }
+
+    setIsSavingSummary(true);
+    try {
+      await saveSummaryAsDocx(summaryResult, documentName);
+      console.log('✅ Summary saved as DOCX successfully');
+    } catch (error) {
+      console.error('❌ Failed to save summary as DOCX:', error);
+      setSummaryError(error instanceof Error ? error.message : 'Failed to save summary as DOCX');
+    } finally {
+      setIsSavingSummary(false);
+    }
+  };
+
+  const handleSaveVectorQuery = async () => {
+    if (!queryTestResult || !userMessage || !documentName) {
+      console.error('No query results, user message, or document name available');
+      return;
+    }
+
+    setIsSavingQuery(true);
+    try {
+      await saveVectorQueryAsDocx(queryTestResult, userMessage, documentName);
+      console.log('✅ Vector query results saved as DOCX successfully');
+    } catch (error) {
+      console.error('❌ Failed to save vector query results as DOCX:', error);
+      setQueryTestError(error instanceof Error ? error.message : 'Failed to save query results as DOCX');
+    } finally {
+      setIsSavingQuery(false);
+    }
+  };
+
   const handleClearFile = () => {
     setSelectedFile(null);
     setPdfContent('');
@@ -372,6 +411,8 @@ FETCH FIRST 2 ROWS ONLY`;
     setQueryTestError(null);
     setShowAnalysis(false);
     setUserMessage('');
+    setIsSavingSummary(false);
+    setIsSavingQuery(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -997,6 +1038,26 @@ FETCH FIRST 2 ROWS ONLY`;
                       </div>
                     </div>
                   )}
+                  
+                  {/* Save Summary Button */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <button
+                      onClick={handleSaveSummary}
+                      disabled={isSavingSummary}
+                      className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isSavingSummary ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          📄 Save Summary as DOCX
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1163,6 +1224,26 @@ FETCH FIRST 2 ROWS ONLY` :
                       )}
                     </div>
                   )}
+                  
+                  {/* Save Vector Query Results Button */}
+                  <div className="pt-4 border-t border-green-200">
+                    <button
+                      onClick={handleSaveVectorQuery}
+                      disabled={isSavingQuery}
+                      className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isSavingQuery ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          📄 Save Query Results as DOCX
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
