@@ -296,7 +296,16 @@ export async function saveVectorQueryAsDocx(
     });
   }
 
-  const fileName = `${documentName}_vector_search_${new Date().toISOString().split('T')[0]}`;
+  // Create a clean version of the user message for filename
+  const cleanUserMessage = userMessage
+    .slice(0, 30) // Limit length to keep filename reasonable
+    .replace(/[^a-z0-9\s]/gi, '') // Remove special characters except spaces
+    .trim()
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .toLowerCase();
+  
+  const date = new Date().toISOString().split('T')[0];
+  const fileName = `${documentName}_${date}_${cleanUserMessage}`;
   
   await saveAsDocx(
     fileName,
