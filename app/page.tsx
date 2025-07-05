@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
@@ -21,6 +23,8 @@ interface Message {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [apiKey, setApiKey] = useState('');
   const [isKeyValid, setIsKeyValid] = useState(false);
   const [serpApiKey, setSerpApiKey] = useState('');
@@ -34,6 +38,14 @@ export default function Home() {
     enableDatabaseQueries: true,
     contextKeywords: ['Employee']
   });
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+    if (!session) {
+      router.push('/auth/signin');
+    }
+  }, [session, status, router]);
 
   // Load API keys from localStorage on mount
   useEffect(() => {
@@ -91,9 +103,54 @@ export default function Home() {
     setTimeout(() => setInitialMessage(undefined), 100);
   };
 
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div className="flex h-screen">
-      {/* Left Sidebar */}
+    <div className="flex h-screen flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900">Agentic RAG Chat</h1>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600">
+              Welcome, {session.user?.email}
+            </span>
+            {session.user?.email === 'phil.cannata@yahoo.com' && (
+              <button
+                onClick={() => router.push('/admin/users')}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+              >
+                Manage Users
+              </button>
+            )}
+            <button
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex h-full">
+        {/* Left Sidebar */}
       <Sidebar 
         apiKey={apiKey}
         isKeyValid={isKeyValid}
@@ -172,6 +229,7 @@ export default function Home() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "email": "test@example.com",
+    "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewlrwjG2/e1qkqze",
+    "createdAt": "2025-07-05T22:40:35.929Z"
+  },
+  {
+    "id": "2",
+    "email": "phil.cannata@yahoo.com",
+    "password": "$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi",
+    "createdAt": "2025-07-05T22:40:35.929Z"
+  },
+  {
+    "id": "1751755236176",
+    "email": "phil.cannata@oracle.com",
+    "password": "$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi",
+    "createdAt": "2025-07-05T22:40:36.176Z"
+  }
+]
