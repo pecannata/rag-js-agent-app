@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     let pythonResult;
     try {
       pythonResult = JSON.parse(result);
-    } catch (parseError) {
+    } catch (_parseError) {
       console.error('Failed to parse Python output:', result);
       return NextResponse.json({
         success: false,

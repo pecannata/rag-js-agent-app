@@ -103,7 +103,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [showExtractedContent, setShowExtractedContent] = useState<boolean>(false);
   const [isRunningAll, setIsRunningAll] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [deletionResults, setDeletionResults] = useState<{success: boolean, error?: string}>({success: false});
+  const [_deletionResults, setDeletionResults] = useState<any>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
   const [summaryResult, setSummaryResult] = useState<SummaryResult | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
@@ -279,9 +279,9 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
 
       if (result.success) {
         setSummaryResult({
-          summary: result.summary,
+          summary: result.summary || '',
           keyTopics: result.keyTopics || [],
-          timestamp: result.timestamp,
+          timestamp: result.timestamp || new Date().toISOString(),
           documentInfo: result.documentInfo
         });
         setShowSummary(true);
@@ -672,9 +672,9 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
       } catch (documentError) {
         console.error('❌ Document processing failed:', documentError);
         console.error('📊 Document error details:', {
-          name: documentError?.name,
-          message: documentError?.message,
-          stack: documentError?.stack
+          name: (documentError as any)?.name,
+          message: (documentError as any)?.message,
+          stack: (documentError as any)?.stack
         });
         throw documentError;
       }
@@ -1310,7 +1310,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                       value={chunkSize}
                       onChange={(e) => {
                         const inputValue = e.target.value;
-                        const newValue = inputValue === '' ? '' : parseInt(inputValue);
+                        const newValue = inputValue === '' ? 1000 : parseInt(inputValue);
                         console.log('Chunk size input changed:', inputValue, '=>', newValue);
                         setChunkSize(isNaN(newValue) ? 1000 : newValue);
                       }}
@@ -1328,7 +1328,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                       value={overlap}
                       onChange={(e) => {
                         const inputValue = e.target.value;
-                        const newValue = inputValue === '' ? '' : parseInt(inputValue);
+                        const newValue = inputValue === '' ? 200 : parseInt(inputValue);
                         console.log('Overlap input changed:', inputValue, '=>', newValue);
                         setOverlap(isNaN(newValue) ? 200 : Math.max(0, newValue));
                       }}
@@ -1393,7 +1393,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                     </button>
 
                     <button
-                      onClick={handleExecuteSQL}
+                      onClick={() => handleExecuteSQL()}
                       disabled={chunks.length === 0 || isExecuting || isRunningAll}
                       className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                         chunks.length > 0 && !isExecuting && !isRunningAll
@@ -1566,7 +1566,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
               <h2 className="text-lg font-semibold text-gray-900 mb-4">📑 Document Chunks</h2>
               
               <div className="space-y-4 max-h-96 overflow-auto">
-                {chunks.map((chunk, index) => (
+                {chunks.map((chunk, _index) => (
                   <div key={chunk.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm font-medium text-gray-900">

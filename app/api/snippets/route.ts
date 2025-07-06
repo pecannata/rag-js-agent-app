@@ -28,7 +28,7 @@ async function readSnippets(): Promise<Snippet[]> {
     await ensureDataDirectory();
     const data = await fs.readFile(SNIPPETS_FILE, 'utf8');
     return JSON.parse(data);
-  } catch (error) {
+  } catch (_error) {
     // If file doesn't exist or is invalid, return empty array
     return [];
   }

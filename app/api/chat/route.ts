@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { RagAgent, ReActConfig } from '../../lib/agent';
+import { RagAgent } from '../../lib/agent';
 
 export async function POST(request: NextRequest) {
   try {

@@ -24,7 +24,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     try {
       const jsonData = JSON.parse(stdout);
       return { success: true, data: jsonData };
-    } catch (parseError) {
+    } catch (_parseError) {
       // If not JSON, return raw output
       return { success: true, data: stdout };
     }
@@ -35,7 +35,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
 }
 
 // Get table schema information
-async function getTableSchema(tableName: string): Promise<{ success: boolean; schema?: any; error?: string }> {
+async function getTableSchema(tableName: string): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
     console.log('🔍 Getting schema for table:', tableName);
     
@@ -146,7 +146,7 @@ Return ONLY comma-separated keywords. No other text.`;
     const response = await llm.invoke(prompt);
     
     // Clean up the response and extract keywords
-    let keywords = [];
+    let keywords: string[] = [];
     try {
       // Remove extra text and extract only the comma-separated keywords
       const content = response.content as string;

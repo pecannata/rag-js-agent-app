@@ -49,7 +49,7 @@ export default function SignUp() {
       } else {
         setError(data.message || 'An error occurred')
       }
-    } catch (error) {
+    } catch (_error) {
       setError('An error occurred. Please try again.')
     }
 

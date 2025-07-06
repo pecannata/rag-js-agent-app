@@ -3,15 +3,15 @@ import { getServerSession } from 'next-auth'
 import { getUsers, deleteUser, updateUserPassword } from '../../../../lib/users'
 
 // Check if user is admin
-async function isAdmin(request: NextRequest) {
+async function isAdmin(_request: NextRequest) {
   const session = await getServerSession()
   return session?.user?.email === 'phil.cannata@yahoo.com'
 }
 
 // GET - List all users
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    if (!(await isAdmin(request))) {
+    if (!(await isAdmin(_request))) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 403 }

@@ -31,8 +31,7 @@ const handler = NextAuth({
     })
   ],
   pages: {
-    signIn: '/auth/signin',
-    signUp: '/auth/signup'
+    signIn: '/auth/signin'
   },
   session: {
     strategy: 'jwt'
@@ -45,7 +44,7 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id as string
       }
       return session

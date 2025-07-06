@@ -113,12 +113,9 @@ export async function saveAsDocx(
 
     // Create the document
     const doc = new Document({
-      properties: {
-        title: metadata?.title || fileName,
-        subject: metadata?.subject,
-        creator: metadata?.creator || 'RAG JS Agent App',
-        description: metadata?.description,
-      },
+      creator: metadata?.creator || 'RAG JS Agent App',
+      title: metadata?.title || fileName,
+      description: metadata?.description,
       sections: [
         {
           children: paragraphs,

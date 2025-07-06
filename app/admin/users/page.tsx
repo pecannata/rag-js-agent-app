@@ -49,7 +49,7 @@ export default function UserManagement() {
       } else {
         setError(data.message || 'Failed to fetch users')
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Network error')
     } finally {
       setLoading(false)
@@ -74,8 +74,8 @@ export default function UserManagement() {
       } else {
         setError(data.message || 'Failed to delete user')
       }
-    } catch (error) {
-      setError('Network error')
+    } catch (_error) {
+      setError('Failed to delete user')
     }
   }
 
@@ -99,8 +99,8 @@ export default function UserManagement() {
       } else {
         setError(data.message || 'Failed to reset password')
       }
-    } catch (error) {
-      setError('Network error')
+    } catch (_error) {
+      setError('Failed to reset password')
     }
   }
 

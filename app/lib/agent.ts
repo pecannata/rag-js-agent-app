@@ -33,7 +33,7 @@ function calculateMath(expression: string): string {
     }
     const result = eval(cleanExpression);
     return `The result is: ${result}`;
-  } catch (error) {
+  } catch (_error) {
     return 'Error: Invalid mathematical expression';
   }
 }
@@ -99,7 +99,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     try {
       const jsonData = JSON.parse(stdout);
       return { success: true, data: jsonData };
-    } catch (parseError) {
+    } catch (_parseError) {
       // If not JSON, return raw output
       return { success: true, data: stdout };
     }
@@ -240,7 +240,7 @@ Response:`;
         ? history.map(msg => `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`).join('\n') + '\n\n'
         : '';
 
-      let augmentationData: any = {};
+        const augmentationData: any = {};
       let domainAnalysis: any = null;
       let databaseResult: any = null;
 
@@ -379,7 +379,7 @@ Response:`;
           ]);
           
           console.log('✅ LLM analysis completed');
-          const analysisText = analysisResponse.content as string;
+          const analysisText = (analysisResponse as any).content as string;
           
           console.log('📝 Step Analysis Response:', analysisText.substring(0, 500) + '...');
           
@@ -407,7 +407,7 @@ Response:`;
             
             // Execute web search steps
             if (stepAnalysis.needsWebSearch && stepAnalysis.steps) {
-              const webSearchSteps = stepAnalysis.steps.filter(step => 
+              const webSearchSteps = stepAnalysis.steps.filter((step: any) => 
                 step.method === 'websearch' && step.needsExecution && step.confidence >= 0.7
               );
               
@@ -442,7 +442,7 @@ Return ONLY the optimized search query, nothing else.`;
                       const enhancedQuery = enhancementResponse.content as string;
                       searchQuery = enhancedQuery.trim();
                       console.log(`🔧 Enhanced search query: "${searchQuery}"`);
-                    } catch (error) {
+                    } catch (_error) {
                       console.log(`⚠️ Query enhancement failed, using original: "${searchQuery}"`);
                     }
                   }
@@ -617,7 +617,7 @@ Return ONLY the optimized search query, nothing else.`;
           const enhancedQuery = enhancementResponse.content as string;
           searchQuery = enhancedQuery.trim();
           console.log(`🔧 Fallback enhanced search query: "${searchQuery}"`);
-        } catch (error) {
+        } catch (_error) {
           console.log(`⚠️ Fallback query enhancement failed, using original: "${searchQuery}"`);
         }
       }

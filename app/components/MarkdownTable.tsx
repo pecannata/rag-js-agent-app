@@ -79,7 +79,7 @@ export default function MarkdownTable({ content }: MarkdownTableProps) {
                   <table className="w-full text-sm">
                     <thead className="bg-blue-200">
                       <tr>
-                        {part.headers.map((header, headerIndex) => (
+                        {part.headers?.map((header, headerIndex) => (
                           <th 
                             key={headerIndex}
                             className="px-3 py-2 text-left font-medium text-blue-800 border-r border-blue-300 last:border-r-0"
@@ -90,7 +90,7 @@ export default function MarkdownTable({ content }: MarkdownTableProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {part.rows.map((row, rowIndex) => (
+                      {part.rows?.map((row, rowIndex) => (
                         <tr 
                           key={rowIndex} 
                           className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-25'} hover:bg-blue-100 transition-colors`}

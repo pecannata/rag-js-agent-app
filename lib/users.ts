@@ -29,13 +29,13 @@ function loadUsers(): User[] {
       {
         id: '1',
         email: 'test@example.com',
-        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewlrwjG2/e1qkqze', // 'password123'
+        password: '$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi', // 'password123'
         createdAt: new Date().toISOString()
       },
       {
         id: '2',
         email: 'phil.cannata@yahoo.com',
-        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewlrwjG2/e1qkqze', // 'password123'
+        password: '$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi', // 'password123'
         createdAt: new Date().toISOString()
       }
     ]

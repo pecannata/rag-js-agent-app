@@ -31,7 +31,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     try {
       const jsonData = JSON.parse(stdout);
       return { success: true, data: jsonData };
-    } catch (parseError) {
+    } catch (_parseError) {
       // If not JSON, return raw output
       return { success: true, data: stdout };
     }

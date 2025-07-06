@@ -100,7 +100,7 @@ export default function DataTable({ data, title = "Database Results" }: DataTabl
               </tr>
             </thead>
             <tbody>
-              {displayData.map((row, rowIndex) => (
+              {displayData.map((row: any, rowIndex: number) => (
                 <tr 
                   key={rowIndex} 
                   className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-25'} hover:bg-blue-100 transition-colors`}
