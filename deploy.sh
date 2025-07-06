@@ -109,7 +109,7 @@ function build_deployment_package() {
     
     # Create deployment package
     mkdir -p ../deployment-package
-    rsync -av --exclude='node_modules' --exclude='.next' --exclude='data' --exclude='errors.md' --exclude='.git' . ../deployment-package/
+    rsync -av --exclude='node_modules' --exclude='.next' --exclude='errors.md' --exclude='.git' . ../deployment-package/
     
     # Create archive
     cd ../deployment-package
@@ -183,10 +183,10 @@ else
     echo "✅ Port 3000 is free"
 fi
 
-# Backup users.json if it exists
-if [ -f "$DEPLOY_PATH/data/users.json" ]; then
-    echo "Backing up existing users.json..."
-    sudo cp "$DEPLOY_PATH/data/users.json" "/tmp/users_backup.json"
+# Backup existing data files if they exist
+if [ -d "$DEPLOY_PATH/data" ]; then
+    echo "Backing up existing data directory..."
+    sudo cp -r "$DEPLOY_PATH/data" "/tmp/data_backup" || true
 fi
 
 # Remove existing application directory for clean deployment
@@ -208,12 +208,25 @@ sudo chown -R $USER:$USER .
 # Make scripts executable
 chmod +x SQLclScript.sh
 
-# Restore users.json if backup exists
-if [ -f "/tmp/users_backup.json" ]; then
-    echo "Restoring users.json backup..."
+# Restore and merge data files if backup exists
+if [ -d "/tmp/data_backup" ]; then
+    echo "Restoring existing data files..."
     mkdir -p data
-    cp "/tmp/users_backup.json" data/users.json
-    sudo rm -f "/tmp/users_backup.json"
+    # Copy existing users.json if it exists in backup
+    if [ -f "/tmp/data_backup/users.json" ]; then
+        cp "/tmp/data_backup/users.json" data/users.json
+        echo "Restored users.json"
+    fi
+    # Copy existing snippets.json if it exists in backup (preserving existing snippets)
+    if [ -f "/tmp/data_backup/snippets.json" ]; then
+        cp "/tmp/data_backup/snippets.json" data/snippets.json
+        echo "Restored existing snippets.json"
+    else
+        echo "Using new snippets.json from deployment"
+    fi
+    sudo rm -rf "/tmp/data_backup"
+else
+    echo "No existing data to restore"
 fi
 
 # Install Node.js dependencies
