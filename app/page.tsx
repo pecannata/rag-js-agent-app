@@ -181,38 +181,74 @@ export default function Home() {
       
       {/* Main Area with Tabs */}
       <div className="flex-1 flex flex-col">
+        {/* Provider Indicator */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-6 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">AI Provider:</span>
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${
+                provider === 'cohere' 
+                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                  : 'bg-green-100 text-green-800 border border-green-200'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  provider === 'cohere' ? 'bg-blue-500' : 'bg-green-500'
+                }`}></div>
+                <span>
+                  {provider === 'cohere' ? '☁️ Cohere (Cloud)' : '🖥️ Ollama (Local)'}
+                </span>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              {provider === 'cohere' 
+                ? 'Using cloud-based AI with your API key'
+                : 'Using local Llama 3.1 8B model'
+              }
+            </div>
+          </div>
+        </div>
+
         {/* Tab Navigation */}
         <div className="bg-white border-b border-gray-200">
           <div className="flex">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
                 activeTab === 'chat'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 bg-gradient-to-t from-blue-50 to-blue-25 shadow-md'
+                  : 'border-transparent text-gray-600 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-25'
               }`}
             >
-              💬 Chat
+              <span className="flex items-center gap-2">
+                <span className="text-xl">💬</span>
+                <span className="font-bold">Chat</span>
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('snippets')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
                 activeTab === 'snippets'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-green-500 text-green-600 bg-gradient-to-t from-green-50 to-green-25 shadow-md'
+                  : 'border-transparent text-gray-600 hover:text-green-500 hover:border-green-300 hover:bg-green-25'
               }`}
             >
-              📝 Snippets
+              <span className="flex items-center gap-2">
+                <span className="text-xl">📝</span>
+                <span className="font-bold">Snippets</span>
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('vectorize')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
                 activeTab === 'vectorize'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-purple-500 text-purple-600 bg-gradient-to-t from-purple-50 to-purple-25 shadow-md'
+                  : 'border-transparent text-gray-600 hover:text-purple-500 hover:border-purple-300 hover:bg-purple-25'
               }`}
             >
-              📄 Vectorize
+              <span className="flex items-center gap-2">
+                <span className="text-xl">📄</span>
+                <span className="font-bold">Vectorize</span>
+              </span>
             </button>
           </div>
         </div>

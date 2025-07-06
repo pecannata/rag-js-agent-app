@@ -1665,32 +1665,6 @@ FETCH FIRST ${rowCount} ROWS ONLY`
             </div>
           </div>
 
-          {/* Future Features */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 Next Steps</h2>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>✅ PDF text extraction</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>✅ Document chunking with user controls</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>✅ Vector embeddings generation (Oracle VECTOR_EMBEDDING)</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>🚧 Semantic search across chunks</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>🚧 Integration with chat queries</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

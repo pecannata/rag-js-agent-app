@@ -39,7 +39,8 @@ export default function Sidebar({
   onReActConfigChange
 }: SidebarProps) {
   const [inputKey, setInputKey] = useState('');
-  const [showReActConfig, setShowReActConfig] = useState(true);
+  const [showApiConfig, setShowApiConfig] = useState(false);
+  const [showReActConfig, setShowReActConfig] = useState(false);
   const [contextKeywordsText, setContextKeywordsText] = useState(
     reactConfig.contextKeywords.join(', ')
   );
@@ -246,85 +247,113 @@ export default function Sidebar({
 
   return (
     <div className="w-80 bg-gray-100 p-6 border-r border-gray-300">
-      <h2 className="text-xl font-bold mb-6 text-gray-800">API Configuration</h2>
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Configuration</h2>
       
-      {/* API Key Input Section */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Cohere API Key
-        </label>
-        <input
-          type="password"
-          value={inputKey}
-          onChange={(e) => setInputKey(e.target.value)}
-          placeholder="Enter your Cohere API key"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={handleSave}
-            disabled={!inputKey.trim()}
-            className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save
-          </button>
-          <button
-            onClick={handleClear}
-            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-          >
-            Clear
-          </button>
-        </div>
+      {/* Instructions */}
+      <div className="text-sm text-gray-600 mb-6">
+        <h3 className="font-medium mb-2">Instructions:</h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Configure your Cohere API key</li>
+          <li>Set SQL query for database context</li>
+          <li>Adjust ReAct configuration as needed</li>
+          <li>Database queries execute only with domain alignment</li>
+        </ul>
       </div>
-
-      {/* API Key Status */}
+      
+      {/* API Configuration Accordion */}
       <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isKeyValid ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm font-medium text-gray-700">
-            API Key Status: {isKeyValid ? 'Active' : 'Not Set'}
+        <button
+          onClick={() => setShowApiConfig(!showApiConfig)}
+          className="w-full flex items-center justify-between p-3 bg-gray-50 border border-gray-300 rounded-md hover:bg-gray-100"
+        >
+          <span className="font-medium text-gray-700">API Configuration</span>
+          <span className={`transform transition-transform ${showApiConfig ? 'rotate-180' : ''}`}>
+            ▼
           </span>
-        </div>
-        {apiKey && (
-          <div className="mt-2 text-xs text-gray-600">
-            Key: ...{apiKey.slice(-8)}
-          </div>
-        )}
-      </div>
+        </button>
+        
+        {showApiConfig && (
+          <div className="mt-3 p-4 border border-gray-300 rounded-md bg-white space-y-6">
+            {/* API Key Input Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cohere API Key
+              </label>
+              <input
+                type="password"
+                value={inputKey}
+                onChange={(e) => setInputKey(e.target.value)}
+                placeholder="Enter your Cohere API key"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={handleSave}
+                  disabled={!inputKey.trim()}
+                  className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleClear}
+                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
 
-      {/* SerpAPI Key Input Section */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          SerpAPI Key (Optional - for current population data)
-        </label>
-        <input
-          type="password"
-          value={serpApiKey}
-          onChange={(e) => onSerpApiKeyChange(e.target.value)}
-          placeholder="Enter your SerpAPI key (optional)"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => onSaveSerpApiKey(serpApiKey)}
-            disabled={!serpApiKey.trim()}
-            className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save
-          </button>
-          <button
-            onClick={onClearSerpApiKey}
-            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="mt-1 text-xs text-gray-500">
-          Used for real-time population data. Get your key at serpapi.com
-        </div>
-        {serpApiKey && (
-          <div className="mt-2 text-xs text-gray-600">
-            SerpAPI Key: ...{serpApiKey.slice(-8)}
+            {/* API Key Status */}
+            <div>
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${isKeyValid ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-sm font-medium text-gray-700">
+                  API Key Status: {isKeyValid ? 'Active' : 'Not Set'}
+                </span>
+              </div>
+              {apiKey && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Key: ...{apiKey.slice(-8)}
+                </div>
+              )}
+            </div>
+
+            {/* SerpAPI Key Input Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SerpAPI Key (Optional - for current population data)
+              </label>
+              <input
+                type="password"
+                value={serpApiKey}
+                onChange={(e) => onSerpApiKeyChange(e.target.value)}
+                placeholder="Enter your SerpAPI key (optional)"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => onSaveSerpApiKey(serpApiKey)}
+                  disabled={!serpApiKey.trim()}
+                  className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={onClearSerpApiKey}
+                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                Used for real-time population data. Get your key at serpapi.com
+              </div>
+              {serpApiKey && (
+                <div className="mt-2 text-xs text-gray-600">
+                  SerpAPI Key: ...{serpApiKey.slice(-8)}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -508,16 +537,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Instructions */}
-      <div className="text-sm text-gray-600">
-        <h3 className="font-medium mb-2">Instructions:</h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Configure your Cohere API key</li>
-          <li>Set SQL query for database context</li>
-          <li>Adjust ReAct configuration as needed</li>
-          <li>Database queries execute only with domain alignment</li>
-        </ul>
-      </div>
     </div>
   );
 }
