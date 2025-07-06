@@ -52,6 +52,9 @@ export default function Sidebar({
   const [sqlAreaHeight, setSqlAreaHeight] = useState(120);
   const [isResizingSql, setIsResizingSql] = useState(false);
   const sqlAreaRef = useRef<HTMLDivElement>(null);
+  const [showSystemSpecs, setShowSystemSpecs] = useState(false);
+  const [systemSpecs, setSystemSpecs] = useState<any>(null);
+  const [loadingSpecs, setLoadingSpecs] = useState(false);
 
   // Sync contextKeywordsText with reactConfig.contextKeywords changes
   useEffect(() => {
@@ -290,6 +293,33 @@ export default function Sidebar({
   const handleSqlResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizingSql(true);
+  };
+
+  const fetchSystemSpecs = async () => {
+    if (systemSpecs) return; // Don't fetch if already loaded
+    
+    setLoadingSpecs(true);
+    try {
+      const response = await fetch('/api/system-specs');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSystemSpecs(data.specs);
+      } else {
+        console.error('Failed to fetch system specs:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching system specs:', error);
+    } finally {
+      setLoadingSpecs(false);
+    }
+  };
+
+  const handleSystemSpecsToggle = () => {
+    setShowSystemSpecs(!showSystemSpecs);
+    if (!showSystemSpecs && !systemSpecs) {
+      fetchSystemSpecs();
+    }
   };
 
   return (
@@ -623,6 +653,66 @@ export default function Sidebar({
                 </span>
               </label>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* System Specifications Accordion */}
+      <div className="mb-6">
+        <button
+          onClick={handleSystemSpecsToggle}
+          className="w-full flex items-center justify-between p-3 bg-gray-50 border border-gray-300 rounded-md hover:bg-gray-100"
+        >
+          <span className="font-medium text-gray-700">System Specifications</span>
+          <span className={`transform transition-transform ${showSystemSpecs ? 'rotate-180' : ''}`}>
+            ▼
+          </span>
+        </button>
+        
+        {showSystemSpecs && (
+          <div className="mt-3 p-4 border border-gray-300 rounded-md bg-white space-y-3">
+            {loadingSpecs ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-gray-600">Loading system specs...</span>
+              </div>
+            ) : systemSpecs ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                    <span className="font-medium text-blue-800">Model:</span>
+                    <span className="text-blue-700 text-right">{systemSpecs.modelName}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                    <span className="font-medium text-green-800">Chip:</span>
+                    <span className="text-green-700 text-right">{systemSpecs.chip}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-purple-50 rounded">
+                    <span className="font-medium text-purple-800">CPU Cores:</span>
+                    <span className="text-purple-700 text-right">{systemSpecs.totalCores}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-orange-50 rounded">
+                    <span className="font-medium text-orange-800">GPU Cores:</span>
+                    <span className="text-orange-700 text-right">{systemSpecs.gpuCores}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-indigo-50 rounded">
+                    <span className="font-medium text-indigo-800">Memory:</span>
+                    <span className="text-indigo-700 text-right">{systemSpecs.memory}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span className="font-medium text-gray-800">Metal:</span>
+                    <span className="text-gray-700 text-right">{systemSpecs.metalSupport}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 text-center mt-3">
+                  Last updated: {new Date(systemSpecs.timestamp).toLocaleString()}
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600 text-center">
+                Failed to load system specifications
+              </div>
+            )}
           </div>
         )}
       </div>

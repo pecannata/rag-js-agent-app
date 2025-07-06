@@ -1569,7 +1569,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h3 className="text-red-800 font-semibold mb-2">Vector Generation Error Details:</h3>
                   <ul className="text-sm text-red-700 space-y-1">
-                    {vectorResults.errors.map((error, index) => (
+{vectorResults.errors.map((error, index) => (
                       <li key={index}>• {error}</li>
                     ))}
                   </ul>
@@ -1596,7 +1596,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h3 className="text-red-800 font-semibold mb-2">Error Details:</h3>
                   <ul className="text-sm text-red-700 space-y-1">
-                    {executionResults.errors.map((error, index) => (
+{executionResults.errors.map((error, index) => (
                       <li key={index}>• {error}</li>
                     ))}
                   </ul>

@@ -29,7 +29,7 @@ export class OllamaService {
   private baseUrl: string;
   private model: string;
 
-  constructor(baseUrl: string = 'http://localhost:11434', model: string = 'llama3.1:8b') {
+  constructor(baseUrl: string = 'http://localhost:11434', model: string = 'llama3.2:3b') {
     this.baseUrl = baseUrl;
     this.model = model;
   }
@@ -44,9 +44,14 @@ export class OllamaService {
       top_p?: number;
       context?: number[];
       stream?: boolean;
+      timeout?: number;
     } = {}
   ): Promise<OllamaResponse> {
     try {
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), options.timeout || 60000); // 60 second default timeout
+      
       const response = await fetch(`${this.baseUrl}/api/generate`, {
         method: 'POST',
         headers: {
@@ -61,8 +66,11 @@ export class OllamaService {
             temperature: options.temperature || 0.7,
             top_p: options.top_p || 0.9,
           }
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
@@ -108,9 +116,15 @@ export class OllamaService {
    */
   async isAvailable(): Promise<boolean> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for availability check
+      
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         method: 'GET',
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       return response.ok;
     } catch (error) {
       console.error('Ollama service check failed:', error);
@@ -123,7 +137,15 @@ export class OllamaService {
    */
   async getModels(): Promise<Array<{ name: string; size: string; modified: string }>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
         throw new Error(`Failed to get models: ${response.status}`);
       }

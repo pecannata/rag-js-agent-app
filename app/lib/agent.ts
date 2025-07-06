@@ -67,7 +67,7 @@ async function searchWeb(query: string, apiKey?: string): Promise<{ success: boo
       engine: "google",
       q: query,
       api_key: apiKey,
-      num: 3 // Limit to 3 results for efficiency
+      num: 6 // Get more results but not overwhelming
     });
     
     console.log('✅ SERPAPI CALL COMPLETED SUCCESSFULLY');
@@ -431,9 +431,9 @@ Response:`;
           console.log('🗃️ Database available:', databaseResult ? 'Yes' : 'No');
           console.log('🔑 SerpAPI key available:', serpApiKey ? 'Yes (...' + serpApiKey.slice(-4) + ')' : 'No');
           
-          // Create a timeout promise (reduced to 15 seconds)
+          // Create a timeout promise (optimized for 3B model)
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('LLM analysis timeout after 15 seconds')), 15000);
+            setTimeout(() => reject(new Error('LLM analysis timeout after 30 seconds')), 30000);
           });
           
           // Race between LLM call and timeout
@@ -453,7 +453,7 @@ Response:`;
             }
             try {
               analysisResponse = await Promise.race([
-                this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1 }),
+                this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1, timeout: 35000 }),
                 timeoutPromise
               ]);
             } catch (_ollamaError) {
@@ -512,7 +512,7 @@ Response:`;
 
 Current Year: ${currentYear}
 Original Search Query: "${step.searchQuery}"
-Database Results Sample: ${JSON.stringify(databaseResult.data).substring(0, 1000)}...
+Database Results Sample: ${JSON.stringify(databaseResult.data)}
 
 Optimize the search query by:
 1. Adding specific entities found in the database results
@@ -536,7 +536,7 @@ Return ONLY the optimized search query, nothing else.`;
                           throw new Error('Ollama not available');
                         }
                         try {
-                          enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+                          enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 30000 });
                         } catch (_ollamaError) {
                           console.warn('⚠️ Ollama not available for query enhancement, using original query');
                           throw new Error('Ollama not available');
@@ -567,15 +567,17 @@ Return ONLY the optimized search query, nothing else.`;
                   
                   if (webResult.success && webResult.data) {
                     const organicResults = webResult.data.organic_results || [];
-                    const searchSummary = organicResults.slice(0, 3).map((result: any) => 
+                    const searchSummary = organicResults.slice(0, 5).map((result: any) => 
                       `${result.title}: ${result.snippet}`
                     ).join('\n');
+                    
+                    console.log(`🔍 Found ${organicResults.length} results, using top 5`);
                     
                     webSearchResults.push({
                       step: step.step,
                       description: step.description,
                       query: searchQuery,
-                      results: organicResults.slice(0, 3),
+                      results: organicResults.slice(0, 5),
                       summary: searchSummary
                     });
                   }
@@ -602,6 +604,8 @@ Return ONLY the optimized search query, nothing else.`;
             }
         } catch (error) {
           console.error('❌ Multi-step analysis error:', error);
+          console.log('🛡️ Multi-step analysis disabled for this session due to timeout issues');
+          
           // Fallback to simple detection
           const fallbackResult = await this.executeSimpleWebSearch(message, databaseResult, serpApiKey, augmentationData);
           if (fallbackResult) {
@@ -614,8 +618,19 @@ Return ONLY the optimized search query, nothing else.`;
       let databaseContext = '';
       if (databaseResult && databaseResult.success) {
         console.log('📊 Database result available for LLM context');
+        
+        // Count actual rows for debugging
+        let rowCount = 0;
+        if (databaseResult.data && databaseResult.data.results && Array.isArray(databaseResult.data.results)) {
+          rowCount = databaseResult.data.results.length;
+          console.log(`📊 Database contains ${rowCount} rows of data`);
+        }
+        
         console.log('📊 Database data preview:', JSON.stringify(databaseResult.data).substring(0, 200) + '...');
         databaseContext = `\n\nDatabase Query Result:\n${JSON.stringify(databaseResult.data, null, 2)}`;
+        
+        // Log the full database context length
+        console.log(`📊 Database context length: ${databaseContext.length} characters`);
       } else {
         console.log('❌ No database result available for LLM context');
         if (databaseResult) {
@@ -657,22 +672,71 @@ Assistant:`;
       console.log('📝 Web search context included:', webSearchContext.length > 0);
       console.log('📝 Knowledge context included:', knowledgeContext.length > 0);
       
+      // No database truncation - always include complete database results
+      let optimizedPrompt = reactPrompt;
+      const optimizedDatabaseContext = databaseContext;
+      let optimizedWebSearchContext = webSearchContext;
+      
+      // Only optimize web search context if extremely large (database always included in full)
+      if (webSearchContext.length > 8000) {
+        // Keep much more web search data - it's crucial for accurate results
+        optimizedWebSearchContext = webSearchContext.substring(0, 7500) + '... [truncated - showing most relevant search results]';
+        console.log('⚠️ Web search context very large, keeping first 7500 characters');
+        
+        // Rebuild prompt with optimized web search context only
+        optimizedPrompt = `You are a helpful AI assistant that uses ReAct (Reasoning and Acting) methodology. You think step by step and can access tools when needed.
+
+Available capabilities:
+- Mathematical calculations
+- Knowledge base search (LangChain, ReAct, Cohere, RAG, LangGraph, Next.js)
+- Oracle database queries (when contextually relevant)
+- Web search for current information (when SerpAPI key is available)
+- General conversation and assistance${webSearchInstruction}
+
+${context}Human: ${message}${knowledgeContext}${optimizedDatabaseContext}${optimizedWebSearchContext}
+
+Thought: Let me analyze this request and provide a helpful response using the available information.
+
+Assistant:`;
+        
+        console.log('📝 Optimized prompt length (web search only):', optimizedPrompt.length);
+      }
+      
+      // Log database preservation
+      if (databaseContext.length > 0) {
+        console.log('✅ Database context: ALL ROWS PRESERVED (no truncation)');
+        if (databaseResult.data && databaseResult.data.results && Array.isArray(databaseResult.data.results)) {
+          console.log(`📊 Database context: preserved ${databaseResult.data.results.length} rows`);
+        }
+      }
+      
       // Log a sample of the prompt to see what's being sent to LLM
-      console.log('📝 Prompt preview (last 500 chars):', reactPrompt.slice(-500));
+      console.log('📝 Prompt preview (last 500 chars):', optimizedPrompt.slice(-500));
+      
+      // Debug: Check if database data is in the final prompt
+      if (optimizedPrompt.includes('Database Query Result')) {
+        const dbSectionStart = optimizedPrompt.indexOf('Database Query Result');
+        const dbSection = optimizedPrompt.substring(dbSectionStart, dbSectionStart + 1000);
+        console.log('🔍 Database section in final prompt:', dbSection + '...');
+        
+        // Count how many rows appear to be in the final prompt
+        const rowMatches = (optimizedPrompt.match(/"EMPNO":/g) || []).length;
+        console.log(`📊 Detected ${rowMatches} employee records in final prompt`);
+      }
       
 let response;
 if (this.provider === 'cohere') {
   if (!this.llm) {
     throw new Error('Cohere LLM not initialized');
   }
-  response = await this.llm.invoke(reactPrompt);
+  response = await this.llm.invoke(optimizedPrompt);
 } else {
   if (!this.ollama) {
     console.error('❌ Ollama not initialized');
     throw new Error('Ollama service is not available in this deployment environment. Please switch to Cohere provider in the chat settings.');
   }
   try {
-    response = await this.ollama.chat(reactPrompt);
+    response = await this.ollama.chat(optimizedPrompt, { timeout: 90000 }); // 90 second timeout for main generation
   } catch (ollamaError) {
     console.error('❌ Ollama chat failed:', ollamaError);
     console.log('🔄 Ollama is not available in this environment');
@@ -727,7 +791,7 @@ if (this.provider === 'cohere') {
         const contextEnhancementPrompt = `You are a search query optimizer. Given a search query and database results, enhance the search query to be more specific and effective.
 
 Original Search Query: "${searchQuery}"
-Database Results Sample: ${JSON.stringify(databaseResult.data).substring(0, 1000)}...
+Database Results Sample: ${JSON.stringify(databaseResult.data)}
 
 Optimize the search query by:
 1. Adding specific entities found in the database results
@@ -750,7 +814,7 @@ Return ONLY the optimized search query, nothing else.`;
               throw new Error('Ollama not available');
             }
             try {
-              enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+              enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 30000 });
             } catch (_ollamaError) {
               console.warn('⚠️ Ollama not available for fallback query enhancement, using original query');
               throw new Error('Ollama not available');
@@ -780,14 +844,16 @@ Return ONLY the optimized search query, nothing else.`;
       
       if (webResult.success && webResult.data) {
         const organicResults = webResult.data.organic_results || [];
-        const searchSummary = organicResults.slice(0, 3).map((result: any) => 
+        const searchSummary = organicResults.slice(0, 5).map((result: any) => 
           `${result.title}: ${result.snippet}`
         ).join('\n');
+        
+        console.log(`🔍 Fallback found ${organicResults.length} results, using top 5`);
         
         augmentationData.webSearch = {
           method: 'fallback',
           query: searchQuery,
-          results: organicResults.slice(0, 3),
+          results: organicResults.slice(0, 5),
           summary: searchSummary
         };
         
