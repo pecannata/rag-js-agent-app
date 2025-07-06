@@ -282,7 +282,10 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
           summary: result.summary || '',
           keyTopics: result.keyTopics || [],
           timestamp: result.timestamp || new Date().toISOString(),
-          documentInfo: result.documentInfo
+          documentInfo: result.documentInfo || {
+            summaryLength: 0,
+            chunksProcessed: 0
+          }
         });
         setShowSummary(true);
         console.log('✅ Summary generated successfully');
@@ -596,6 +599,10 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
       // Execute each SQL statement individually
       for (let i = 0; i < chunksForExecution.length; i++) {
         const chunk = chunksForExecution[i];
+        if (!chunk) {
+          console.warn(`Chunk at index ${i} is undefined, skipping`);
+          continue;
+        }
         // Properly escape the chunk text for SQL execution
         const escapedText = chunk.text
           .replace(/'/g, "''")
@@ -804,6 +811,10 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
       // Execute each vector UPDATE statement individually
       for (let i = 0; i < chunksForVectors.length; i++) {
         const chunk = chunksForVectors[i];
+        if (!chunk) {
+          console.warn(`Chunk at index ${i} is undefined, skipping vector generation`);
+          continue;
+        }
         const vectorStatement = `update segs set vec = (SELECT VECTOR_EMBEDDING(ALL_MINILM_L12_V2 USING seg as data) FROM segs where id = ${chunk.id} and doc = '${documentName}') where id = ${chunk.id} and doc = '${documentName}'`;
         
         try {

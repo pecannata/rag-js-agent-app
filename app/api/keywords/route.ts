@@ -70,8 +70,10 @@ function extractTableNames(sqlQuery: string): string[] {
       tables.push(...joinMatch.map(match => match.replace(/JOIN\s+/i, '').trim()));
     }
     
-    // Remove aliases (words after space)
-    return tables.map(table => table.split(/\s+/)[0]).filter(table => table && table.length > 0);
+    // Remove aliases (words after space) and ensure no undefined values
+    return tables
+      .map(table => table.split(/\s+/)[0])
+      .filter((table): table is string => table !== undefined && table.length > 0);
   } catch (error) {
     console.error('Error extracting table names:', error);
     return [];

@@ -265,7 +265,7 @@ export default function Home() {
               sqlQuery={sqlQuery}
               reactConfig={reactConfig}
               serpApiKey={serpApiKey}
-              initialMessage={initialMessage}
+              initialMessage={initialMessage ?? ''}
               provider={provider}
               onProviderChange={handleProviderChange}
             />

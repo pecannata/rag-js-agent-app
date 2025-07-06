@@ -23,9 +23,15 @@ export default function MarkdownTable({ content }: MarkdownTableProps) {
         });
       }
       
-      // Parse the table
+      // Parse the table - check for undefined capture groups
       const headerRow = match[1];
-      const dataRows = match[2].trim();
+      const dataRowsMatch = match[2];
+      
+      if (!headerRow || !dataRowsMatch) {
+        continue; // Skip this match if capture groups are undefined
+      }
+      
+      const dataRows = dataRowsMatch.trim();
       
       // Parse headers
       const headers = headerRow.split('|')

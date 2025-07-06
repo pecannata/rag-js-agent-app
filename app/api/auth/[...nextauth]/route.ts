@@ -22,7 +22,7 @@ const handler = NextAuth({
           return {
             id: user.id,
             email: user.email,
-            name: user.email.split('@')[0]
+            name: user.email.split('@')[0] ?? 'User'
           }
         }
 
@@ -50,7 +50,7 @@ const handler = NextAuth({
       return session
     }
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET ?? 'development-secret-change-in-production'
 })
 
 export { handler as GET, handler as POST }

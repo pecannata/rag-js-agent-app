@@ -140,8 +140,13 @@ export async function updateUserPassword(email: string, newPassword: string): Pr
     return false
   }
   
+  const user = users[userIndex];
+  if (!user) {
+    return false;
+  }
+  
   const hashedPassword = await bcrypt.hash(newPassword, 12)
-  users[userIndex].password = hashedPassword
+  user.password = hashedPassword
   saveUsers(users)
   return true
 }

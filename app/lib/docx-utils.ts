@@ -80,23 +80,30 @@ export async function saveAsDocx(
     // Process each section with optimization and async yielding
     for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
       const section = sections[sectionIndex];
+      if (!section) {
+        console.warn(`Section at index ${sectionIndex} is undefined, skipping`);
+        continue;
+      }
       console.log(`📝 Processing section ${sectionIndex + 1}/${sections.length}: ${section.title}`);
       
       // Add section title
       if (section.title) {
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: section.title,
-                bold: true,
-                size: 28, // 14pt font
-              }),
-            ],
-            heading: section.isHeading ? HeadingLevel.HEADING_1 : undefined,
-            spacing: { before: 300, after: 200 },
-          })
-        );
+        const paragraphOptions: any = {
+          children: [
+            new TextRun({
+              text: section.title,
+              bold: true,
+              size: 28, // 14pt font
+            }),
+          ],
+          spacing: { before: 300, after: 200 },
+        };
+        
+        if (section.isHeading) {
+          paragraphOptions.heading = HeadingLevel.HEADING_1;
+        }
+        
+        paragraphs.push(new Paragraph(paragraphOptions));
       }
 
       // Optimize content processing for large sections
@@ -109,6 +116,10 @@ export async function saveAsDocx(
           const chunks = splitLargeContent(section.content, maxChunkSize);
           for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
             const chunk = chunks[chunkIndex];
+            if (!chunk) {
+              console.warn(`Chunk at index ${chunkIndex} is undefined, skipping`);
+              continue;
+            }
             console.log(`  📦 Processing chunk ${chunkIndex + 1}/${chunks.length}`);
             await processSectionContentAsync(chunk, paragraphs);
             
@@ -141,16 +152,21 @@ export async function saveAsDocx(
     console.log('🏗️ Creating document...');
 
     // Create the document
-    const doc = new Document({
+    const docOptions: any = {
       creator: metadata?.creator || 'RAG JS Agent App',
       title: metadata?.title || fileName,
-      description: metadata?.description,
       sections: [
         {
           children: paragraphs,
         },
       ],
-    });
+    };
+    
+    if (metadata?.description) {
+      docOptions.description = metadata.description;
+    }
+    
+    const doc = new Document(docOptions);
 
     console.log('📦 Generating document buffer...');
     
@@ -335,13 +351,16 @@ function parseMarkdownBold(text: string): TextRun[] {
       }
     }
     
-    // Add bold text
-    runs.push(
-      new TextRun({
-        text: match[1],
-        bold: true,
-      })
-    );
+    // Add bold text - check for undefined capture group
+    const boldText = match[1];
+    if (boldText) {
+      runs.push(
+        new TextRun({
+          text: boldText,
+          bold: true,
+        })
+      );
+    }
     
     currentIndex = match.index + match[0].length;
   }
