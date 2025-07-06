@@ -1,0 +1,17 @@
+{
+  "version": "1.0.9",
+  "name": "rag-js-agent-app",
+  "buildTime": "2025-07-06T16:50:30.368Z",
+  "buildDate": "Jul 6, 2025",
+  "sourceVersion": "v1.0.8.070625",
+  "git": {
+    "branch": "main",
+    "commit": "e5fe385d53a5f1f23c65a58658bd42b365f8da6f",
+    "shortCommit": "e5fe385d",
+    "commitDate": "2025-07-06 11:01:51 -0500",
+    "commitMessage": "Change the Snippets tab name to be \"Chat Snippets\"P"
+  },
+  "environment": "development",
+  "ci": {},
+  "buildSignature": "1.0.8-e5fe385d-20250706-165030"
+}

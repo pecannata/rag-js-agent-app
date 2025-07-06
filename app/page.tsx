@@ -7,6 +7,7 @@ import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
 import Vectorize from './components/Vectorize';
+import { getVersionString, getCompactVersionInfo, VERSION_INFO } from './lib/version';
 
 interface ReActConfig {
   temperature: number;
@@ -139,7 +140,25 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">Agentic RAG Chat</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold text-gray-900">Agentic RAG Chat</h1>
+            <div className="flex items-center gap-2">
+              <span 
+                className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-mono cursor-help"
+                title={getVersionString()}
+              >
+                {getCompactVersionInfo()}
+              </span>
+              {VERSION_INFO.environment === 'production' && (
+                <span 
+                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-mono cursor-help"
+                  title={`Deployed from: ${VERSION_INFO.sourceVersion} on branch: ${VERSION_INFO.gitBranch} | Built: ${VERSION_INFO.buildDate}`}
+                >
+                  🌱 {VERSION_INFO.gitBranch}@{VERSION_INFO.sourceVersion.includes('@') ? VERSION_INFO.sourceVersion.split('@')[1] : VERSION_INFO.sourceVersion}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
               Welcome, {session.user?.email}

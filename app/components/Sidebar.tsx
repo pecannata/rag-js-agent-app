@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getDetailedVersionInfo, getBuildInfo } from '../lib/version';
 
 interface ReActConfig {
   temperature: number;
@@ -624,6 +625,16 @@ export default function Sidebar({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Version Info Footer */}
+      <div className="mt-6 pt-4 border-t border-gray-300">
+        <div className="text-xs text-gray-500 text-center">
+          <div className="font-mono mb-1">{getDetailedVersionInfo()}</div>
+          <div className="text-gray-400 text-[10px] leading-tight">
+            {getBuildInfo()}
+          </div>
+        </div>
       </div>
 
     </div>
