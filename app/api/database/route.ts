@@ -13,12 +13,24 @@ interface ReActConfig {
 }
 
 // Oracle database execution function
-async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
+async function executeOracleQuery(sqlQuery: string, userMessage?: string): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    console.log('🔍 Direct Database Query Execution:', sqlQuery);
+    // Replace <USER_MESSAGE> placeholder with actual user message if provided
+    let processedQuery = sqlQuery;
+    if (userMessage && sqlQuery.includes('<USER_MESSAGE>')) {
+      // Escape single quotes in user message for SQL safety
+      const escapedUserMessage = userMessage.replace(/'/g, "''");
+      processedQuery = sqlQuery.replace(/<USER_MESSAGE>/g, escapedUserMessage);
+      console.log('🔄 Replaced <USER_MESSAGE> placeholder in SQL query');
+      console.log('📝 Original query:', sqlQuery);
+      console.log('📝 User message:', userMessage);
+      console.log('📝 Processed query:', processedQuery);
+    }
+    
+    console.log('🔍 Direct Database Query Execution:', processedQuery);
     
     // Execute the SQLclScript.sh with the SQL query
-    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${sqlQuery.replace(/"/g, '\\"')}"`);
+    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${processedQuery.replace(/"/g, '\\"')}"`);
     
     if (stderr) {
       console.error('❌ Database query error:', stderr);
@@ -179,7 +191,7 @@ export async function POST(request: NextRequest) {
     if (shouldExecute) {
       console.log('✅ Domain analysis PASSED or FORCED - Executing database query');
       
-      const databaseResult = await executeOracleQuery(sqlQuery);
+      const databaseResult = await executeOracleQuery(sqlQuery, userMessage);
       
       return NextResponse.json({
         success: true,

@@ -297,10 +297,6 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     }
   };
 
-  // Helper function to escape single quotes for SQL
-  const escapeSingleQuotes = (str: string): string => {
-    return str.replace(/'/g, "''");
-  };
 
   const handleTestQuery = async () => {
     if (!apiKey) {
@@ -315,10 +311,10 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
     try {
       console.log('Testing SQL query via Chat API...');
       
-      const escapedUserMessage = escapeSingleQuotes(userMessage);
+      // Use placeholder that will be replaced by the backend with proper SQL escaping
       const dynamicSqlQuery = `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
-(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapedUserMessage}' as data)), COSINE) 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '<USER_MESSAGE>' as data)), COSINE) 
 FETCH FIRST ${rowCount} ROWS ONLY`;
       
       const response = await fetch('/api/chat', {
@@ -1169,11 +1165,11 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                       {documentName ? 
                         `SELECT seg FROM segs WHERE doc = '${documentName}' 
 ORDER BY vector_distance(vec, 
-(SELECT vector_embedding(ALL_MINILM_L12_V2 using '${escapeSingleQuotes(userMessage)}' as data)), COSINE) 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '<USER_MESSAGE>' as data)), COSINE) 
 FETCH FIRST ${rowCount} ROWS ONLY` : 
                         `SELECT seg FROM segs WHERE doc = '<Document name>' 
 ORDER BY vector_distance(vec, 
-(SELECT vector_embedding(ALL_MINILM_L12_V2 using '<User Message>' as data)), COSINE) 
+(SELECT vector_embedding(ALL_MINILM_L12_V2 using '<USER_MESSAGE>' as data)), COSINE) 
 FETCH FIRST ${rowCount} ROWS ONLY`
                       }
                     </div>
