@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface ReActConfig {
   temperature: number;
@@ -48,11 +48,52 @@ export default function Sidebar({
   const [isTestingDb, setIsTestingDb] = useState(false);
   const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([]);
   const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+  const [sqlAreaHeight, setSqlAreaHeight] = useState(120);
+  const [isResizingSql, setIsResizingSql] = useState(false);
+  const sqlAreaRef = useRef<HTMLDivElement>(null);
 
   // Sync contextKeywordsText with reactConfig.contextKeywords changes
   useEffect(() => {
     setContextKeywordsText(reactConfig.contextKeywords.join(', '));
   }, [reactConfig.contextKeywords]);
+
+  // Handle SQL area resize logic
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingSql) return;
+      
+      const container = sqlAreaRef.current?.parentElement;
+      if (!container) return;
+      
+      const containerRect = container.getBoundingClientRect();
+      const newHeight = e.clientY - containerRect.top - 60; // Account for label and padding
+      const minHeight = 80;
+      const maxHeight = 400;
+      
+      setSqlAreaHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingSql(false);
+    };
+
+    if (isResizingSql) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizingSql]);
 
   // Manual keyword generation function
   const handleGenerateKeywords = async () => {
@@ -242,7 +283,12 @@ export default function Sidebar({
       setDbTestResult(`❌ Domain test failed: ${(error as Error).message}`);
     } finally {
       setIsTestingDb(false);
-    }
+    };
+  };
+
+  const handleSqlResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingSql(true);
   };
 
   return (
@@ -358,18 +404,61 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* SQL Query Input */}
+      {/* SQL Query Input - Resizable */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          SQL Query
-        </label>
-        <textarea
-          value={sqlQuery}
-          onChange={(e) => onSqlQueryChange(e.target.value)}
-          placeholder="select * from emp"
-          className="w-full px-3 py-2 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none bg-indigo-50 text-indigo-900 placeholder-indigo-400 font-mono text-sm"
-          rows={3}
-        />
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            SQL Query
+          </label>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span>📏 Resizable</span>
+            {sqlQuery && (
+              <span className="bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                {sqlQuery.length} chars
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div 
+          ref={sqlAreaRef}
+          className="relative border border-indigo-300 rounded-md bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent overflow-hidden"
+          style={{ height: `${sqlAreaHeight}px` }}
+        >
+          {/* SQL Content with Line Numbers */}
+          <div className="h-full flex">
+            {/* Line Numbers */}
+            <div className="bg-indigo-100 border-r border-indigo-200 px-2 py-2 text-xs text-indigo-500 font-mono select-none flex-shrink-0 min-w-[40px] overflow-hidden">
+              {sqlQuery.split('\n').map((_, index) => (
+                <div key={index} className="leading-5 text-right">
+                  {index + 1}
+                </div>
+              ))}
+            </div>
+            
+            {/* SQL Textarea */}
+            <textarea
+              value={sqlQuery}
+              onChange={(e) => onSqlQueryChange(e.target.value)}
+              placeholder="select * from emp join dept on emp.deptno = dept.deptno"
+              className="flex-1 h-full px-3 py-2 border-none outline-none resize-none bg-transparent text-indigo-900 placeholder-indigo-400 font-mono text-sm leading-5 overflow-auto"
+              style={{ 
+                minHeight: '100%',
+                lineHeight: '1.25rem' // Match line number height
+              }}
+              spellCheck={false}
+            />
+          </div>
+          
+          {/* Resize Handle */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-indigo-200 to-transparent hover:from-indigo-300 cursor-ns-resize transition-colors flex items-center justify-center group"
+            onMouseDown={handleSqlResizeStart}
+            title="Drag to resize SQL area"
+          >
+            <div className="w-8 h-0.5 bg-indigo-400 rounded-full group-hover:bg-indigo-600 transition-colors"></div>
+          </div>
+        </div>
         
         {/* Database Testing Buttons */}
         <div className="grid grid-cols-2 gap-2 mt-3">

@@ -235,7 +235,7 @@ export default function Home() {
             >
               <span className="flex items-center gap-2">
                 <span className="text-xl">📝</span>
-                <span className="font-bold">Snippets</span>
+                <span className="font-bold">Chat Snippets</span>
               </span>
             </button>
             <button
