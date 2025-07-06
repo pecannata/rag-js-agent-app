@@ -2,6 +2,7 @@ import { ChatCohere } from '@langchain/cohere';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { getJson } from 'serpapi';
+import { OllamaService, OllamaMessage } from './ollama-service';
 
 const execAsync = promisify(exec);
 
@@ -125,24 +126,36 @@ async function executeOracleQuery(sqlQuery: string, userMessage?: string): Promi
 export class RagAgent {
   private llm: ChatCohere;
   private domainCheckerLlm: ChatCohere;
+  private ollama: OllamaService;
 
-  constructor(apiKey: string, config?: Partial<ReActConfig>) {
-    this.llm = new ChatCohere({
-      apiKey: apiKey,
-      model: 'command-r-plus',
-      temperature: config?.temperature || 0.7,
-    });
-    
-    // Separate LLM instance for domain checking with lower temperature for consistency
-    this.domainCheckerLlm = new ChatCohere({
-      apiKey: apiKey,
-      model: 'command-r-plus',
-      temperature: 0.1, // Lower temperature for more consistent domain checking
-    });
+  constructor(apiKey: string, config?: Partial<ReActConfig>, private provider: 'cohere' | 'ollama' = 'cohere') {
+    if (this.provider === 'cohere') {
+      this.llm = new ChatCohere({
+        apiKey: apiKey,
+        model: 'command-r-plus',
+        temperature: config?.temperature || 0.7,
+      });
+      
+      // Separate LLM instance for domain checking with lower temperature for consistency
+      this.domainCheckerLlm = new ChatCohere({
+        apiKey: apiKey,
+        model: 'command-r-plus',
+        temperature: 0.1, // Lower temperature for more consistent domain checking
+      });
+    } else {
+      this.ollama = new OllamaService();
+    }
   }
 
   async initialize() {
-    // Simple initialization - no complex setup needed
+    // Check Ollama availability if using Ollama provider
+    if (this.provider === 'ollama') {
+      const isAvailable = await this.ollama.isAvailable();
+      if (!isAvailable) {
+        throw new Error('Ollama service is not available. Please ensure Ollama is running (brew services start ollama)');
+      }
+      console.log('✅ Ollama service is available and ready');
+    }
     return Promise.resolve();
   }
 
@@ -190,8 +203,15 @@ Response:`;
       console.log('Context Keywords:', contextString);
       console.log('User Message:', userMessage);
       
-      const response = await this.domainCheckerLlm.invoke(domainCheckPrompt);
-      const responseText = response.content as string;
+      let response;
+      if (this.provider === 'cohere') {
+        response = await this.domainCheckerLlm.invoke(domainCheckPrompt);
+      } else {
+        response = await this.ollama.chat(domainCheckPrompt, { temperature: 0.1 });
+      }
+      const responseText = this.provider === 'cohere' ? 
+        response.content as string :
+        response.response as string;
       
       // Parse JSON response
       try {
@@ -385,13 +405,23 @@ Response:`;
           });
           
           // Race between LLM call and timeout
-          const analysisResponse = await Promise.race([
-            this.domainCheckerLlm.invoke(stepAnalysisPrompt),
-            timeoutPromise
-          ]);
+          let analysisResponse;
+          if (this.provider === 'cohere') {
+            analysisResponse = await Promise.race([
+              this.domainCheckerLlm.invoke(stepAnalysisPrompt),
+              timeoutPromise
+            ]);
+          } else {
+            analysisResponse = await Promise.race([
+              this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1 }),
+              timeoutPromise
+            ]);
+          }
           
           console.log('✅ LLM analysis completed');
-          const analysisText = (analysisResponse as any).content as string;
+          const analysisText = this.provider === 'cohere' ? 
+            (analysisResponse as any).content as string :
+            (analysisResponse as any).response as string;
           
           console.log('📝 Step Analysis Response:', analysisText.substring(0, 500) + '...');
           
@@ -450,8 +480,15 @@ Optimize the search query by:
 Return ONLY the optimized search query, nothing else.`;
                     
                     try {
-                      const enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
-                      const enhancedQuery = enhancementResponse.content as string;
+                      let enhancementResponse;
+                      if (this.provider === 'cohere') {
+                        enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
+                      } else {
+                        enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+                      }
+                      const enhancedQuery = this.provider === 'cohere' ? 
+                        enhancementResponse.content as string :
+                        enhancementResponse.response as string;
                       searchQuery = enhancedQuery.trim();
                       console.log(`🔧 Enhanced search query: "${searchQuery}"`);
                     } catch (_error) {
@@ -567,10 +604,17 @@ Assistant:`;
       // Log a sample of the prompt to see what's being sent to LLM
       console.log('📝 Prompt preview (last 500 chars):', reactPrompt.slice(-500));
       
-      const response = await this.llm.invoke(reactPrompt);
+let response;
+if (this.provider === 'cohere') {
+  response = await this.llm.invoke(reactPrompt);
+} else {
+  response = await this.ollama.chat(reactPrompt);
+}
       
       return {
-        response: response.content as string,
+        response: this.provider === 'cohere' ? 
+          response.content as string :
+          response.response as string,
         augmentationData,
         domainAnalysis
       };
@@ -625,8 +669,15 @@ Optimize the search query by:
 Return ONLY the optimized search query, nothing else.`;
         
         try {
-          const enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
-          const enhancedQuery = enhancementResponse.content as string;
+          let enhancementResponse;
+          if (this.provider === 'cohere') {
+            enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
+          } else {
+            enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+          }
+          const enhancedQuery = this.provider === 'cohere' ? 
+            enhancementResponse.content as string :
+            enhancementResponse.response as string;
           searchQuery = enhancedQuery.trim();
           console.log(`🔧 Fallback enhanced search query: "${searchQuery}"`);
         } catch (_error) {

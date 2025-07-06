@@ -32,6 +32,7 @@ export default function Home() {
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
   const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
+  const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere');
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
     domainSimilarityThreshold: 0.7,
@@ -47,7 +48,7 @@ export default function Home() {
     }
   }, [session, status, router]);
 
-  // Load API keys from localStorage on mount
+  // Load API keys and provider from localStorage on mount
   useEffect(() => {
     const savedKey = localStorage.getItem('cohere-api-key');
     if (savedKey) {
@@ -58,6 +59,11 @@ export default function Home() {
     const savedSerpApiKey = localStorage.getItem('serpapi-key');
     if (savedSerpApiKey) {
       setSerpApiKey(savedSerpApiKey);
+    }
+    
+    const savedProvider = localStorage.getItem('ai-provider') as 'cohere' | 'ollama';
+    if (savedProvider) {
+      setProvider(savedProvider);
     }
   }, []);
 
@@ -81,6 +87,13 @@ export default function Home() {
   const handleClearSerpApiKey = () => {
     setSerpApiKey('');
     localStorage.removeItem('serpapi-key');
+  };
+
+  const handleProviderChange = (newProvider: 'cohere' | 'ollama') => {
+    setProvider(newProvider);
+    localStorage.setItem('ai-provider', newProvider);
+    // Clear messages when switching providers to avoid confusion
+    setMessages([]);
   };
 
   const handleSelectSnippet = (snippetSqlQuery: string, snippetUserMessage: string, snippetKeywords: string[]) => {
@@ -216,6 +229,8 @@ export default function Home() {
               reactConfig={reactConfig}
               serpApiKey={serpApiKey}
               initialMessage={initialMessage}
+              provider={provider}
+              onProviderChange={handleProviderChange}
             />
           ) : activeTab === 'snippets' ? (
             <Snippets 

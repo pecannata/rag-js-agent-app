@@ -3,11 +3,12 @@ import { RagAgent } from '../../lib/agent';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, apiKey, history, sqlQuery, config, serpApiKey } = await request.json();
+    const { message, apiKey, history, sqlQuery, config, serpApiKey, provider } = await request.json();
 
-    if (!apiKey) {
+    // Only require API key for Cohere provider
+    if (provider === 'cohere' && !apiKey) {
       return NextResponse.json(
-        { error: 'API key is required' },
+        { error: 'API key is required for Cohere provider' },
         { status: 400 }
       );
     }
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize and use the RAG agent with config
-    const agent = new RagAgent(apiKey, config);
+    const agent = new RagAgent(apiKey, config, provider || 'cohere');
     await agent.initialize();
     
     const result = await agent.processMessage(
