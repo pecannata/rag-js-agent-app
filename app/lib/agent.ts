@@ -2,7 +2,7 @@ import { ChatCohere } from '@langchain/cohere';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { getJson } from 'serpapi';
-import { OllamaService, OllamaMessage } from './ollama-service';
+import { OllamaService } from './ollama-service';
 
 const execAsync = promisify(exec);
 
@@ -124,9 +124,9 @@ async function executeOracleQuery(sqlQuery: string, userMessage?: string): Promi
 }
 
 export class RagAgent {
-  private llm: ChatCohere;
-  private domainCheckerLlm: ChatCohere;
-  private ollama: OllamaService;
+  private llm: ChatCohere | undefined;
+  private domainCheckerLlm: ChatCohere | undefined;
+  private ollama: OllamaService | undefined;
 
   constructor(apiKey: string, config?: Partial<ReActConfig>, private provider: 'cohere' | 'ollama' = 'cohere') {
     if (this.provider === 'cohere') {
@@ -150,11 +150,23 @@ export class RagAgent {
   async initialize() {
     // Check Ollama availability if using Ollama provider
     if (this.provider === 'ollama') {
-      const isAvailable = await this.ollama.isAvailable();
-      if (!isAvailable) {
-        throw new Error('Ollama service is not available. Please ensure Ollama is running (brew services start ollama)');
+      try {
+        if (!this.ollama) {
+          console.warn('⚠️ Ollama service not initialized - this is expected in deployment environments');
+          return Promise.resolve();
+        }
+        const isAvailable = await this.ollama.isAvailable();
+        if (!isAvailable) {
+          console.warn('⚠️ Ollama service is not available - this is expected in deployment environments');
+          // Don't throw error, just log warning
+          return Promise.resolve();
+        }
+        console.log('✅ Ollama service is available and ready');
+      } catch (error) {
+        console.warn('⚠️ Ollama service check failed - this is expected in deployment environments:', error);
+        // Don't throw error, just log warning
+        return Promise.resolve();
       }
-      console.log('✅ Ollama service is available and ready');
     }
     return Promise.resolve();
   }
@@ -205,13 +217,33 @@ Response:`;
       
       let response;
       if (this.provider === 'cohere') {
+        if (!this.domainCheckerLlm) {
+          throw new Error('Cohere LLM not initialized');
+        }
         response = await this.domainCheckerLlm.invoke(domainCheckPrompt);
       } else {
-        response = await this.ollama.chat(domainCheckPrompt, { temperature: 0.1 });
+        if (!this.ollama) {
+          console.warn('⚠️ Ollama not initialized, defaulting to safe mode');
+          return {
+            shouldExecute: false,
+            reasoning: 'Ollama service not initialized - defaulting to safe mode',
+            confidence: 0
+          };
+        }
+        try {
+          response = await this.ollama.chat(domainCheckPrompt, { temperature: 0.1 });
+        } catch (_ollamaError) {
+          console.warn('⚠️ Ollama not available for domain checking, defaulting to safe mode');
+          return {
+            shouldExecute: false,
+            reasoning: 'Ollama service not available in deployment environment - defaulting to safe mode',
+            confidence: 0
+          };
+        }
       }
       const responseText = this.provider === 'cohere' ? 
-        response.content as string :
-        response.response as string;
+        (response as any).content as string :
+        (response as any).response as string;
       
       // Parse JSON response
       try {
@@ -407,15 +439,27 @@ Response:`;
           // Race between LLM call and timeout
           let analysisResponse;
           if (this.provider === 'cohere') {
+            if (!this.domainCheckerLlm) {
+              throw new Error('Cohere LLM not initialized');
+            }
             analysisResponse = await Promise.race([
               this.domainCheckerLlm.invoke(stepAnalysisPrompt),
               timeoutPromise
             ]);
           } else {
-            analysisResponse = await Promise.race([
-              this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1 }),
-              timeoutPromise
-            ]);
+            if (!this.ollama) {
+              console.warn('⚠️ Ollama not initialized, falling back to simple search');
+              throw new Error('Ollama not available - falling back');
+            }
+            try {
+              analysisResponse = await Promise.race([
+                this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1 }),
+                timeoutPromise
+              ]);
+            } catch (_ollamaError) {
+              console.warn('⚠️ Ollama not available for multi-step analysis, falling back to simple search');
+              throw new Error('Ollama not available - falling back');
+            }
           }
           
           console.log('✅ LLM analysis completed');
@@ -482,13 +526,25 @@ Return ONLY the optimized search query, nothing else.`;
                     try {
                       let enhancementResponse;
                       if (this.provider === 'cohere') {
+                        if (!this.domainCheckerLlm) {
+                          throw new Error('Cohere LLM not initialized');
+                        }
                         enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
                       } else {
-                        enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+                        if (!this.ollama) {
+                          console.warn('⚠️ Ollama not initialized, using original query');
+                          throw new Error('Ollama not available');
+                        }
+                        try {
+                          enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+                        } catch (_ollamaError) {
+                          console.warn('⚠️ Ollama not available for query enhancement, using original query');
+                          throw new Error('Ollama not available');
+                        }
                       }
                       const enhancedQuery = this.provider === 'cohere' ? 
-                        enhancementResponse.content as string :
-                        enhancementResponse.response as string;
+                        (enhancementResponse as any).content as string :
+                        (enhancementResponse as any).response as string;
                       searchQuery = enhancedQuery.trim();
                       console.log(`🔧 Enhanced search query: "${searchQuery}"`);
                     } catch (_error) {
@@ -606,15 +662,28 @@ Assistant:`;
       
 let response;
 if (this.provider === 'cohere') {
+  if (!this.llm) {
+    throw new Error('Cohere LLM not initialized');
+  }
   response = await this.llm.invoke(reactPrompt);
 } else {
-  response = await this.ollama.chat(reactPrompt);
+  if (!this.ollama) {
+    console.error('❌ Ollama not initialized');
+    throw new Error('Ollama service is not available in this deployment environment. Please switch to Cohere provider in the chat settings.');
+  }
+  try {
+    response = await this.ollama.chat(reactPrompt);
+  } catch (ollamaError) {
+    console.error('❌ Ollama chat failed:', ollamaError);
+    console.log('🔄 Ollama is not available in this environment');
+    throw new Error('Ollama service is not available in this deployment environment. Please switch to Cohere provider in the chat settings.');
+  }
 }
       
       return {
         response: this.provider === 'cohere' ? 
-          response.content as string :
-          response.response as string,
+          (response as any).content as string :
+          (response as any).response as string,
         augmentationData,
         domainAnalysis
       };
@@ -671,13 +740,25 @@ Return ONLY the optimized search query, nothing else.`;
         try {
           let enhancementResponse;
           if (this.provider === 'cohere') {
+            if (!this.domainCheckerLlm) {
+              throw new Error('Cohere LLM not initialized');
+            }
             enhancementResponse = await this.domainCheckerLlm.invoke(contextEnhancementPrompt);
           } else {
-            enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+            if (!this.ollama) {
+              console.warn('⚠️ Ollama not initialized, using original query');
+              throw new Error('Ollama not available');
+            }
+            try {
+              enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1 });
+            } catch (_ollamaError) {
+              console.warn('⚠️ Ollama not available for fallback query enhancement, using original query');
+              throw new Error('Ollama not available');
+            }
           }
           const enhancedQuery = this.provider === 'cohere' ? 
-            enhancementResponse.content as string :
-            enhancementResponse.response as string;
+            (enhancementResponse as any).content as string :
+            (enhancementResponse as any).response as string;
           searchQuery = enhancedQuery.trim();
           console.log(`🔧 Fallback enhanced search query: "${searchQuery}"`);
         } catch (_error) {

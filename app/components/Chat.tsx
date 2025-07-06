@@ -123,10 +123,20 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
       setMessages([...newMessages, aiMessage]);
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage: Message = { 
-        role: 'ai', 
-        content: 'Sorry, I encountered an error processing your request. Please check your API key and try again.' 
-      };
+      const errorText = (error as Error).message;
+      let errorMessage: Message;
+      
+      if (errorText.includes('Ollama service is not available in this deployment environment')) {
+        errorMessage = { 
+          role: 'ai', 
+          content: '🚨 Ollama is not available in this deployment environment. Please switch to Cohere provider using the dropdown above, or contact your administrator if you need local AI capabilities.' 
+        };
+      } else {
+        errorMessage = { 
+          role: 'ai', 
+          content: 'Sorry, I encountered an error processing your request. Please check your settings and try again.' 
+        };
+      }
       setMessages([...newMessages, errorMessage]);
     } finally {
       setIsLoading(false);

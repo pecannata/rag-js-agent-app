@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { OllamaService } from '../../../lib/ollama-service';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: Request) {
   try {
     const ollama = new OllamaService();
     
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
           models: models,
           message: 'Ollama service is running and ready'
         });
-      } catch (modelError) {
+    } catch (_modelError) {
         return NextResponse.json({
           available: true,
           status: 'running',
@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error('Error checking Ollama status:', error);
+    console.warn('⚠️ Ollama status check failed - this is expected in deployment environments:', error);
     return NextResponse.json({
       available: false,
-      status: 'error',
+      status: 'not available',
       models: [],
-      message: 'Error checking Ollama status',
+      message: 'Ollama is not available in this deployment environment. This is normal for cloud deployments.',
       error: (error as Error).message
-    }, { status: 500 });
+    });
   }
 }

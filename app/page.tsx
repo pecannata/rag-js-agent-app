@@ -32,7 +32,7 @@ export default function Home() {
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
   const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
-  const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere');
+  const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere'); // Default to Cohere for deployment compatibility
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
     domainSimilarityThreshold: 0.7,
@@ -63,6 +63,7 @@ export default function Home() {
     
     const savedProvider = localStorage.getItem('ai-provider') as 'cohere' | 'ollama';
     if (savedProvider) {
+      // Only set to Ollama if explicitly saved, otherwise stay with Cohere for deployment compatibility
       setProvider(savedProvider);
     }
   }, []);
@@ -202,7 +203,7 @@ export default function Home() {
             <div className="text-xs text-gray-500">
               {provider === 'cohere' 
                 ? 'Using cloud-based AI with your API key'
-                : 'Using local Llama 3.1 8B model'
+                : 'Using local Llama 3.1 8B model (if available)'
               }
             </div>
           </div>
