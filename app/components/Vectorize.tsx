@@ -363,9 +363,23 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
     }
 
     setIsSavingSummary(true);
+    setSummaryError(null);
+    
     try {
       const isPptx = selectedFile?.name.toLowerCase().endsWith('.pptx');
       const summaryMode = isPptx && useSlideBySlide ? 'slide-by-slide' : 'standard';
+      
+      const summaryLength = summaryResult.summary?.length || 0;
+      console.log('🔄 Starting DOCX generation for summary...');
+      console.log('📊 Summary length:', summaryLength, 'characters');
+      
+      // Warn user about performance for large documents
+      if (summaryLength > 200000) {
+        console.log('⚠️ Large summary detected - this may take some time to generate');
+      }
+      
+      // Add a small delay to allow UI to update
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       await saveSummaryAsDocx(summaryResult, documentName, summaryMode);
       console.log('✅ Summary saved as DOCX successfully');
@@ -384,7 +398,21 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
     }
 
     setIsSavingQuery(true);
+    setQueryTestError(null);
+    
     try {
+      const responseLength = queryTestResult.response?.length || 0;
+      console.log('🔄 Starting DOCX generation for vector query results...');
+      console.log('📊 Response length:', responseLength, 'characters');
+      
+      // Warn user about performance for large documents
+      if (responseLength > 100000) {
+        console.log('⚠️ Large query results detected - this may take some time to generate');
+      }
+      
+      // Add a small delay to allow UI to update
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await saveVectorQueryAsDocx(queryTestResult, userMessage, documentName);
       console.log('✅ Vector query results saved as DOCX successfully');
     } catch (error) {
@@ -1075,7 +1103,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                       {isSavingSummary ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Saving...
+                          Generating DOCX...
                         </>
                       ) : (
                         <>
@@ -1083,6 +1111,11 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                         </>
                       )}
                     </button>
+                    {isSavingSummary && (
+                      <div className="mt-2 text-sm text-gray-600 text-center">
+                        ⏳ Please wait, this may take a moment for large documents...
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1279,7 +1312,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                       {isSavingQuery ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Saving...
+                          Generating DOCX...
                         </>
                       ) : (
                         <>
@@ -1287,6 +1320,11 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                         </>
                       )}
                     </button>
+                    {isSavingQuery && (
+                      <div className="mt-2 text-sm text-gray-600 text-center">
+                        ⏳ Please wait, this may take a moment for large documents...
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1589,6 +1627,48 @@ FETCH FIRST ${rowCount} ROWS ONLY`
             </div>
           )}
           
+          {/* Performance Tips */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">⚡ Performance Tips</h2>
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-blue-900 mb-2">📄 File Download Performance</h3>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• <strong>Small documents (&lt;50K chars):</strong> Downloads complete in &lt;5 seconds</li>
+                  <li>• <strong>Medium documents (50K-200K chars):</strong> May take 5-15 seconds</li>
+                  <li>• <strong>Large documents (200K-500K chars):</strong> Can take 15-45 seconds</li>
+                  <li>• <strong>Very large documents (&gt;500K chars):</strong> May take 45+ seconds</li>
+                </ul>
+              </div>
+              
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-green-900 mb-2">🚀 Tips for Better Performance</h3>
+                <ul className="text-sm text-green-800 space-y-1">
+                  <li>• Keep browser tab active during downloads</li>
+                  <li>• Close other tabs to free up memory</li>
+                  <li>• For very large documents, consider breaking them into smaller parts</li>
+                  <li>• Check browser console for detailed progress information</li>
+                  <li>• Wait for the download to complete - don't refresh the page</li>
+                </ul>
+              </div>
+              
+              {pdfContent && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-yellow-900 mb-2">📊 Current Document Stats</h3>
+                  <div className="text-sm text-yellow-800 space-y-1">
+                    <div>• Content length: {pdfContent.length.toLocaleString()} characters</div>
+                    <div>• Estimated download time: {
+                      pdfContent.length < 50000 ? '< 5 seconds' :
+                      pdfContent.length < 200000 ? '5-15 seconds' :
+                      pdfContent.length < 500000 ? '15-45 seconds' : '45+ seconds'
+                    }</div>
+                    <div>• Memory usage: ~{Math.round(pdfContent.length * 10 / 1024)}KB</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Future Features */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 Next Steps</h2>

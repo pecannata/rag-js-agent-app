@@ -1,0 +1,35 @@
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners for iOS -->
+  <rect width="180" height="180" rx="32" ry="32" fill="#2563eb"/>
+  
+  <!-- AI Brain/Network nodes (scaled up) -->
+  <circle cx="55" cy="55" r="8" fill="#ffffff" opacity="0.9"/>
+  <circle cx="125" cy="55" r="8" fill="#ffffff" opacity="0.9"/>
+  <circle cx="90" cy="35" r="6" fill="#ffffff" opacity="0.8"/>
+  <circle cx="35" cy="90" r="6" fill="#ffffff" opacity="0.8"/>
+  <circle cx="145" cy="90" r="6" fill="#ffffff" opacity="0.8"/>
+  <circle cx="70" cy="125" r="5" fill="#ffffff" opacity="0.7"/>
+  <circle cx="110" cy="125" r="5" fill="#ffffff" opacity="0.7"/>
+  
+  <!-- Connecting lines (neural network style) -->
+  <line x1="55" y1="55" x2="125" y2="55" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <line x1="55" y1="55" x2="90" y2="35" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <line x1="125" y1="55" x2="90" y2="35" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <line x1="55" y1="55" x2="35" y2="90" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <line x1="125" y1="55" x2="145" y2="90" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <line x1="55" y1="55" x2="70" y2="125" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+  <line x1="125" y1="55" x2="110" y2="125" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Chat bubble (larger) -->
+  <path d="M30 100 Q30 95 35 95 L120 95 Q125 95 125 100 L125 130 Q125 135 120 135 L65 135 L45 145 L45 135 Q30 135 30 130 Z" 
+        fill="#ffffff" opacity="0.95"/>
+  
+  <!-- Text dots in chat bubble -->
+  <circle cx="55" cy="115" r="4" fill="#2563eb"/>
+  <circle cx="70" cy="115" r="4" fill="#2563eb"/>
+  <circle cx="85" cy="115" r="4" fill="#2563eb"/>
+  <circle cx="100" cy="115" r="4" fill="#2563eb"/>
+  
+  <!-- RAG text indicator -->
+  <text x="90" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff" opacity="0.8">RAG</text>
+</svg>

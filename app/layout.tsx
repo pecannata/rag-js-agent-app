@@ -16,6 +16,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Agentic RAG Chat",
   description: "AI-powered chat application with RAG capabilities",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.svg', sizes: '32x32', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.svg', sizes: '180x180', type: 'image/svg+xml' },
+    ],
+  },
+  manifest: '/site.webmanifest',
+  themeColor: '#2563eb',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
+import { PerformanceMonitor, assessDocumentPerformance, estimateMemoryUsage } from './performance-utils';
 
 export interface DocumentSection {
   title: string;
@@ -34,9 +35,29 @@ export async function saveAsDocx(
     console.log('📄 Starting DOCX creation for:', fileName);
     console.log('📊 Processing', sections.length, 'sections');
     
+    // Estimate document size and warn user
+    const totalContentLength = sections.reduce((total, section) => total + (section.content?.length || 0), 0);
+    console.log(`📊 Estimated content size: ${totalContentLength.toLocaleString()} characters`);
+    
+    // Performance assessment
+    const perfAssessment = assessDocumentPerformance(totalContentLength);
+    const memoryEstimate = estimateMemoryUsage(totalContentLength);
+    
+    console.log(`📈 Performance level: ${perfAssessment.level} (${perfAssessment.estimatedTime})`);
+    console.log(`💾 Estimated memory usage: ${memoryEstimate.estimated}${memoryEstimate.unit}`);
+    
+    if (perfAssessment.warning) {
+      console.warn(`⚠️ ${perfAssessment.warning}`);
+    }
+    if (memoryEstimate.warning) {
+      console.warn(`⚠️ ${memoryEstimate.warning}`);
+    }
+    
+    // Start performance monitoring
+    const monitor = new PerformanceMonitor('DOCX Generation', totalContentLength);
+    
     // Create paragraphs from sections with progress tracking
     const paragraphs: Paragraph[] = [];
-    let totalContentLength = 0;
 
     // Add document title if provided
     if (metadata?.title) {
@@ -56,8 +77,9 @@ export async function saveAsDocx(
       );
     }
 
-    // Process each section with optimization
-    sections.forEach((section, sectionIndex) => {
+    // Process each section with optimization and async yielding
+    for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+      const section = sections[sectionIndex];
       console.log(`📝 Processing section ${sectionIndex + 1}/${sections.length}: ${section.title}`);
       
       // Add section title
@@ -79,20 +101,24 @@ export async function saveAsDocx(
 
       // Optimize content processing for large sections
       if (section.content) {
-        totalContentLength += section.content.length;
-        
         // For very large content, split into smaller chunks to avoid memory issues
-        const maxChunkSize = 50000; // 50KB chunks
+        const maxChunkSize = 30000; // Reduced to 30KB chunks for better performance
         if (section.content.length > maxChunkSize) {
-          console.log(`⚠️ Large section detected (${section.content.length} chars), chunking...`);
+          console.log(`⚠️ Large section detected (${section.content.length} chars), chunking for performance...`);
           
           const chunks = splitLargeContent(section.content, maxChunkSize);
-          chunks.forEach((chunk, chunkIndex) => {
+          for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+            const chunk = chunks[chunkIndex];
             console.log(`  📦 Processing chunk ${chunkIndex + 1}/${chunks.length}`);
-            processSectionContent(chunk, paragraphs);
-          });
+            await processSectionContentAsync(chunk, paragraphs);
+            
+            // Add yield point for very large documents to prevent browser freeze
+            if (chunkIndex % 5 === 0 && chunks.length > 10) {
+              await new Promise(resolve => setTimeout(resolve, 10)); // Small yield
+            }
+          }
         } else {
-          processSectionContent(section.content, paragraphs);
+          await processSectionContentAsync(section.content, paragraphs);
         }
       }
 
@@ -105,10 +131,13 @@ export async function saveAsDocx(
           })
         );
       }
-    });
-
-    console.log(`📊 Total content processed: ${totalContentLength.toLocaleString()} characters`);
-    console.log(`📄 Total paragraphs created: ${paragraphs.length}`);
+      
+      // Yield control occasionally for large documents
+      if (sectionIndex % 3 === 0 && sections.length > 5) {
+        await new Promise(resolve => setTimeout(resolve, 5)); // Small yield
+      }
+    }
+    console.log('📄 Total paragraphs created:', paragraphs.length);
     console.log('🏗️ Creating document...');
 
     // Create the document
@@ -125,11 +154,13 @@ export async function saveAsDocx(
 
     console.log('📦 Generating document buffer...');
     
-    // Generate and save the document with timeout protection
+    // Generate and save the document with timeout protection and progress indication
+    const timeoutDuration = perfAssessment.level === 'very-slow' ? 120000 : 60000; // 2 minutes for very large docs
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Document generation timed out after 30 seconds')), 30000);
+      setTimeout(() => reject(new Error(`Document generation timed out after ${timeoutDuration / 1000} seconds`)), timeoutDuration);
     });
     
+    console.log('⏳ Generating document buffer (this may take a moment for large documents)...');
     const buffer = await Promise.race([
       Packer.toBuffer(doc),
       timeoutPromise
@@ -146,6 +177,14 @@ export async function saveAsDocx(
     console.log('💾 Downloading file:', `${cleanFileName}.docx`);
     
     saveAs(blob, `${cleanFileName}.docx`);
+    
+    // Finish performance monitoring
+    const metrics = monitor.finish();
+    
+    // Log final performance metrics
+    if (metrics.duration && metrics.duration > 5000) {
+      console.log(`📈 Performance summary: ${(metrics.duration / 1000).toFixed(1)}s for ${totalContentLength.toLocaleString()} characters`);
+    }
     
     console.log('✅ DOCX file download initiated successfully');
     
@@ -193,35 +232,75 @@ function splitLargeContent(content: string, maxChunkSize: number): string[] {
   return chunks;
 }
 
+
 /**
- * Process section content and add paragraphs
+ * Async version of processSectionContent with yield points for better performance
  */
-function processSectionContent(content: string, paragraphs: Paragraph[]): void {
+async function processSectionContentAsync(content: string, paragraphs: Paragraph[]): Promise<void> {
+  // Performance optimization: limit paragraph splitting for very large content
+  const maxParagraphs = 1000; // Limit to 1000 paragraphs to prevent browser freeze
+  
   // Split content by paragraphs (double newlines or single newlines)
   const contentParagraphs = content.split(/\n\s*\n|\n/);
   
-  contentParagraphs.forEach((paragraph) => {
-    if (paragraph.trim()) {
-      try {
-        const textRuns = parseMarkdownBold(paragraph);
-        paragraphs.push(
-          new Paragraph({
-            children: textRuns,
-            spacing: { after: 200 },
-          })
-        );
-      } catch (error) {
-        console.warn('Warning: Failed to parse paragraph, adding as plain text:', error);
-        // Fallback to plain text if parsing fails
-        paragraphs.push(
-          new Paragraph({
-            children: [new TextRun({ text: paragraph.trim() })],
-            spacing: { after: 200 },
-          })
-        );
+  // If we have too many paragraphs, merge some together
+  let processedParagraphs = contentParagraphs;
+  if (contentParagraphs.length > maxParagraphs) {
+    console.log(`⚠️ Large paragraph count detected (${contentParagraphs.length}), merging to improve performance...`);
+    processedParagraphs = [];
+    const mergeSize = Math.ceil(contentParagraphs.length / maxParagraphs);
+    
+    for (let i = 0; i < contentParagraphs.length; i += mergeSize) {
+      const merged = contentParagraphs.slice(i, i + mergeSize).join('\n');
+      if (merged.trim()) {
+        processedParagraphs.push(merged);
       }
     }
-  });
+  }
+  
+  // Process paragraphs in batches to avoid blocking the main thread
+  const batchSize = 25; // Smaller batches for async processing
+  for (let i = 0; i < processedParagraphs.length; i += batchSize) {
+    const batch = processedParagraphs.slice(i, i + batchSize);
+    
+    batch.forEach((paragraph) => {
+      if (paragraph.trim()) {
+        try {
+          // For very long paragraphs, use plain text to improve performance
+          if (paragraph.length > 10000) {
+            paragraphs.push(
+              new Paragraph({
+                children: [new TextRun({ text: paragraph.trim() })],
+                spacing: { after: 200 },
+              })
+            );
+          } else {
+            const textRuns = parseMarkdownBold(paragraph);
+            paragraphs.push(
+              new Paragraph({
+                children: textRuns,
+                spacing: { after: 200 },
+              })
+            );
+          }
+        } catch (error) {
+          console.warn('Warning: Failed to parse paragraph, adding as plain text:', error);
+          // Fallback to plain text if parsing fails
+          paragraphs.push(
+            new Paragraph({
+              children: [new TextRun({ text: paragraph.trim() })],
+              spacing: { after: 200 },
+            })
+          );
+        }
+      }
+    });
+    
+    // Yield control after each batch to prevent browser freeze
+    if (i + batchSize < processedParagraphs.length) {
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+  }
 }
 
 /**
