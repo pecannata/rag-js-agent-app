@@ -213,7 +213,7 @@ if [ -f "/tmp/users_backup.json" ]; then
     echo "Restoring users.json backup..."
     mkdir -p data
     cp "/tmp/users_backup.json" data/users.json
-    rm "/tmp/users_backup.json"
+    sudo rm -f "/tmp/users_backup.json"
 fi
 
 # Install Node.js dependencies
