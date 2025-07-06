@@ -220,6 +220,10 @@ fi
 echo "Installing Node.js dependencies..."
 npm install --production
 
+# Install Python dependencies for document processing
+echo "Installing Python dependencies..."
+pip3 install --user PyPDF2==2.12.1 python-docx==0.8.11 'Pillow<9.0.0' python-pptx==0.6.21 XlsxWriter nltk 2>/dev/null || echo "Warning: Some Python packages may have failed to install"
+
 
 # Create environment file
 echo "Creating environment configuration..."
