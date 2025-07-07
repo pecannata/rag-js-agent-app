@@ -1072,7 +1072,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                   {/* Summary Text */}
                   <div>
                     <h3 className="text-sm font-medium text-gray-800 mb-2">📄 Summary:</h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-h-96 overflow-y-auto">
                       <div className="text-sm text-gray-700 leading-relaxed">
                         <SummaryRenderer content={summaryResult.summary} />
                       </div>
@@ -1258,7 +1258,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`
                   {/* AI Response with MarkdownTable formatting */}
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-green-800 mb-2">🤖 AI Response:</h4>
-                    <div className="bg-white border border-green-200 rounded-lg p-4">
+                    <div className="bg-white border border-green-200 rounded-lg p-4 max-h-96 overflow-y-auto">
                       <div className="text-gray-800">
                         <MarkdownTable content={queryTestResult.response} />
                       </div>
@@ -1583,11 +1583,13 @@ FETCH FIRST ${rowCount} ROWS ONLY`
               {vectorResults.errors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h3 className="text-red-800 font-semibold mb-2">Vector Generation Error Details:</h3>
-                  <ul className="text-sm text-red-700 space-y-1">
+                  <div className="max-h-32 overflow-y-auto">
+                    <ul className="text-sm text-red-700 space-y-1">
 {vectorResults.errors.map((error, index) => (
-                      <li key={index}>• {error}</li>
-                    ))}
-                  </ul>
+                        <li key={index}>• {error}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>
@@ -1610,11 +1612,13 @@ FETCH FIRST ${rowCount} ROWS ONLY`
               {executionResults.errors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h3 className="text-red-800 font-semibold mb-2">Error Details:</h3>
-                  <ul className="text-sm text-red-700 space-y-1">
+                  <div className="max-h-32 overflow-y-auto">
+                    <ul className="text-sm text-red-700 space-y-1">
 {executionResults.errors.map((error, index) => (
-                      <li key={index}>• {error}</li>
-                    ))}
-                  </ul>
+                        <li key={index}>• {error}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>
