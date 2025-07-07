@@ -50,7 +50,7 @@ export class OllamaService {
     try {
       // Create an AbortController for timeout handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), options.timeout || 60000); // 60 second default timeout
+      const timeoutId = setTimeout(() => controller.abort(), options.timeout || 300000); // 5 minute default timeout
       
       const response = await fetch(`${this.baseUrl}/api/generate`, {
         method: 'POST',
@@ -117,7 +117,7 @@ export class OllamaService {
   async isAvailable(): Promise<boolean> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for availability check
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout for availability check
       
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         method: 'GET',
@@ -138,7 +138,7 @@ export class OllamaService {
   async getModels(): Promise<Array<{ name: string; size: string; modified: string }>> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
       
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         signal: controller.signal

@@ -431,9 +431,9 @@ Response:`;
           console.log('🗃️ Database available:', databaseResult ? 'Yes' : 'No');
           console.log('🔑 SerpAPI key available:', serpApiKey ? 'Yes (...' + serpApiKey.slice(-4) + ')' : 'No');
           
-          // Create a timeout promise (optimized for 3B model)
+          // Create a timeout promise (generous timeout for complex analysis)
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('LLM analysis timeout after 30 seconds')), 30000);
+            setTimeout(() => reject(new Error('LLM analysis timeout after 5 minutes')), 300000);
           });
           
           // Race between LLM call and timeout
@@ -453,7 +453,7 @@ Response:`;
             }
             try {
               analysisResponse = await Promise.race([
-                this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1, timeout: 35000 }),
+                this.ollama.chat(stepAnalysisPrompt, { temperature: 0.1, timeout: 300000 }),
                 timeoutPromise
               ]);
             } catch (_ollamaError) {
@@ -536,7 +536,7 @@ Return ONLY the optimized search query, nothing else.`;
                           throw new Error('Ollama not available');
                         }
                         try {
-                          enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 30000 });
+                          enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 180000 });
                         } catch (_ollamaError) {
                           console.warn('⚠️ Ollama not available for query enhancement, using original query');
                           throw new Error('Ollama not available');
@@ -736,7 +736,7 @@ if (this.provider === 'cohere') {
     throw new Error('Ollama service is not available in this deployment environment. Please switch to Cohere provider in the chat settings.');
   }
   try {
-    response = await this.ollama.chat(optimizedPrompt, { timeout: 90000 }); // 90 second timeout for main generation
+    response = await this.ollama.chat(optimizedPrompt, { timeout: 600000 }); // 10 minute timeout for main generation
   } catch (ollamaError) {
     console.error('❌ Ollama chat failed:', ollamaError);
     console.log('🔄 Ollama is not available in this environment');
@@ -814,7 +814,7 @@ Return ONLY the optimized search query, nothing else.`;
               throw new Error('Ollama not available');
             }
             try {
-              enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 30000 });
+              enhancementResponse = await this.ollama.chat(contextEnhancementPrompt, { temperature: 0.1, timeout: 180000 });
             } catch (_ollamaError) {
               console.warn('⚠️ Ollama not available for fallback query enhancement, using original query');
               throw new Error('Ollama not available');
