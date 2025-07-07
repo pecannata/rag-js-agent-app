@@ -5,6 +5,7 @@ import { summarizeDocument } from '../lib/document-utils';
 import { saveSummaryAsDocx, saveVectorQueryAsDocx } from '../lib/docx-utils';
 import DataTable from './DataTable';
 import MarkdownTable from './MarkdownTable';
+import MessageHistoryInput from './MessageHistoryInput';
 
 // Simple markdown renderer for summary content with bold formatting
 interface SummaryRendererProps {
@@ -998,16 +999,13 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                 </p>
 
                 {/* User Message Input for Summary */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Message:</label>
-                  <input
-                    type="text"
-                    value={summaryUserMessage}
-                    onChange={(e) => setSummaryUserMessage(e.target.value)}
-                    placeholder="Add additional context or questions for the summarization"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                  />
-                </div>
+                <MessageHistoryInput
+                  value={summaryUserMessage}
+                  onChange={setSummaryUserMessage}
+                  placeholder="Add additional context or questions for the summarization"
+                  label="User Message"
+                  disabled={isGeneratingSummary || isRunningAll}
+                />
                 
                 {!apiKey && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
@@ -1159,17 +1157,15 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                 <h3 className="text-sm font-medium text-blue-900 mb-3">Test Query Configuration:</h3>
                 <div className="space-y-3">
                   {/* User Message Input */}
-                  <div>
-                    <label className="block text-sm font-medium text-blue-800 mb-1">User Message:</label>
-                    <input
-                      type="text"
-                      value={userMessage}
-                      onChange={(e) => setUserMessage(e.target.value)}
-                      placeholder="Enter your question about the data"
-                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      disabled={isTestingQuery}
-                    />
-                  </div>
+                  <MessageHistoryInput
+                    value={userMessage}
+                    onChange={setUserMessage}
+                    placeholder="Enter your question about the data"
+                    label="User Message"
+                    disabled={isTestingQuery}
+                    labelClassName="text-blue-800"
+                    inputClassName="border-blue-300 focus:ring-blue-500 focus:border-blue-500"
+                  />
                   
                   {/* Row Count Selection */}
                   <div>

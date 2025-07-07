@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1751909001531",
+    "message": "For each slide summary add the customer value and for each side compare it to similar capabilities on Azure, Google, and Microsoft Cloud. Give some details and examples if possible. Be sure to add these for the last slide. After the last slide summarize all of the customers values from each slide and all similar capabilities from each slide.",
+    "timestamp": "2025-07-07T19:46:06.319Z",
+    "usageCount": 14
+  },
+  {
+    "id": "1704067200000",
+    "message": "What are the main topics discussed in this document?",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "usageCount": 5
+  },
+  {
+    "id": "1704067260000",
+    "message": "Summarize the key findings",
+    "timestamp": "2024-01-01T00:01:00.000Z",
+    "usageCount": 3
+  },
+  {
+    "id": "1704067320000",
+    "message": "What are the recommendations?",
+    "timestamp": "2024-01-01T00:02:00.000Z",
+    "usageCount": 2
+  },
+  {
+    "id": "1751916635924",
+    "message": "For each slide summary add the customer value and for each side compare it to similar capabilities on Azure, Google, and Microsoft Cloud. Give some details and examples if possible. After the last slide summarize all of the customers values from each slide and all similar capabilities from each slide.",
+    "timestamp": "2025-07-07T19:30:35.924Z",
+    "usageCount": 1
+  },
+  {
+    "id": "1704067380000",
+    "message": "Explain the methodology used",
+    "timestamp": "2024-01-01T00:03:00.000Z",
+    "usageCount": 1
+  }
+]
