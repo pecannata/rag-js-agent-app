@@ -1158,16 +1158,17 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                 <h3 className="text-sm font-medium text-blue-900 mb-3">Test Query Configuration:</h3>
                 <div className="space-y-3">
                   {/* User Message Input */}
-                  <MessageHistoryInput
-                    value={userMessage}
-                    onChange={setUserMessage}
-                    placeholder="Enter your question about the data"
-                    label="User Message"
-                    disabled={isTestingQuery}
-                    labelClassName="text-blue-800"
-                    inputClassName="border-blue-300 focus:ring-blue-500 focus:border-blue-500"
-                    rows={3}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">User Message:</label>
+                    <textarea
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
+                      placeholder="Enter your question about the data"
+                      disabled={isTestingQuery}
+                      rows={3}
+                      className="w-full px-3 py-3 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500 resize-vertical leading-relaxed"
+                    />
+                  </div>
                   
                   {/* Row Count Selection */}
                   <div>
