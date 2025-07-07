@@ -117,6 +117,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [isSavingSummary, setIsSavingSummary] = useState<boolean>(false);
   const [isSavingQuery, setIsSavingQuery] = useState<boolean>(false);
   const [useSlideBySlide, setUseSlideBySlide] = useState<boolean>(false);
+  const [summaryUserMessage, setSummaryUserMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,6 +263,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
 
     try {
       console.log('Generating summary for document:', documentName);
+      console.log('User message being sent:', summaryUserMessage);
       
       const documentType = selectedFile?.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 
                           selectedFile?.name.toLowerCase().endsWith('.docx') ? 'docx' : 'pptx';
@@ -274,7 +276,9 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
         {
           size: selectedFile?.size || 0,
           useSlideBySlide: useSlideBySlide
-        }
+        },
+        undefined,
+        summaryUserMessage
       );
 
       if (result.success) {
@@ -450,6 +454,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
     setIsSavingSummary(false);
     setIsSavingQuery(false);
     setUseSlideBySlide(false);
+    setSummaryUserMessage('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -982,7 +987,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
             </div>
           )}
 
-          {/* AI Document Summarization Section */}
+      /* AI Document Summarization Section */
           {pdfContent && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">🤖 AI Document Summarization</h2>
@@ -991,6 +996,18 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                 <p className="text-sm text-gray-600">
                   Uses your Cohere API key to generate an intelligent summary and extract key topics from the document.
                 </p>
+
+                {/* User Message Input for Summary */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">User Message:</label>
+                  <input
+                    type="text"
+                    value={summaryUserMessage}
+                    onChange={(e) => setSummaryUserMessage(e.target.value)}
+                    placeholder="Add additional context or questions for the summarization"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                  />
+                </div>
                 
                 {!apiKey && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">

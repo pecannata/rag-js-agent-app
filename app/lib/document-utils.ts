@@ -155,7 +155,8 @@ export async function summarizeDocument(
   documentType: string,
   apiKey: string,
   metadata?: any,
-  baseUrl: string = ''
+  baseUrl: string = '',
+  userMessage?: string
 ): Promise<SummarizationResult> {
   try {
     console.log('Calling summarization API...');
@@ -170,7 +171,8 @@ export async function summarizeDocument(
         filename,
         documentType,
         apiKey,
-        metadata
+        metadata,
+        userMessage
       }),
     });
     

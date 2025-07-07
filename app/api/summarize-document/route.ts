@@ -5,11 +5,12 @@ export async function POST(request: NextRequest) {
   console.log('=== DOCUMENT SUMMARIZATION API ROUTE CALLED ===');
   
   try {
-    const { text, filename, apiKey, documentType, metadata } = await request.json();
+    const { text, filename, apiKey, documentType, metadata, userMessage } = await request.json();
     
     console.log('Summarization request received for:', filename);
     console.log('Document type:', documentType);
     console.log('Text length:', text?.length || 0);
+    console.log('User message:', userMessage);
     
     if (!apiKey) {
       console.log('No API key provided, returning error');
@@ -35,8 +36,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Create document type-specific prompts with enhanced detail requirements
-    const getPromptForDocumentType = (docType: string, filename: string, text: string, metadata?: any) => {
-      const baseInstructions = `You are an expert document analyst with deep analytical skills. Your task is to create a comprehensive, detailed, and highly informative summary that captures not just the main points, but also the nuances, context, relationships, and strategic implications of the document. Provide 50% more detail than a standard summary while maintaining clarity and organization.`;
+    const getPromptForDocumentType = (docType: string, filename: string, text: string, metadata?: any, userMessage?: string) => {
+      const baseInstructions = `You are an expert document analyst with deep analytical skills. Your task is to create a comprehensive, detailed, and highly informative summary that captures not just the main points, but also the nuances, context, relationships, and strategic implications of the document. Provide 50% more detail than a standard summary while maintaining clarity and organization.${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be addressed throughout your entire analysis. Every section of your summary should incorporate this perspective and directly respond to this request. This is not optional - it is the primary focus of your analysis.` : ''}`;
       
       const documentInfo = `Document: ${filename}
 Type: ${docType}
@@ -393,7 +394,7 @@ Detailed Comprehensive Summary:`;
     if (chunks.length === 1) {
       // Single chunk - direct summarization
       console.log('Generating summary for single chunk...');
-      const prompt = getPromptForDocumentType(documentType, filename, text, metadata);
+      const prompt = getPromptForDocumentType(documentType, filename, text, metadata, userMessage);
       const response = await llm.invoke(prompt);
       finalSummary = response.content as string;
     } else {
@@ -404,7 +405,7 @@ Detailed Comprehensive Summary:`;
       for (let i = 0; i < chunks.length; i++) {
         console.log(`Summarizing chunk ${i + 1}/${chunks.length}...`);
         
-        const chunkPrompt = `You are creating a detailed analysis of part ${i + 1} of ${chunks.length} of a ${documentType} document named "${filename}". This section analysis will be combined with other sections to create a comprehensive document summary.
+        const chunkPrompt = `You are creating a detailed analysis of part ${i + 1} of ${chunks.length} of a ${documentType} document named "${filename}". This section analysis will be combined with other sections to create a comprehensive document summary.${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be the PRIMARY FOCUS of your analysis. Every aspect of your section analysis must directly address this requirement. Do not treat this as optional context - it is the main directive for your analysis.` : ''}
 
 Please provide a thorough, detailed analysis of this section, focusing on:
 
@@ -457,7 +458,7 @@ Detailed Section Analysis:`;
 Document: ${filename}
 Type: ${documentType}
 Total sections processed: ${chunks.length}
-Mode: Slide-by-slide analysis
+Mode: Slide-by-slide analysis${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be the PRIMARY FOCUS of your final summary. Every section, every slide analysis, and every insight must directly address this requirement. This is not optional context - it is the main directive that should drive your entire analysis.` : ''}
 
 Detailed Section Analyses:
 ${combinedSummaries}
@@ -520,7 +521,7 @@ Comprehensive Final Slide-by-Slide Analysis:`;
 
 Document: ${filename}
 Type: ${documentType}
-Total sections processed: ${chunks.length}
+Total sections processed: ${chunks.length}${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be the PRIMARY FOCUS of your final summary. Every section and every analysis must directly address this requirement. This is not optional context - it is the main directive that should drive your entire analysis.` : ''}
 
 Detailed Section Analyses:
 ${combinedSummaries}
@@ -599,7 +600,7 @@ Comprehensive Strategic Presentation Analysis:`;
 
 Document: ${filename}
 Type: ${documentType}
-Total sections processed: ${chunks.length}
+Total sections processed: ${chunks.length}${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be the PRIMARY FOCUS of your final summary. Every section and every analysis must directly address this requirement. This is not optional context - it is the main directive that should drive your entire analysis.` : ''}
 
 Detailed Section Analyses:
 ${combinedSummaries}
