@@ -11,6 +11,7 @@ interface MessageHistoryInputProps {
   className?: string;
   labelClassName?: string;
   inputClassName?: string;
+  rows?: number;
 }
 
 interface HistoryEntry {
@@ -27,7 +28,8 @@ export default function MessageHistoryInput({
   disabled = false,
   className = "",
   labelClassName = "text-gray-700",
-  inputClassName = ""
+  inputClassName = "",
+  rows = 4
 }: MessageHistoryInputProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
@@ -35,7 +37,7 @@ export default function MessageHistoryInput({
   const [error, setError] = useState<string | null>(null);
   
   const historyRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Load history on component mount to show if there are items
@@ -105,7 +107,7 @@ export default function MessageHistoryInput({
   };
 
   // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
   };
 
@@ -162,15 +164,15 @@ export default function MessageHistoryInput({
       </label>
       
       <div className="relative">
-        <input
+        <textarea
           ref={inputRef}
-          type="text"
           value={value}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full px-3 py-2 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500 ${inputClassName}`}
+          rows={rows}
+          className={`w-full px-3 py-3 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500 resize-vertical leading-relaxed ${inputClassName}`}
         />
         
         {/* History Button */}
@@ -179,7 +181,7 @@ export default function MessageHistoryInput({
           type="button"
           onClick={toggleHistory}
           disabled={disabled}
-          className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1.5 text-xs font-medium transition-colors bg-blue-600 text-white rounded border shadow-md hover:bg-blue-700 disabled:text-gray-300 disabled:bg-gray-200`}
+          className={`absolute right-2 top-2 px-3 py-1.5 text-xs font-medium transition-colors bg-blue-600 text-white rounded border shadow-md hover:bg-blue-700 disabled:text-gray-300 disabled:bg-gray-200`}
           title={history.length > 0 ? `Show message history (${history.length} items)` : "Show message history"}
         >
           <div className="flex items-center gap-1">

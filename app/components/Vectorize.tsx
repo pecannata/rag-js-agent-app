@@ -1005,6 +1005,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                   placeholder="Add additional context or questions for the summarization"
                   label="User Message"
                   disabled={isGeneratingSummary || isRunningAll}
+                  rows={5}
                 />
                 
                 {!apiKey && (
@@ -1165,6 +1166,7 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                     disabled={isTestingQuery}
                     labelClassName="text-blue-800"
                     inputClassName="border-blue-300 focus:ring-blue-500 focus:border-blue-500"
+                    rows={3}
                   />
                   
                   {/* Row Count Selection */}
