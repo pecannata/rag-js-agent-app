@@ -2,8 +2,8 @@
   {
     "id": "1751909001531",
     "message": "For each slide summary add the customer value and for each side compare it to similar capabilities on Azure, Google, and Microsoft Cloud. Give some details and examples if possible. Be sure to add these for the last slide. After the last slide summarize all of the customers values from each slide and all similar capabilities from each slide.",
-    "timestamp": "2025-07-07T20:07:57.113Z",
-    "usageCount": 19
+    "timestamp": "2025-07-07T22:04:46.736Z",
+    "usageCount": 36
   },
   {
     "id": "1704067200000",
@@ -22,6 +22,12 @@
     "message": "What are the recommendations?",
     "timestamp": "2024-01-01T00:02:00.000Z",
     "usageCount": 2
+  },
+  {
+    "id": "1751924787778",
+    "message": "For each slide summary add the customer value and for each side compare it to similar capabilities on Azure, Google, and Microsoft Cloud.",
+    "timestamp": "2025-07-07T21:46:27.778Z",
+    "usageCount": 1
   },
   {
     "id": "1751916635924",

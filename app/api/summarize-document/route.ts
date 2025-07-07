@@ -28,11 +28,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Initialize LLM for summarization
+    // Initialize LLM for summarization with explicit configuration
     const llm = new ChatCohere({
       apiKey: apiKey,
       model: 'command-r-plus',
       temperature: 0.3, // Lower temperature for more consistent summaries
+      streaming: false,
+      // Try different parameter names for max tokens
+      max_tokens: 16000,
+      maxTokens: 16000,
     });
 
     // Create document type-specific prompts with enhanced detail requirements
@@ -392,11 +396,260 @@ Detailed Comprehensive Summary:`;
     let finalSummary = '';
 
     if (chunks.length === 1) {
-      // Single chunk - direct summarization
-      console.log('Generating summary for single chunk...');
-      const prompt = getPromptForDocumentType(documentType, filename, text, metadata, userMessage);
-      const response = await llm.invoke(prompt);
-      finalSummary = response.content as string;
+      // Single chunk - use multi-part strategy to overcome token limits
+      console.log('Generating summary for single chunk using multi-part strategy...');
+      
+      // Check if this is a PowerPoint with slide-by-slide mode enabled
+      const isSlideBySlide = (documentType?.toLowerCase() === 'pptx' || documentType?.toLowerCase() === 'powerpoint') && 
+                            metadata?.useSlideBySlide === true;
+      
+      console.log('Slide-by-slide mode enabled:', isSlideBySlide);
+      
+      // Strategy: Generate summary in multiple focused parts then combine
+      const parts = [];
+      
+      if (isSlideBySlide) {
+        // SLIDE-BY-SLIDE MODE: Focus on detailed slide analysis
+        
+        // Part 1: Slide-by-Slide Content Analysis
+        const part1Prompt = `You are an expert presentation analyst. Create the FIRST PART of a comprehensive SLIDE-BY-SLIDE analysis for this PowerPoint presentation. This part should focus on detailed individual slide analysis.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - This must be the PRIMARY FOCUS throughout your slide-by-slide analysis.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+Length: ${text.length} characters
+Mode: SLIDE-BY-SLIDE ANALYSIS
+
+For this FIRST PART, provide detailed SLIDE-BY-SLIDE analysis:
+
+**DETAILED SLIDE-BY-SLIDE BREAKDOWN**:
+For each slide (marked with **Slide X:**), provide:
+- **Slide Purpose & Function**: Specific role this slide plays in the overall narrative
+- **Core Content Analysis**: Comprehensive breakdown of all text, bullet points, and key messages
+- **Visual Elements**: Detailed description of charts, graphs, images, and their significance
+- **Data Analysis**: All quantitative information, statistics, trends, and implications
+- **Strategic Content**: Key insights, recommendations, decisions, or strategic directions
+- **Customer Value**: Specific value propositions and benefits highlighted on this slide
+- **Competitive Analysis**: Any competitive comparisons or positioning mentioned
+
+Analyze approximately the first half of the slides in detail. This is PART 1 of a slide-by-slide analysis.
+
+Document Text:
+${text}
+
+Detailed Slide-by-Slide Analysis (Part 1):`;
+        
+        console.log('Generating Part 1: Slide-by-Slide Content Analysis...');
+        const part1Response = await llm.invoke(part1Prompt);
+        parts.push(`**PART 1: SLIDE-BY-SLIDE CONTENT ANALYSIS**\n${part1Response.content as string}`);
+        
+        console.log('Part 1 length:', (part1Response.content as string).length);
+        console.log('Part 1 ends with:', (part1Response.content as string).slice(-150));
+        
+        // Part 2: Remaining Slides and Strategic Analysis
+        const part2Prompt = `You are continuing a comprehensive SLIDE-BY-SLIDE analysis. Create the SECOND PART focusing on remaining slides and strategic insights.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - Continue addressing this requirement for each remaining slide.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+Mode: SLIDE-BY-SLIDE ANALYSIS (Continuation)
+
+For this SECOND PART, provide:
+
+**REMAINING SLIDE-BY-SLIDE ANALYSIS**:
+Continue the detailed slide-by-slide breakdown for remaining slides:
+- **Individual Slide Analysis**: Complete analysis of each remaining slide
+- **Slide Transitions**: How slides connect and build upon each other
+- **Technical Details**: Any technical specifications or implementation details
+- **Business Implications**: Operational and strategic impacts from each slide
+- **Customer Value Propositions**: Value delivery and benefits for each slide
+- **Competitive Positioning**: Market positioning and competitive advantages
+
+Analyze the remaining slides in the same detailed format. This is PART 2 of the slide-by-slide analysis.
+
+Document Text:
+${text}
+
+Detailed Slide-by-Slide Analysis (Part 2):`;
+        
+        console.log('Generating Part 2: Remaining Slides and Strategic Analysis...');
+        const part2Response = await llm.invoke(part2Prompt);
+        parts.push(`**PART 2: REMAINING SLIDES & STRATEGIC ANALYSIS**\n${part2Response.content as string}`);
+        
+        console.log('Part 2 length:', (part2Response.content as string).length);
+        console.log('Part 2 ends with:', (part2Response.content as string).slice(-150));
+        
+        // Part 3: Comprehensive Synthesis and Strategic Summary
+        const part3Prompt = `You are completing a comprehensive SLIDE-BY-SLIDE analysis. Create the FINAL PART with overall synthesis and strategic conclusions.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - Provide final comprehensive synthesis addressing this requirement across all slides.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+Mode: SLIDE-BY-SLIDE ANALYSIS (Final Synthesis)
+
+For this FINAL PART, provide comprehensive synthesis:
+
+**PRESENTATION SYNTHESIS**:
+- **Overall Narrative Flow**: How all slides work together to tell the complete story
+- **Key Themes Across Slides**: Major themes that span multiple slides
+- **Strategic Message Architecture**: How arguments build throughout the presentation
+- **Comprehensive Customer Value Summary**: All customer values identified across all slides
+- **Complete Competitive Analysis Summary**: All competitive comparisons and positioning across slides
+- **Implementation Roadmap**: Combined action items and next steps from all slides
+- **Strategic Recommendations**: Overall strategic insights and recommendations
+- **Final Conclusions**: Key takeaways and most important insights from the entire presentation
+
+Provide a comprehensive synthesis that ties together all slide analyses. This is the FINAL PART of the slide-by-slide analysis.
+
+Document Text:
+${text}
+
+Comprehensive Slide-by-Slide Synthesis:`;
+        
+        console.log('Generating Part 3: Comprehensive Synthesis and Strategic Summary...');
+        const part3Response = await llm.invoke(part3Prompt);
+        parts.push(`**PART 3: COMPREHENSIVE SYNTHESIS & STRATEGIC SUMMARY**\n${part3Response.content as string}`);
+        
+        console.log('Part 3 length:', (part3Response.content as string).length);
+        console.log('Part 3 ends with:', (part3Response.content as string).slice(-150));
+        
+      } else {
+        // REGULAR MODE: Standard document analysis
+        
+        // Part 1: Executive Summary and Main Content
+        const part1Prompt = `You are an expert document analyst. Create the FIRST PART of a comprehensive summary for this ${documentType} document. This part should focus on executive summary and main content analysis.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - This must be the PRIMARY FOCUS throughout your analysis.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+Length: ${text.length} characters
+
+For this FIRST PART, provide detailed analysis of:
+
+**1. Executive Summary & Overview**:
+- Document purpose, scope, and strategic importance
+- Primary objectives and intended outcomes
+- Target audience and stakeholder analysis
+- Overall value proposition and key messages
+
+**2. Main Content Analysis**:
+- Primary themes and core topics with detailed exploration
+- Key arguments, findings, and conclusions
+- Critical information including facts, figures, and data
+- Important methodologies, processes, or frameworks
+
+**3. Strategic Intelligence**:
+- Business implications and operational impacts
+- Stakeholder roles and responsibilities
+- Risk assessments and opportunity identification
+- Competitive positioning and market insights
+
+Provide extensive detail for these sections. This is PART 1 of a multi-part summary.
+
+Document Text:
+${text}
+
+Detailed Part 1 Analysis:`;
+      
+        console.log('Generating Part 1: Executive Summary and Main Content...');
+        const part1Response = await llm.invoke(part1Prompt);
+        parts.push(`**PART 1: EXECUTIVE SUMMARY & MAIN CONTENT**\n${part1Response.content as string}`);
+        
+        console.log('Part 1 length:', (part1Response.content as string).length);
+        console.log('Part 1 ends with:', (part1Response.content as string).slice(-150));
+        
+        // Part 2: Technical Details and Implementation
+        const part2Prompt = `You are continuing a comprehensive summary analysis. Create the SECOND PART focusing on technical details and implementation aspects.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - Continue addressing this requirement in this section.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+
+For this SECOND PART, provide detailed analysis of:
+
+**4. Technical & Methodological Analysis**:
+- Detailed technical specifications and requirements
+- Research methods and analytical approaches
+- Quality controls and validation processes
+- Best practices and proven methodologies
+
+**5. Implementation & Action Items**:
+- Specific recommendations with implementation steps
+- Decision points and required actions
+- Resource requirements and timelines
+- Success metrics and evaluation criteria
+
+**6. Supporting Evidence & Data**:
+- Quantitative analysis and statistical information
+- Case studies and real-world applications
+- Expert insights and authoritative perspectives
+- Benchmark comparisons and industry standards
+
+Provide extensive detail for these sections. This is PART 2 of a multi-part summary.
+
+Document Text:
+${text}
+
+Detailed Part 2 Analysis:`;
+        
+        console.log('Generating Part 2: Technical Details and Implementation...');
+        const part2Response = await llm.invoke(part2Prompt);
+        parts.push(`**PART 2: TECHNICAL DETAILS & IMPLEMENTATION**\n${part2Response.content as string}`);
+        
+        console.log('Part 2 length:', (part2Response.content as string).length);
+        console.log('Part 2 ends with:', (part2Response.content as string).slice(-150));
+        
+        // Part 3: Strategic Insights and Future Considerations
+        const part3Prompt = `You are completing a comprehensive summary analysis. Create the FINAL PART focusing on strategic insights and future considerations.
+
+${userMessage ? `🎯 CRITICAL USER REQUIREMENT: "${userMessage}" - Provide final comprehensive analysis addressing this requirement.\n\n` : ''}
+Document: ${filename}
+Type: ${documentType}
+
+For this FINAL PART, provide detailed analysis of:
+
+**7. Strategic Assessment & Critical Analysis**:
+- Document strengths and potential limitations
+- Assumptions analysis and validity assessment
+- Alternative approaches and competitive considerations
+- Information gaps and areas for further development
+
+**8. Future Implications & Long-term Considerations**:
+- Strategic positioning and competitive advantages
+- Long-term trends and market evolution
+- Scalability and sustainability factors
+- Innovation opportunities and emerging technologies
+
+**9. Comprehensive Conclusions & Summary**:
+- Key takeaways and most important insights
+- Final recommendations and strategic priorities
+- Integration opportunities and synergy potential
+- Next steps and follow-up requirements
+
+Provide extensive detail for these sections. This is the FINAL PART of the comprehensive summary.
+
+Document Text:
+${text}
+
+Detailed Final Part Analysis:`;
+        
+        console.log('Generating Part 3: Strategic Insights and Conclusions...');
+        const part3Response = await llm.invoke(part3Prompt);
+        parts.push(`**PART 3: STRATEGIC INSIGHTS & CONCLUSIONS**\n${part3Response.content as string}`);
+        
+        console.log('Part 3 length:', (part3Response.content as string).length);
+        console.log('Part 3 ends with:', (part3Response.content as string).slice(-150));
+      }
+      
+      // Combine all parts
+      finalSummary = parts.join('\n\n' + '='.repeat(80) + '\n\n');
+      
+      console.log('=== MULTI-PART RESPONSE DETAILS ===');
+      console.log('Total parts generated:', parts.length);
+      console.log('Combined final length:', finalSummary.length);
+      console.log('Final response ends with:', finalSummary.slice(-100));
+      console.log('Mode used:', isSlideBySlide ? 'SLIDE-BY-SLIDE' : 'REGULAR');
+      console.log('=====================================');
     } else {
       // Multiple chunks - summarize each chunk then combine
       console.log('Processing multiple chunks...');
@@ -440,7 +693,14 @@ ${chunks[i]}
 Detailed Section Analysis:`;
 
         const chunkResponse = await llm.invoke(chunkPrompt);
-        chunkSummaries.push(`**Section ${i + 1} (Detailed Analysis):**\n${chunkResponse.content as string}`);
+        const chunkContent = chunkResponse.content as string;
+        
+        console.log(`=== CHUNK ${i + 1} RESPONSE DETAILS ===`);
+        console.log('Chunk response length:', chunkContent.length);
+        console.log('Chunk response ends with:', chunkContent.slice(-50));
+        console.log('=======================================');
+        
+        chunkSummaries.push(`**Section ${i + 1} (Detailed Analysis):**\n${chunkContent}`);
       }
 
       // Combine chunk summaries into final summary
@@ -668,10 +928,17 @@ Detailed Comprehensive Final Summary:`;
 
       const finalResponse = await llm.invoke(finalPrompt);
       finalSummary = finalResponse.content as string;
+      
+      console.log('=== FINAL MULTI-CHUNK RESPONSE DETAILS ===');
+      console.log('Combined summaries length:', combinedSummaries.length);
+      console.log('Final response length:', finalSummary.length);
+      console.log('Final response ends with:', finalSummary.slice(-100));
+      console.log('==========================================');
     }
 
     console.log('Summary generation completed successfully');
-    console.log('Summary length:', finalSummary.length);
+    console.log('Final summary length:', finalSummary.length);
+    console.log('Final summary character count (detailed):', finalSummary.split('').length);
 
     // Extract key topics using enhanced analysis
     const keyTopicsPrompt = `Based on this comprehensive document summary, extract 8-12 key topics, themes, and strategic elements that represent the most important aspects of the document. Include both primary themes and important secondary topics.
@@ -700,6 +967,12 @@ Key Topics and Themes:`;
 
     console.log('Extracted key topics:', keyTopics);
 
+    console.log('=== FINAL RESPONSE TO FRONTEND ===');
+    console.log('Summary being sent length:', finalSummary.length);
+    console.log('Summary being sent ends with:', finalSummary.slice(-200));
+    console.log('Is summary complete?', !finalSummary.endsWith('...') && !finalSummary.slice(-50).includes('ity,'));
+    console.log('===================================');
+    
     return NextResponse.json({
       success: true,
       summary: finalSummary,
