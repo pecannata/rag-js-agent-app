@@ -29,9 +29,11 @@ interface ChatProps {
   initialMessage?: string;
   provider?: 'cohere' | 'ollama';
   onProviderChange?: (provider: 'cohere' | 'ollama') => void;
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
-export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey, initialMessage, provider = 'cohere', onProviderChange }: ChatProps) {
+export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey, initialMessage, provider = 'cohere', onProviderChange, selectedModel, onModelChange }: ChatProps) {
   const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [_expandedAugmentation, _setExpandedAugmentation] = useState<number | null>(null);
@@ -105,7 +107,8 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
           sqlQuery: sqlQuery,
           config: reactConfig,
           serpApiKey: serpApiKey,
-          provider: provider
+          provider: provider,
+          selectedModel: selectedModel
         }),
       });
 
@@ -165,6 +168,25 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
               <option value="ollama">Ollama (Local)</option>
             </select>
           </div>
+          
+          {/* Model Selector - Only shown for Ollama */}
+          {provider === 'ollama' && ollamaStatus?.available && ollamaStatus.models && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Model:</label>
+              <select
+                value={selectedModel || 'qwen2.5:14b'}
+                onChange={(e) => onModelChange?.(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {ollamaStatus.models.map((model) => (
+                  <option key={model.name} value={model.name}>
+                    {model.name} ({typeof model.size === 'string' ? model.size : (model.size / 1024**3).toFixed(1) + 'GB'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          
           <button
             onClick={handleClearChat}
             className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
@@ -191,8 +213,8 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
             {ollamaStatus?.available 
               ? `✅ Ollama ready (${ollamaStatus.models?.length || 0} models available)` 
               : `❌ ${ollamaStatus?.message || 'Checking Ollama status...'}`}
-            {ollamaStatus?.available && ollamaStatus.models?.some(m => m.name.includes('qwen2.5:14b')) && (
-              <div className="text-xs text-green-500 mt-1">Using Qwen2.5 14B</div>
+            {ollamaStatus?.available && selectedModel && (
+              <div className="text-xs text-green-500 mt-1">Using {selectedModel}</div>
             )}
           </div>
         )}

@@ -34,6 +34,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere'); // Default to Cohere for deployment compatibility
+  const [selectedModel, setSelectedModel] = useState<string>('qwen2.5:14b'); // Default model
   const [ollamaStatus, setOllamaStatus] = useState<{ available: boolean; currentModel?: string } | null>(null);
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
@@ -67,6 +68,11 @@ export default function Home() {
     if (savedProvider) {
       // Only set to Ollama if explicitly saved, otherwise stay with Cohere for deployment compatibility
       setProvider(savedProvider);
+    }
+    
+    const savedModel = localStorage.getItem('selected-model');
+    if (savedModel) {
+      setSelectedModel(savedModel);
     }
   }, []);
 
@@ -119,6 +125,13 @@ export default function Home() {
     setProvider(newProvider);
     localStorage.setItem('ai-provider', newProvider);
     // Clear messages when switching providers to avoid confusion
+    setMessages([]);
+  };
+
+  const handleModelChange = (newModel: string) => {
+    setSelectedModel(newModel);
+    localStorage.setItem('selected-model', newModel);
+    // Clear messages when switching models to avoid confusion
     setMessages([]);
   };
 
@@ -246,7 +259,7 @@ export default function Home() {
             <div className="text-xs text-gray-500">
               {provider === 'cohere' 
                 ? 'Using cloud-based AI with your API key'
-                : `Using local ${ollamaStatus?.currentModel || 'Qwen2.5 14B'} model (${ollamaStatus?.available ? 'available' : 'checking...'})`
+                : `Using local ${selectedModel || 'Qwen2.5 14B'} model (${ollamaStatus?.available ? 'available' : 'checking...'})`
               }
             </div>
           </div>
@@ -311,6 +324,8 @@ export default function Home() {
               initialMessage={initialMessage ?? ''}
               provider={provider}
               onProviderChange={handleProviderChange}
+              selectedModel={selectedModel}
+              onModelChange={handleModelChange}
             />
           ) : activeTab === 'snippets' ? (
             <Snippets 

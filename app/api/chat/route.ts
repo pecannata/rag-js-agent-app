@@ -3,7 +3,7 @@ import { RagAgent } from '../../lib/agent';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, apiKey, history, sqlQuery, config, serpApiKey, provider } = await request.json();
+    const { message, apiKey, history, sqlQuery, config, serpApiKey, provider, selectedModel } = await request.json();
 
     // Only require API key for Cohere provider
     if (provider === 'cohere' && !apiKey) {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize and use the RAG agent with config
-    const agent = new RagAgent(apiKey, config, provider || 'cohere');
+    const agent = new RagAgent(apiKey, config, provider || 'cohere', selectedModel);
     await agent.initialize();
     
     const result = await agent.processMessage(

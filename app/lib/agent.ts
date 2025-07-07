@@ -128,7 +128,7 @@ export class RagAgent {
   private domainCheckerLlm: ChatCohere | undefined;
   private ollama: OllamaService | undefined;
 
-  constructor(apiKey: string, config?: Partial<ReActConfig>, private provider: 'cohere' | 'ollama' = 'cohere') {
+  constructor(apiKey: string, config?: Partial<ReActConfig>, private provider: 'cohere' | 'ollama' = 'cohere', selectedModel?: string) {
     if (this.provider === 'cohere') {
       this.llm = new ChatCohere({
         apiKey: apiKey,
@@ -143,7 +143,7 @@ export class RagAgent {
         temperature: 0.1, // Lower temperature for more consistent domain checking
       });
     } else {
-      this.ollama = new OllamaService();
+      this.ollama = new OllamaService('http://localhost:11434', selectedModel || 'qwen2.5:14b');
     }
   }
 
