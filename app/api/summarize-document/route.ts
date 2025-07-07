@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
       maxTokens: 16000,
     });
 
-    // Create document type-specific prompts with enhanced detail requirements
+    // Create document type-specific prompts focused on essential elements
     const getPromptForDocumentType = (docType: string, filename: string, text: string, metadata?: any, userMessage?: string) => {
-      const baseInstructions = `You are an expert document analyst with deep analytical skills. Your task is to create a comprehensive, detailed, and highly informative summary that captures not just the main points, but also the nuances, context, relationships, and strategic implications of the document. Provide 50% more detail than a standard summary while maintaining clarity and organization.${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be addressed throughout your entire analysis. Every section of your summary should incorporate this perspective and directly respond to this request. This is not optional - it is the primary focus of your analysis.` : ''}`;
+      const baseInstructions = `You are an expert document analyst. Your task is to create a focused, strategic summary that captures the essential intelligence and actionable insights of the document. Focus on core elements that directly support decision-making and strategic understanding.${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be addressed throughout your entire analysis. Every section of your summary should incorporate this perspective and directly respond to this request. This is not optional - it is the primary focus of your analysis.` : ''}`;
       
       const documentInfo = `Document: ${filename}
 Type: ${docType}
@@ -54,49 +54,43 @@ ${metadata ? `Additional Info: ${JSON.stringify(metadata, null, 2)}` : ''}`;
 
 ${documentInfo}
 
-This is a PDF document. Please provide a highly detailed, structured summary that includes:
+This is a PDF document. Please provide a focused, strategic summary that includes:
 
-1. **Executive Summary**: Comprehensive overview including document type, primary purpose, scope, and intended audience with specific context
+1. **Document Purpose and Scope**:
+   - Primary purpose, objectives, and strategic importance
+   - Target audience and intended outcomes
 
-2. **Detailed Content Analysis**:
-   - **Main Topics & Themes**: Deep dive into each major subject with supporting details, context, and interconnections
-   - **Critical Information**: All important facts, figures, statistics, dates, names, and findings with their significance explained
-   - **Arguments & Evidence**: Detailed analysis of key arguments presented, supporting evidence, methodologies used, and credibility assessment
-   - **Data & Metrics**: Comprehensive breakdown of all quantitative information, trends, comparisons, and their implications
+2. **Primary Themes and Essential Content**:
+   - Core topics that directly support the main purpose
+   - Critical facts, figures, and key data points
+   - Essential findings and conclusions
 
-3. **Structural Analysis**:
-   - **Document Organization**: Detailed breakdown of sections, chapters, subsections with their specific purposes
-   - **Information Flow**: How information builds throughout the document, logical progression, and narrative structure
-   - **Supporting Elements**: Analysis of tables, charts, appendices, references, and their contributions
+3. **Key Facts and Authoritative Insights**:
+   - Important statistics, metrics, and quantitative information
+   - Significant research findings and evidence
+   - Expert insights and authoritative perspectives
 
-4. **Contextual Analysis**:
-   - **Background Information**: Historical context, industry setting, regulatory environment, or situational backdrop
-   - **Stakeholder Analysis**: Key parties mentioned, their roles, relationships, and interests
-   - **External References**: Important citations, related documents, standards, or frameworks referenced
+4. **Business Implications and Strategic Impact**:
+   - How the content affects business operations and strategy
+   - Financial implications and strategic considerations
+   - Impact on decision-making and organizational performance
 
-5. **Strategic Insights & Implications**:
-   - **Key Findings**: Detailed analysis of major discoveries, conclusions, or research results
-   - **Recommendations**: Specific actionable items, strategic directions, or next steps with implementation considerations
-   - **Risk Assessment**: Potential challenges, limitations, assumptions, or areas of concern identified
-   - **Opportunities**: Growth areas, potential benefits, or positive developments highlighted
+5. **Strategic Recommendations and Actions**:
+   - Specific actionable recommendations with clear rationale
+   - Critical decision points and priorities
+   - Implementation considerations and next steps
 
-6. **Technical Details** (if applicable):
-   - **Methodologies**: Research methods, analytical approaches, or technical processes described
-   - **Specifications**: Technical requirements, standards, protocols, or detailed criteria
-   - **Performance Metrics**: Benchmarks, KPIs, success measures, or evaluation criteria
+6. **Key Takeaways and Conclusions**:
+   - Essential insights for informed decision-making
+   - Strategic value and bottom-line impact
+   - Most important outcomes and findings
 
-7. **Actionable Intelligence**:
-   - **Immediate Actions**: What needs to be done right away based on the document
-   - **Strategic Planning**: Long-term implications and planning considerations
-   - **Decision Support**: Information that directly supports decision-making processes
-   - **Follow-up Requirements**: Additional research, documentation, or analysis needed
-
-Provide rich detail while maintaining clear organization and readability. Include specific examples, quotes, and data points where relevant.
+Focus on essential information that directly supports strategic understanding and decision-making. Omit detailed methodological descriptions, extensive stakeholder analysis, and alternative approaches unless directly relevant to core objectives.
 
 Document Text:
 ${text}
 
-Detailed Summary:`;
+Focused Strategic Summary:`;
 
         case 'docx':
         case 'word':
