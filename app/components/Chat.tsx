@@ -34,7 +34,7 @@ interface ChatProps {
 }
 
 export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQuery, reactConfig, serpApiKey, initialMessage, provider = 'cohere', onProviderChange, selectedModel, onModelChange }: ChatProps) {
-  const [input, setInput] = useState('Find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states.'); // Default message
+  const [input, setInput] = useState('How many employees did you find? And find the manager of each employee and tell me the department name of the manager and the location of the manager including the location\'s state (in a separate column) and the current population of the state (in a separate column) and the surrounding states. Even if values are null, please put each employee, manager, department, state, population, and a list of surrounding states in one table at the end of your analysis.'); // Default message
   const [isLoading, setIsLoading] = useState(false);
   const [_expandedAugmentation, _setExpandedAugmentation] = useState<number | null>(null);
   const [ollamaStatus, setOllamaStatus] = useState<{ available: boolean; message: string; models?: any[] } | null>(null);
