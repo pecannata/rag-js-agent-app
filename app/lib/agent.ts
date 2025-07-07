@@ -715,13 +715,19 @@ Assistant:`;
       
       // Debug: Check if database data is in the final prompt
       if (optimizedPrompt.includes('Database Query Result')) {
-        const dbSectionStart = optimizedPrompt.indexOf('Database Query Result');
-        const dbSection = optimizedPrompt.substring(dbSectionStart, dbSectionStart + 1000);
-        console.log('🔍 Database section in final prompt:', dbSection + '...');
-        
         // Count how many rows appear to be in the final prompt
-        const rowMatches = (optimizedPrompt.match(/"EMPNO":/g) || []).length;
-        console.log(`📊 Detected ${rowMatches} employee records in final prompt`);
+        // Use actual database result data for accurate counting
+        let rowMatches = 0;
+        if (databaseResult.data && databaseResult.data.results && Array.isArray(databaseResult.data.results)) {
+          // Count actual items within all result sets
+          rowMatches = databaseResult.data.results.reduce((total: number, result: any) => {
+            if (result.items && Array.isArray(result.items)) {
+              return total + result.items.length;
+            }
+            return total;
+          }, 0);
+        }
+        console.log(`📊 Detected ${rowMatches} database records in final prompt`);
       }
       
 let response;
