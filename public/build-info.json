@@ -1,17 +1,17 @@
 {
-  "version": "1.0.28",
+  "version": "1.0.31",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-07T00:25:52.666Z",
+  "buildTime": "2025-07-07T01:11:32.956Z",
   "buildDate": "Jul 6, 2025",
-  "sourceVersion": "v1.0.27.070625",
+  "sourceVersion": "v1.0.30.070625",
   "git": {
     "branch": "main",
-    "commit": "ae8612f2a60730141140fe97e74aefcd1c957462",
-    "shortCommit": "ae8612f2",
-    "commitDate": "2025-07-06 19:24:29 -0500",
-    "commitMessage": "Either increase the Ollama timeouts significantly or remove them all together to be more generous and closer to Cohere's behavior."
+    "commit": "c6377718caeae5ca6f3b5f51363315f1f5ecae55",
+    "shortCommit": "c6377718",
+    "commitDate": "2025-07-06 19:50:56 -0500",
+    "commitMessage": "Misc"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.27-ae8612f2-20250707-002552"
+  "buildSignature": "1.0.30-c6377718-20250707-011132"
 }

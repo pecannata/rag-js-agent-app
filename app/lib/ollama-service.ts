@@ -29,7 +29,7 @@ export class OllamaService {
   private baseUrl: string;
   private model: string;
 
-  constructor(baseUrl: string = 'http://localhost:11434', model: string = 'llama3.2:3b') {
+  constructor(baseUrl: string = 'http://localhost:11434', model: string = 'qwen2.5:14b') {
     this.baseUrl = baseUrl;
     this.model = model;
   }

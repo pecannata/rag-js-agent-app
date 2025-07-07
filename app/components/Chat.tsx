@@ -191,8 +191,8 @@ export default function Chat({ apiKey, isKeyValid, messages, setMessages, sqlQue
             {ollamaStatus?.available 
               ? `✅ Ollama ready (${ollamaStatus.models?.length || 0} models available)` 
               : `❌ ${ollamaStatus?.message || 'Checking Ollama status...'}`}
-            {ollamaStatus?.available && ollamaStatus.models?.some(m => m.name.includes('llama3.2:3b')) && (
-              <div className="text-xs text-green-500 mt-1">Using Llama 3.2 3B</div>
+            {ollamaStatus?.available && ollamaStatus.models?.some(m => m.name.includes('qwen2.5:14b')) && (
+              <div className="text-xs text-green-500 mt-1">Using Qwen2.5 14B</div>
             )}
           </div>
         )}

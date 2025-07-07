@@ -16,6 +16,7 @@ export async function GET(_request: Request) {
           available: true,
           status: 'running',
           models: models,
+          currentModel: ollama.getModel(),
           message: 'Ollama service is running and ready'
         });
     } catch (_modelError) {
@@ -23,6 +24,7 @@ export async function GET(_request: Request) {
           available: true,
           status: 'running',
           models: [],
+          currentModel: ollama.getModel(),
           message: 'Ollama service is running but model list unavailable'
         });
       }

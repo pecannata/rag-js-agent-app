@@ -34,6 +34,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere'); // Default to Cohere for deployment compatibility
+  const [ollamaStatus, setOllamaStatus] = useState<{ available: boolean; currentModel?: string } | null>(null);
   const [reactConfig, setReActConfig] = useState<ReActConfig>({
     temperature: 0.7,
     domainSimilarityThreshold: 0.7,
@@ -68,6 +69,29 @@ export default function Home() {
       setProvider(savedProvider);
     }
   }, []);
+
+  // Check Ollama status when provider changes to Ollama
+  useEffect(() => {
+    if (provider === 'ollama') {
+      checkOllamaStatus();
+    }
+  }, [provider]);
+
+  const checkOllamaStatus = async () => {
+    try {
+      const response = await fetch('/api/ollama/status');
+      const status = await response.json();
+      setOllamaStatus({
+        available: status.available,
+        currentModel: status.currentModel
+      });
+    } catch (error) {
+      console.error('Error checking Ollama status:', error);
+      setOllamaStatus({
+        available: false
+      });
+    }
+  };
 
   const handleSaveApiKey = (key: string) => {
     setApiKey(key);
@@ -222,7 +246,7 @@ export default function Home() {
             <div className="text-xs text-gray-500">
               {provider === 'cohere' 
                 ? 'Using cloud-based AI with your API key'
-                : 'Using local Llama 3.1 8B model (if available)'
+                : `Using local ${ollamaStatus?.currentModel || 'Qwen2.5 14B'} model (${ollamaStatus?.available ? 'available' : 'checking...'})`
               }
             </div>
           </div>
