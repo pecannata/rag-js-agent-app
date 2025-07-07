@@ -661,7 +661,7 @@ Available capabilities:
 - Web search for current information (when SerpAPI key is available)
 - General conversation and assistance${webSearchInstruction}
 
-${context}Human: ${message}${knowledgeContext}${databaseContext}${webSearchContext}
+${context}Human: ${message}. Use table formatting of results wherever possible.${knowledgeContext}${databaseContext}${webSearchContext}
 
 Thought: Let me analyze this request and provide a helpful response using the available information.
 
@@ -693,7 +693,7 @@ Available capabilities:
 - Web search for current information (when SerpAPI key is available)
 - General conversation and assistance${webSearchInstruction}
 
-${context}Human: ${message}${knowledgeContext}${optimizedDatabaseContext}${optimizedWebSearchContext}
+${context}Human: ${message}. Use table formatting of results wherever possible.${knowledgeContext}${optimizedDatabaseContext}${optimizedWebSearchContext}
 
 Thought: Let me analyze this request and provide a helpful response using the available information.
 
