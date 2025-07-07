@@ -31,7 +31,7 @@ async function main() {
     console.log('\n--- Chat with Custom Options ---');
     const creativeResponse = await client.chat(
       'Write a short poem about programming',
-      'llama3.1:8b',
+      'llama3.2:3b',
       { temperature: 0.9 }
     );
     console.log('Creative Response:', creativeResponse);
@@ -41,7 +41,7 @@ async function main() {
     console.log('Streaming response: ');
     await client.chatStream(
       'Tell me a joke',
-      'llama3.1:8b',
+      'llama3.2:3b',
       (chunk) => {
         process.stdout.write(chunk);
       }

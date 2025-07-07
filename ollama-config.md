@@ -1,7 +1,7 @@
 # Ollama GPU Optimization Configuration
 
 ## Current Setup
-- **Model**: Llama 3.1 8B
+- **Model**: Llama 3.2 3B
 - **Platform**: macOS with Apple Silicon
 - **Service**: Running via Homebrew (`brew services start ollama`)
 - **API Endpoint**: http://localhost:11434
@@ -47,7 +47,7 @@ brew services list | grep ollama
 ollama list
 
 # Pull additional models
-ollama pull llama3.1:8b-instruct-q8_0  # Higher quality version
+ollama pull llama3.2:3b-instruct-q8_0  # Higher quality version
 ollama pull codellama:7b                # For code tasks
 
 # Remove unused models

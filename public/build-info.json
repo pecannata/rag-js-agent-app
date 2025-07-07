@@ -1,17 +1,17 @@
 {
-  "version": "1.0.25",
+  "version": "1.0.26",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-06T23:20:56.869Z",
+  "buildTime": "2025-07-07T00:00:48.126Z",
   "buildDate": "Jul 6, 2025",
-  "sourceVersion": "v1.0.24.070625",
+  "sourceVersion": "v1.0.25.070625",
   "git": {
     "branch": "main",
-    "commit": "c726fa44ac1045bf0e90a54f24389f4812869ff4",
-    "shortCommit": "c726fa44",
-    "commitDate": "2025-07-06 11:55:20 -0500",
-    "commitMessage": "v1.0.9.070625 Is it possible to have a unique version number that appears on the app? Can the dev version number from which it is derived be shown on the deployment version somehow. The deployment version says \"v1.0.3.070625\", which is fine but the dev version says \"main@dev-6-162205\". I was hoping it would say \"v1.0.2.070625\" or whatever version it was based on."
+    "commit": "a1cf0618f365366f870dcc75b0ee0b51e567ea81",
+    "shortCommit": "a1cf0618",
+    "commitDate": "2025-07-06 18:23:10 -0500",
+    "commitMessage": "Replaced the Llama 3.1 8B model with Llama 3.1 70B on your machine. But Llama 3.1 70Bwas too slow. replace it with Llama 3.2 3B. Make sure you preserve all database results and preserve all web search results. Don't any truncating of them. Summary"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.24-c726fa44-20250706-232056"
+  "buildSignature": "1.0.25-a1cf0618-20250707-000048"
 }

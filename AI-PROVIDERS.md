@@ -25,7 +25,7 @@ This chat application now supports **two AI providers** that you can choose betw
 4. Start chatting!
 
 ### Ollama Setup
-1. Ollama is already installed and configured with Llama 3.1 8B
+1. Ollama is already installed and configured with Llama 3.2 3B
 2. Ensure the service is running: `brew services start ollama`
 3. Select "Ollama (Local)" from the provider dropdown
 4. The status indicator will show if it's ready
@@ -52,7 +52,7 @@ You can switch providers anytime using the dropdown in the chat header:
 ### Ollama
 - ✅ Green: "Ollama ready (X models available)"
 - ❌ Red: Service not running or error
-- 🔍 Shows available models and confirms Llama 3.1 8B
+- 🔍 Shows available models and confirms Llama 3.2 3B
 
 ---
 
@@ -60,7 +60,7 @@ You can switch providers anytime using the dropdown in the chat header:
 
 ### Ollama Configuration
 - **Service**: Runs on `localhost:11434`
-- **Model**: Llama 3.1 8B with GPU acceleration (Metal on Apple Silicon)
+- **Model**: Llama 3.2 3B with GPU acceleration (Metal on Apple Silicon)
 - **Management**: Via Homebrew (`brew services start/stop ollama`)
 
 ### Provider Architecture
@@ -96,8 +96,8 @@ ollama pull codellama:7b
 ```
 
 ### Model Information
-- **Current Model**: Llama 3.1 8B
-- **Size**: ~4.9 GB
+- **Current Model**: Llama 3.2 3B
+- **Size**: ~2.0 GB
 - **Performance**: Optimized for Apple Silicon with Metal GPU acceleration
 
 ---
@@ -112,7 +112,7 @@ ollama pull codellama:7b
 
 2. **Model not found**
    ```bash
-   ollama pull llama3.1:8b
+   ollama pull llama3.2:3b
    ```
 
 3. **Slow responses**
