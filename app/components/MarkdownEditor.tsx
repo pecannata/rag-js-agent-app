@@ -9,215 +9,608 @@ interface MarkdownEditorProps {
   apiKey: string;
 }
 
-export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
-  const [markdown, setMarkdown] = useState<string>('# Welcome to Markdown Editor\n\nThis is a **markdown editor** with *live preview* and drag-and-drop support for images and links.\n\n## Features\n\n- ✅ Live preview mode\n- ✅ Drag and drop images\n- ✅ Clickable links (try this: [Google](https://www.google.com))\n- ✅ Full markdown support\n- ✅ Code syntax highlighting\n\n## Getting Started\n\n1. Type your markdown in the editor\n2. See the live preview on the right\n3. Drag images directly into the editor\n4. Save your work locally\n5. Click links in preview mode - they open in new tabs!\n\n```javascript\nconst example = "Hello, World!";\nconsole.log(example);\n```\n\n> This is a blockquote example\n\n---\n\n**Happy writing!** 📝');
-  const [savedDocuments, setSavedDocuments] = useState<{ id: string; title: string; content: string; lastModified: Date }[]>([]);
-  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [documentTitle, setDocumentTitle] = useState('');
+interface DirectoryItem {
+  name: string;
+  path: string;
+  type: 'directory' | 'file';
+}
 
-  // Load saved documents from localStorage on component mount
-  useEffect(() => {
-    const saved = localStorage.getItem('markdown-documents');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setSavedDocuments(parsed.map((doc: any) => ({
-          ...doc,
-          lastModified: new Date(doc.lastModified)
-        })));
-      } catch (error) {
-        console.error('Error loading saved documents:', error);
+interface ReadmeFile {
+  name: string;
+  path: string;
+  relativePath: string;
+  type: 'file';
+}
+
+interface DirectoryInfo {
+  name: string;
+  path: string;
+  relativePath: string;
+  type: 'directory';
+  readmeFiles: ReadmeFile[];
+  subdirectories?: DirectoryInfo[];
+}
+
+interface BrowseResponse {
+  currentPath: string;
+  parentPath: string;
+  directories: DirectoryItem[];
+  readmeFiles: DirectoryItem[];
+}
+
+interface ReadmeBrowseResponse {
+  currentPath: string;
+  parentPath: string;
+  directories: DirectoryInfo[];
+  readmeFiles: ReadmeFile[];
+  parentReadmeFiles: ReadmeFile[];
+  groupedReadmeFiles: { [key: string]: ReadmeFile[] };
+}
+
+export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
+  const [markdown, setMarkdown] = useState<string>('# Welcome to Markdown Editor\n\nThis is a **markdown editor** with Monaco Editor (VS Code).\n\n## Features\n\n- ✅ Professional code editor experience\n- ✅ Markdown syntax highlighting\n- ✅ IntelliSense and autocompletion\n- ✅ File browser for README*.md files\n- ✅ Document management\n\n## Getting Started\n\n1. Browse directories in the sidebar\n2. Click on README*.md files to open them\n3. Edit with full VS Code functionality\n4. Save and manage your documents\n\n**Happy writing!** 📝');
+  const [currentPath, setCurrentPath] = useState<string>('');
+  const [directories, setDirectories] = useState<DirectoryInfo[]>([]);
+  const [readmeFiles, setReadmeFiles] = useState<ReadmeFile[]>([]);
+  const [parentReadmeFiles, setParentReadmeFiles] = useState<ReadmeFile[]>([]);
+  const [groupedReadmeFiles, setGroupedReadmeFiles] = useState<{ [key: string]: ReadmeFile[] }>({});
+  const [parentPath, setParentPath] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [showPathBrowser, setShowPathBrowser] = useState(false);
+  const [pathBrowserPath, setPathBrowserPath] = useState<string>('');
+  const [pathBrowserDirs, setPathBrowserDirs] = useState<DirectoryItem[]>([]);
+  const [pathBrowserParent, setPathBrowserParent] = useState<string>('');
+  const [pathBrowserLoading, setPathBrowserLoading] = useState(false);
+  const [pathBrowserInitialized, setPathBrowserInitialized] = useState(false);
+  const [editorRef, setEditorRef] = useState<any>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalContent, setOriginalContent] = useState('');
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [pendingFilePath, setPendingFilePath] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (!currentFilePath) {
+      setError('No file selected to save');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/save-file', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: currentFilePath,
+          content: markdown,
+        }),
+      });
+
+      if (response.ok) {
+        // Clear any existing errors
+        setError(null);
+        // Reset unsaved changes flag
+        setHasUnsavedChanges(false);
+        setOriginalContent(markdown);
+        // Could add a success message here if desired
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to save file');
       }
+    } catch (error) {
+      setError('Error saving file: ' + error);
+    }
+  };
+
+
+  const handleSaveAndContinue = async () => {
+    await handleSave();
+    if (pendingFilePath) {
+      await loadFile(pendingFilePath);
+      setPendingFilePath(null);
+    }
+    setShowUnsavedWarning(false);
+  };
+
+  const handleDiscardChanges = async () => {
+    if (pendingFilePath) {
+      await loadFile(pendingFilePath);
+      setPendingFilePath(null);
+    }
+    setShowUnsavedWarning(false);
+  };
+
+  const handleCancelFileSwitch = () => {
+    setPendingFilePath(null);
+    setShowUnsavedWarning(false);
+  };
+
+  // Load persisted path and file on component mount
+  useEffect(() => {
+    const savedPath = localStorage.getItem('markdownEditor.currentPath');
+    const savedFilePath = localStorage.getItem('markdownEditor.currentFilePath');
+    
+    if (savedPath) {
+      setPathBrowserInitialized(true);
+      browseDirectory(savedPath).then(() => {
+        // After loading the directory, try to open the saved file
+        if (savedFilePath) {
+          loadFile(savedFilePath);
+        }
+      });
     }
   }, []);
 
-  // Save documents to localStorage whenever savedDocuments changes
+  // Add keyboard shortcuts
   useEffect(() => {
-    if (savedDocuments.length > 0) {
-      localStorage.setItem('markdown-documents', JSON.stringify(savedDocuments));
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentFilePath, markdown]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (originalContent !== '' && markdown !== originalContent) {
+      setHasUnsavedChanges(true);
+    } else if (markdown === originalContent) {
+      setHasUnsavedChanges(false);
     }
-  }, [savedDocuments]);
+  }, [markdown, originalContent]);
 
-  const handleSave = () => {
-    if (currentDocumentId) {
-      // Update existing document
-      setSavedDocuments(prev => prev.map(doc => 
-        doc.id === currentDocumentId 
-          ? { ...doc, content: markdown, lastModified: new Date() }
-          : doc
-      ));
-    } else {
-      // Save new document
-      setShowSaveDialog(true);
-    }
-  };
-
-  const handleSaveNew = () => {
-    if (documentTitle.trim()) {
-      const newDoc = {
-        id: Date.now().toString(),
-        title: documentTitle.trim(),
-        content: markdown,
-        lastModified: new Date()
-      };
-      setSavedDocuments(prev => [newDoc, ...prev]);
-      setCurrentDocumentId(newDoc.id);
-      setShowSaveDialog(false);
-      setDocumentTitle('');
-    }
-  };
-
-  const handleLoad = (doc: { id: string; title: string; content: string; lastModified: Date }) => {
-    setMarkdown(doc.content);
-    setCurrentDocumentId(doc.id);
-  };
-
-  const handleNew = () => {
-    const newContent = '# New Document\n\nStart writing your markdown here...';
-    setMarkdown(newContent);
-    setCurrentDocumentId(null);
-  };
-
-  const handleDelete = (docId: string) => {
-    setSavedDocuments(prev => prev.filter(doc => doc.id !== docId));
-    if (currentDocumentId === docId) {
-      setCurrentDocumentId(null);
+  const browseDirectory = async (path: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const url = path ? `/api/browse-readme-files?path=${encodeURIComponent(path)}` : '/api/browse-readme-files';
+      const response = await fetch(url);
+      if (response.ok) {
+        const data: ReadmeBrowseResponse = await response.json();
+        setCurrentPath(data.currentPath);
+        setParentPath(data.parentPath);
+        setDirectories(data.directories);
+        setReadmeFiles(data.readmeFiles);
+        setParentReadmeFiles(data.parentReadmeFiles || []);
+        setGroupedReadmeFiles(data.groupedReadmeFiles);
+        // Persist the current path to localStorage
+        localStorage.setItem('markdownEditor.currentPath', data.currentPath);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to browse directory');
+        console.error('Failed to browse directory:', errorData);
+      }
+    } catch (error) {
+      setError('Error browsing directory: ' + error);
+      console.error('Error browsing directory:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleExport = () => {
-    const blob = new Blob([markdown], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${getCurrentDocumentTitle() || 'document'}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const openReadmeFile = async (filePath: string) => {
+    // Check for unsaved changes before switching files
+    if (hasUnsavedChanges && currentFilePath && currentFilePath !== filePath) {
+      setPendingFilePath(filePath);
+      setShowUnsavedWarning(true);
+      return;
+    }
+    
+    await loadFile(filePath);
   };
+
+  const loadFile = async (filePath: string) => {
+    setError(null);
+    try {
+      const response = await fetch(`/api/read-file?path=${encodeURIComponent(filePath)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMarkdown(data.content);
+        setOriginalContent(data.content);
+        setCurrentFilePath(filePath);
+        setDocumentTitle(data.name);
+        setHasUnsavedChanges(false);
+        // Persist the current file path to localStorage
+        localStorage.setItem('markdownEditor.currentFilePath', filePath);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to read file');
+        console.error('Failed to read file:', errorData);
+      }
+    } catch (error) {
+      setError('Error reading file: ' + error);
+      console.error('Error reading file:', error);
+    }
+  };
+
+  // Removed handleNew and handleExport functions - not needed for README editing
 
   const getCurrentDocumentTitle = () => {
-    if (currentDocumentId) {
-      const doc = savedDocuments.find(d => d.id === currentDocumentId);
-      return doc?.title || 'Untitled';
+    if (currentFilePath) {
+      return documentTitle || 'README*.md';
     }
     return 'New Document';
   };
 
-  const handleImageUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          resolve(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+  const openPathBrowser = async () => {
+    setShowPathBrowser(true);
+    setPathBrowserPath(currentPath);
+    await browsePathBrowserDirectory(currentPath);
   };
 
-  const handleDrop = (event: React.DragEvent) => {
-    event.preventDefault();
-    const files = Array.from(event.dataTransfer.files);
-    
-    files.forEach(file => {
-      if (file.type.startsWith('image/')) {
-        handleImageUpload(file).then(dataUrl => {
-          const imageMarkdown = `![${file.name}](${dataUrl})`;
-          setMarkdown(prev => prev + '\n\n' + imageMarkdown);
-        });
+  const browsePathBrowserDirectory = async (path: string) => {
+    setPathBrowserLoading(true);
+    try {
+      const url = path ? `/api/browse-files?path=${encodeURIComponent(path)}` : '/api/browse-files';
+      const response = await fetch(url);
+      if (response.ok) {
+        const data: BrowseResponse = await response.json();
+        setPathBrowserPath(data.currentPath);
+        setPathBrowserParent(data.parentPath);
+        setPathBrowserDirs(data.directories);
+      } else {
+        console.error('Failed to browse directory for path browser');
       }
-    });
+    } catch (error) {
+      console.error('Error browsing directory for path browser:', error);
+    } finally {
+      setPathBrowserLoading(false);
+    }
   };
 
-  const handleDragOver = (event: React.DragEvent) => {
-    event.preventDefault();
+  const selectPath = async (selectedPath: string) => {
+    setShowPathBrowser(false);
+    setPathBrowserInitialized(true);
+    await browseDirectory(selectedPath);
+  };
+
+  const renderDirectoryStructure = () => {
+    const renderTreeLevel = (dirs: DirectoryInfo[], depth: number = 0): React.ReactElement[] => {
+      const items: React.ReactElement[] = [];
+      
+      dirs.forEach(dir => {
+        const indentStyle = { paddingLeft: `${depth * 16}px` };
+        
+        // Add directory header
+        items.push(
+          <div key={`dir-${dir.path}`} className="space-y-1">
+            <div 
+              className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200"
+              style={indentStyle}
+            >
+              <div className="w-5 h-5 bg-blue-100 rounded-md flex items-center justify-center">
+                <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                </svg>
+              </div>
+              <span className="text-xs font-bold text-slate-600 truncate flex-1">{dir.name}</span>
+            </div>
+            
+            {/* Render README files in this directory */}
+            {dir.readmeFiles.length > 0 && (
+              <div className="space-y-1">
+                {dir.readmeFiles.map((file) => (
+                  <button
+                    key={file.path}
+                    onClick={() => openReadmeFile(file.path)}
+                    className={`w-full group flex items-center gap-2 p-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
+                      currentFilePath === file.path
+                        ? 'bg-emerald-50 border-emerald-300 shadow-sm'
+                        : 'bg-white hover:bg-emerald-50 border-slate-200 hover:border-emerald-300'
+                    }`}
+                    style={{ paddingLeft: `${(depth + 1) * 16}px` }}
+                  >
+                    <div className={`w-4 h-4 rounded-sm flex items-center justify-center transition-colors ${
+                      currentFilePath === file.path
+                        ? 'bg-emerald-200'
+                        : 'bg-emerald-100 group-hover:bg-emerald-200'
+                    }`}>
+                      <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <span className={`text-xs font-medium truncate flex-1 text-left transition-colors ${
+                      currentFilePath === file.path
+                        ? 'text-emerald-900'
+                        : 'text-slate-700 group-hover:text-emerald-900'
+                    }`}>{file.name}</span>
+                    {currentFilePath === file.path && (
+                      <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Recursively render subdirectories */}
+            {dir.subdirectories && dir.subdirectories.length > 0 && (
+              <div className="space-y-1">
+                {renderTreeLevel(dir.subdirectories, depth + 1)}
+              </div>
+            )}
+          </div>
+        );
+      });
+      
+      return items;
+    };
+    
+    // Also render README files in the root directory
+    const rootReadmeFiles = readmeFiles.filter(file => file.path.startsWith(currentPath) && file.path.lastIndexOf('/') === currentPath.length);
+    
+    return (
+      <div className="space-y-2">
+        {/* Parent README files */}
+        {parentReadmeFiles.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
+              </svg>
+              <span className="text-xs font-bold text-slate-600">Parent Directory</span>
+            </div>
+            <div className="space-y-1 mb-3">
+              {parentReadmeFiles.map((file) => (
+                <button
+                  key={file.path}
+                  onClick={() => openReadmeFile(file.path)}
+                  className={`w-full group flex items-center gap-2 p-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
+                    currentFilePath === file.path
+                      ? 'bg-amber-50 border-amber-300 shadow-sm'
+                      : 'bg-white hover:bg-amber-50 border-slate-200 hover:border-amber-300'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded-sm flex items-center justify-center transition-colors ${
+                    currentFilePath === file.path
+                      ? 'bg-amber-200'
+                      : 'bg-amber-100 group-hover:bg-amber-200'
+                  }`}>
+                    <svg className="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span className={`text-xs font-medium truncate flex-1 text-left transition-colors ${
+                    currentFilePath === file.path
+                      ? 'text-amber-900'
+                      : 'text-slate-700 group-hover:text-amber-900'
+                  }`}>{file.name}</span>
+                  {currentFilePath === file.path && (
+                    <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        
+        {/* Root README files */}
+        {rootReadmeFiles.length > 0 && (
+          <div className="space-y-1">
+            {rootReadmeFiles.map((file) => (
+              <button
+                key={file.path}
+                onClick={() => openReadmeFile(file.path)}
+                className={`w-full group flex items-center gap-2 p-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
+                  currentFilePath === file.path
+                    ? 'bg-emerald-50 border-emerald-300 shadow-sm'
+                    : 'bg-white hover:bg-emerald-50 border-slate-200 hover:border-emerald-300'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-sm flex items-center justify-center transition-colors ${
+                  currentFilePath === file.path
+                    ? 'bg-emerald-200'
+                    : 'bg-emerald-100 group-hover:bg-emerald-200'
+                }`}>
+                  <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <span className={`text-xs font-medium truncate flex-1 text-left transition-colors ${
+                  currentFilePath === file.path
+                    ? 'text-emerald-900'
+                    : 'text-slate-700 group-hover:text-emerald-900'
+                }`}>{file.name}</span>
+                {currentFilePath === file.path && (
+                  <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+        
+        {/* Directory tree */}
+        {renderTreeLevel(directories)}
+      </div>
+    );
+  };
+
+  // Custom scrollbar styles
+  const scrollbarStyles = {
+    scrollbarWidth: 'thin' as const,
+    scrollbarColor: '#cbd5e1 #f1f5f9',
   };
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
+      <style>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+          overflow-y: scroll !important;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+          -webkit-appearance: none;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+          min-height: 20px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-corner {
+          background: #f1f5f9;
+        }
+        
+        /* Force scrollbar to always be visible on macOS */
+        .custom-scrollbar::-webkit-scrollbar-thumb:vertical {
+          min-height: 30px;
+        }
+      `}</style>
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-semibold text-gray-900">
               📝 {getCurrentDocumentTitle()}
+              {hasUnsavedChanges && (
+                <span className="ml-2 text-orange-600 font-normal" title="Unsaved changes">
+                  •
+                </span>
+              )}
             </h2>
-            {currentDocumentId && (
+            {currentFilePath && (
               <span className="text-sm text-gray-500">
-                Last saved: {savedDocuments.find(d => d.id === currentDocumentId)?.lastModified.toLocaleString()}
+                File: {currentFilePath}
+                {hasUnsavedChanges && (
+                  <span className="ml-2 text-orange-600" title="Unsaved changes">
+                    (modified)
+                  </span>
+                )}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleNew}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-            >
-              New
-            </button>
-            <button
-              onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleExport}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-            >
-              Export
-            </button>
+            {/* Removed New and Export buttons - not needed for README editing */}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Sidebar with saved documents */}
-        <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Saved Documents</h3>
-            {savedDocuments.length === 0 ? (
-              <p className="text-gray-500 text-sm">No saved documents yet</p>
-            ) : (
-              <div className="space-y-2">
-                {savedDocuments.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition duration-200 ${
-                      currentDocumentId === doc.id
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleLoad(doc)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                          {doc.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {doc.lastModified.toLocaleDateString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(doc.id);
-                        }}
-                        className="text-red-500 hover:text-red-700 p-1"
-                        title="Delete document"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+      <div className="flex h-full">
+        {/* File Browser Sidebar */}
+        <div className="w-80 bg-gradient-to-b from-slate-50 to-slate-100 border-r border-slate-200 shadow-inner flex flex-col h-full">
+          <div className="p-6 flex-1 custom-scrollbar" style={{ minHeight: '400px', maxHeight: 'calc(100vh - 100px)' }}>
+            {/* Current Path Card */}
+            <div className="mb-4">
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-xs font-medium text-slate-600">Current Location</span>
                   </div>
-                ))}
+                  <button
+                    onClick={openPathBrowser}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Browse and select path"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                    </svg>
+                    Browse
+                  </button>
+                </div>
+                <div className="bg-slate-50 rounded-md p-2 border border-slate-200">
+                  <p className="text-xs font-mono text-slate-700 break-all" title={currentPath}>
+                    {currentPath || '~/Home'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 1l4 4-4 4" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-slate-800">File Browser</h3>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  {error}
+                </div>
               </div>
             )}
+
+            {/* README Files Display */}
+            <div className="space-y-2">
+              {!pathBrowserInitialized ? (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 1l4 4-4 4" />
+                    </svg>
+                  </div>
+                  <p className="text-slate-600 text-xs font-medium mb-1">Select a path to browse</p>
+                  <p className="text-slate-400 text-xs mb-3">Click the "Browse" button above to choose a directory</p>
+                  <button
+                    onClick={openPathBrowser}
+                    className="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                    </svg>
+                    Browse Path
+                  </button>
+                </div>
+              ) : loading ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-200"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent absolute top-0 left-0"></div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Directory Structure with README Files */}
+                  {renderDirectoryStructure()}
+                  
+                  {/* Empty State */}
+                  {directories.length === 0 && readmeFiles.length === 0 && (
+                    <div className="text-center py-6">
+                      <div className="w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                        <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        </svg>
+                      </div>
+                      <p className="text-slate-500 text-xs font-medium">No README*.md files found</p>
+                      <p className="text-slate-400 text-xs mt-1">Try selecting a different path</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -226,8 +619,20 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
           <div className="h-full flex flex-col">
             {/* Monaco Editor */}
             <div className="flex-1 flex flex-col">
-              <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+              <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
                 <h3 className="text-sm font-medium text-gray-700">📝 Monaco Editor (VS Code)</h3>
+                {currentFilePath && (
+                  <button
+                    onClick={handleSave}
+                    className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Save file (Cmd+S)"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Save
+                  </button>
+                )}
               </div>
               <div className="flex-1 border border-gray-200 rounded-b-lg overflow-hidden">
                 <Editor
@@ -236,6 +641,9 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
                   value={markdown}
                   onChange={(value) => setMarkdown(value || '')}
                   theme="vs"
+                  onMount={(editor, monaco) => {
+                    setEditorRef(editor);
+                  }}
                   options={{
                     wordWrap: 'on',
                     lineNumbers: 'on',
@@ -253,7 +661,12 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
                     folding: true,
                     renderWhitespace: 'selection',
                     cursorBlinking: 'blink',
-                    smoothScrolling: true
+                    smoothScrolling: true,
+                    find: {
+                      seedSearchStringFromSelection: 'always',
+                      autoFindInSelection: 'never',
+                      globalFindClipboard: false
+                    }
                   }}
                 />
               </div>
@@ -262,33 +675,118 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
         </div>
       </div>
 
-      {/* Save Dialog */}
-      {showSaveDialog && (
+      {/* Path Browser Popup Modal */}
+      {showPathBrowser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Save Document</h3>
-            <input
-              type="text"
-              value={documentTitle}
-              onChange={(e) => setDocumentTitle(e.target.value)}
-              placeholder="Enter document title..."
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onKeyPress={(e) => e.key === 'Enter' && handleSaveNew()}
-              autoFocus
-            />
-            <div className="flex justify-end gap-2 mt-4">
+          <div className="bg-white rounded-lg shadow-xl w-96 max-h-[600px] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h3 className="text-lg font-semibold">📁 Select Path</h3>
               <button
-                onClick={() => setShowSaveDialog(false)}
+                onClick={() => setShowPathBrowser(false)}
+                className="text-white hover:text-gray-200 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Current Path Display */}
+            <div className="px-6 py-3 bg-gray-50 border-b">
+              <p className="text-sm text-gray-600 mb-1">Current Path:</p>
+              <p className="text-sm font-mono bg-white p-2 rounded border break-all">
+                {pathBrowserPath || 'Home'}
+              </p>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {pathBrowserLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Up Directory Button */}
+                  {pathBrowserPath && pathBrowserParent && pathBrowserPath !== pathBrowserParent && (
+                    <button
+                      onClick={() => browsePathBrowserDirectory(pathBrowserParent)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center gap-3"
+                    >
+                      <span className="text-lg">📁</span>
+                      <span className="font-medium">..</span>
+                      <span className="text-sm text-gray-500">(Up one level)</span>
+                    </button>
+                  )}
+
+                  {/* Directories */}
+                  {pathBrowserDirs.map((dir) => (
+                    <button
+                      key={dir.path}
+                      onClick={() => browsePathBrowserDirectory(dir.path)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center gap-3"
+                    >
+                      <span className="text-lg">📁</span>
+                      <span className="font-medium truncate">{dir.name}</span>
+                    </button>
+                  ))}
+
+                  {pathBrowserDirs.length === 0 && (
+                    <p className="text-gray-500 text-center py-8">
+                      No directories found
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex items-center justify-between">
+              <button
+                onClick={() => setShowPathBrowser(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSaveNew}
-                disabled={!documentTitle.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition duration-200"
+                onClick={() => selectPath(pathBrowserPath)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200"
+                disabled={pathBrowserLoading}
               >
-                Save
+                Select This Path
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Unsaved Changes Warning Modal */}
+      {showUnsavedWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-[380px]">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-800">Unsaved Changes</h3>
+              <p className="text-sm text-gray-600 mt-2">
+                You have unsaved changes. What would you like to do?
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex items-center justify-end gap-2">
+              <button
+                onClick={handleCancelFileSwitch}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDiscardChanges}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition duration-200"
+              >
+                Discard Changes
+              </button>
+              <button
+                onClick={handleSaveAndContinue}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200"
+              >
+                Save and Continue
               </button>
             </div>
           </div>
