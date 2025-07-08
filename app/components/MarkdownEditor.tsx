@@ -311,6 +311,8 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
       console.log('Processing clipboard items...');
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        if (!item) continue;
+        
         console.log('Item type:', item.type);
         
         if (item.type.indexOf('image') !== -1) {
@@ -1158,23 +1160,77 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                         components={{
                           img: ({ src, alt, ...props }) => {
                             // Handle relative image paths
-                            if (src && src.startsWith('./images/')) {
+                            if (typeof src === 'string' && src.startsWith('./images/')) {
                               const imagePath = src.replace('./images/', `${currentPath}/images/`);
                               const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
                               return (
-                                <img 
-                                  src={imageUrl} 
-                                  alt={alt} 
-                                  {...props}
-                                  style={{ maxWidth: '100%', height: 'auto' }}
-                                  onError={(e) => {
-                                    console.error('Image failed to load:', imageUrl);
-                                    e.currentTarget.style.display = 'none';
+                                <div 
+                                  className="resizable-image-wrapper"
+                                  style={{
+                                    resize: 'both',
+                                    overflow: 'hidden',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    display: 'inline-block',
+                                    minWidth: '100px',
+                                    minHeight: '100px',
+                                    maxWidth: '100%',
+                                    width: '300px',
+                                    height: '200px',
+                                    margin: '1rem 0',
+                                    position: 'relative'
                                   }}
-                                />
+                                >
+                                  <img 
+                                    src={imageUrl} 
+                                    alt={alt} 
+                                    {...props}
+                                    style={{ 
+                                      width: '100%', 
+                                      height: '100%', 
+                                      objectFit: 'contain',
+                                      display: 'block'
+                                    }}
+                                    onError={(e) => {
+                                      console.error('Image failed to load:', imageUrl);
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
                               );
                             }
-                            return <img src={src} alt={alt} {...props} />;
+                            // Handle regular images
+                            return (
+                              <div 
+                                className="resizable-image-wrapper"
+                                style={{
+                                  resize: 'both',
+                                  overflow: 'hidden',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '8px',
+                                  display: 'inline-block',
+                                  minWidth: '100px',
+                                  minHeight: '100px',
+                                  maxWidth: '100%',
+                                  width: '300px',
+                                  height: '200px',
+                                  margin: '1rem 0',
+                                  position: 'relative'
+                                }}
+                              >
+                                <img 
+                                  src={src} 
+                                  alt={alt} 
+                                  {...props}
+                                  style={{ 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    objectFit: 'contain',
+                                    display: 'block'
+                                  }}
+                                />
+                              </div>
+                            );
                           }
                         }}
                       >

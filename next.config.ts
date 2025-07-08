@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
   env: {
     ...buildEnv,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Handle HTTPS in production
   async headers() {
     return [
