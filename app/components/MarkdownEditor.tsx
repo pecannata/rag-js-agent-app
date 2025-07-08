@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-// import ReactMarkdown from 'react-markdown';
-// import remarkGfm from 'remark-gfm';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface MarkdownEditorProps {
   apiKey: string;
@@ -75,6 +75,8 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [findTimeout, setFindTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentMatches, setCurrentMatches] = useState<any[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   // Handle find functionality with throttling
   const handleFind = () => {
@@ -279,6 +281,118 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
       setHasUnsavedChanges(false);
     }
   }, [markdown, originalContent]);
+
+  // Handle image paste functionality
+  useEffect(() => {
+    console.log('Setting up paste handler, editorRef:', editorRef, 'currentPath:', currentPath);
+    const handlePaste = async (event: ClipboardEvent) => {
+      console.log('Document paste event detected.', event);
+      console.log('Event target:', event.target);
+      console.log('Event currentTarget:', event.currentTarget);
+      
+      // Only process if Monaco editor is focused
+      console.log('Editor ref exists:', !!editorRef);
+      if (editorRef) {
+        console.log('Editor has text focus:', editorRef.hasTextFocus());
+      }
+      
+      // Temporarily remove focus check to test all paste events
+      // if (!editorRef || !editorRef.hasTextFocus()) {
+      //   console.log('Editor not focused, ignoring paste.');
+      //   return;
+      // }
+      
+      const items = event.clipboardData?.items;
+      if (!items) {
+        console.log('No clipboard items found.');
+        return;
+      }
+
+      console.log('Processing clipboard items...');
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        console.log('Item type:', item.type);
+        
+        if (item.type.indexOf('image') !== -1) {
+          console.log('Image found in clipboard.');
+          event.preventDefault();
+          event.stopPropagation();
+          
+          const blob = item.getAsFile();
+          if (!blob || !currentPath) {
+            console.log('Missing blob or currentPath:', { blob, currentPath });
+            return;
+          }
+          else {
+            console.log('Blob and currentPath are available.');
+          }
+          
+          setIsUploadingImage(true);
+          setError(null);
+          
+          try {
+            const formData = new FormData();
+            formData.append('image', blob);
+            formData.append('currentPath', currentPath);
+            
+            console.log('Uploading image...');
+            const response = await fetch('/api/upload-image', {
+              method: 'POST',
+              body: formData,
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              const markdownSyntax = `![Image](${data.path})`;
+              console.log('Image uploaded successfully:', data);
+              
+              // Insert the markdown syntax at the current cursor position
+              const selection = editorRef.getSelection();
+              const range = {
+                startLineNumber: selection?.startLineNumber || 1,
+                startColumn: selection?.startColumn || 1,
+                endLineNumber: selection?.endLineNumber || 1,
+                endColumn: selection?.endColumn || 1,
+              };
+              
+              editorRef.executeEdits('paste-image', [{
+                range: range,
+                text: markdownSyntax,
+              }]);
+              
+              // Move cursor to end of inserted text
+              const newPosition = {
+                lineNumber: range.startLineNumber,
+                column: range.startColumn + markdownSyntax.length,
+              };
+              editorRef.setPosition(newPosition);
+              
+            } else {
+              const errorData = await response.json();
+              console.error('Upload failed:', errorData);
+              setError(errorData.error || 'Failed to upload image');
+            }
+          } catch (error) {
+            console.error('Upload error:', error);
+            setError('Error uploading image: ' + error);
+          } finally {
+            setIsUploadingImage(false);
+          }
+          
+          break; // Only handle the first image found
+        }
+      }
+    };
+
+    // Add event listener to document and window
+    document.addEventListener('paste', handlePaste);
+    window.addEventListener('paste', handlePaste);
+    
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [editorRef, currentPath]);
 
   const browseDirectory = async (path: string) => {
     setLoading(true);
@@ -597,6 +711,102 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
           border: 2px solid #f57c00 !important;
           border-radius: 2px !important;
         }
+        
+        /* Preview mode styles */
+        .prose {
+          max-width: none !important;
+        }
+        
+        .prose h1 {
+          font-size: 2em;
+          font-weight: bold;
+          margin-bottom: 0.5em;
+          color: #1f2937;
+        }
+        
+        .prose h2 {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin-bottom: 0.5em;
+          color: #374151;
+        }
+        
+        .prose h3 {
+          font-size: 1.25em;
+          font-weight: bold;
+          margin-bottom: 0.5em;
+          color: #4b5563;
+        }
+        
+        .prose p {
+          margin-bottom: 1em;
+          line-height: 1.6;
+          color: #1f2937;
+        }
+        
+        .prose ul, .prose ol {
+          margin-bottom: 1em;
+          padding-left: 1.5em;
+        }
+        
+        .prose li {
+          margin-bottom: 0.5em;
+        }
+        
+        .prose blockquote {
+          border-left: 4px solid #e5e7eb;
+          padding-left: 1em;
+          margin: 1em 0;
+          color: #6b7280;
+          font-style: italic;
+        }
+        
+        .prose code {
+          background-color: #f3f4f6;
+          padding: 0.125em 0.25em;
+          border-radius: 0.25em;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 0.875em;
+          color: #1f2937;
+        }
+        
+        .prose pre {
+          background-color: #f3f4f6;
+          padding: 1em;
+          border-radius: 0.5em;
+          overflow-x: auto;
+          margin: 1em 0;
+        }
+        
+        .prose pre code {
+          background-color: transparent;
+          padding: 0;
+        }
+        
+        .prose img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5em;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          margin: 1em 0;
+        }
+        
+        .prose table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 1em 0;
+        }
+        
+        .prose th, .prose td {
+          border: 1px solid #e5e7eb;
+          padding: 0.5em;
+          text-align: left;
+        }
+        
+        .prose th {
+          background-color: #f9fafb;
+          font-weight: bold;
+        }
       `}</style>
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -743,23 +953,119 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
             {/* Monaco Editor */}
             <div className="flex-1 flex flex-col">
               <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-700">📝 Monaco Editor (VS Code)</h3>
-                {currentFilePath && (
+                <div className="flex items-center gap-3">
+                  <h3 className="text-sm font-medium text-gray-700">📝 Monaco Editor (VS Code)</h3>
+                  {isUploadingImage && (
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent"></div>
+                      <span className="text-xs">Uploading image...</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={handleSave}
-                    className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                    title="Save file (Cmd+S)"
+                    onClick={() => setIsPreviewMode(!isPreviewMode)}
+                    className={`flex items-center gap-1 ${isPreviewMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600'} text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95`}
+                    title="Toggle Preview Mode"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    Save
+                    {isPreviewMode ? 'Edit' : 'Preview'}
                   </button>
-                )}
+                  <button
+                    onClick={async () => {
+                      try {
+                        if (navigator.clipboard && navigator.clipboard.read) {
+                          const clipboardItems = await navigator.clipboard.read();
+                          console.log('Clipboard items:', clipboardItems);
+                          
+                          for (const clipboardItem of clipboardItems) {
+                            console.log('Clipboard item types:', clipboardItem.types);
+                            for (const type of clipboardItem.types) {
+                              if (type.startsWith('image/')) {
+                                const blob = await clipboardItem.getType(type);
+                                console.log('Found image blob:', blob);
+                                
+                                if (blob && currentPath) {
+                                  setIsUploadingImage(true);
+                                  
+                                  const formData = new FormData();
+                                  formData.append('image', blob);
+                                  formData.append('currentPath', currentPath);
+                                  
+                                  const response = await fetch('/api/upload-image', {
+                                    method: 'POST',
+                                    body: formData,
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    const markdownSyntax = `![Image](${data.path})`;
+                                    
+                                    if (editorRef) {
+                                      const selection = editorRef.getSelection();
+                                      const range = {
+                                        startLineNumber: selection?.startLineNumber || 1,
+                                        startColumn: selection?.startColumn || 1,
+                                        endLineNumber: selection?.endLineNumber || 1,
+                                        endColumn: selection?.endColumn || 1,
+                                      };
+                                      
+                                      editorRef.executeEdits('paste-image', [{
+                                        range: range,
+                                        text: markdownSyntax,
+                                      }]);
+                                      
+                                      const newPosition = {
+                                        lineNumber: range.startLineNumber,
+                                        column: range.startColumn + markdownSyntax.length,
+                                      };
+                                      editorRef.setPosition(newPosition);
+                                    }
+                                  }
+                                  
+                                  setIsUploadingImage(false);
+                                }
+                                break;
+                              }
+                            }
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Clipboard API error:', error);
+                        setError('Clipboard access denied. Please paste directly or use file upload.');
+                      }
+                    }}
+                    className="flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Insert image from clipboard"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    📋 Image
+                  </button>
+                  {currentFilePath && (
+                    <button
+                      onClick={handleSave}
+                      className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Save file (Cmd+S)"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      Save
+                    </button>
+                  )}
+                </div>
               </div>
               
               {/* Find Box */}
               <div className="bg-white px-4 py-3 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-500">💡 Tip: You can paste images directly into the editor!</span>
+                </div>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -844,40 +1150,75 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
               </div>
               
               <div className="flex-1 border border-gray-200 rounded-b-lg overflow-hidden">
-                <Editor
-                  height="600px"
-                  defaultLanguage="markdown"
-                  value={markdown}
-                  onChange={(value) => setMarkdown(value || '')}
-                  theme="vs"
-                  onMount={(editor, _monaco) => {
+                {isPreviewMode ? (
+                  <div className="h-full p-6 bg-white overflow-y-auto custom-scrollbar">
+                    <div className="max-w-none prose prose-sm prose-slate">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          img: ({ src, alt, ...props }) => {
+                            // Handle relative image paths
+                            if (src && src.startsWith('./images/')) {
+                              const imagePath = src.replace('./images/', `${currentPath}/images/`);
+                              const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
+                              return (
+                                <img 
+                                  src={imageUrl} 
+                                  alt={alt} 
+                                  {...props}
+                                  style={{ maxWidth: '100%', height: 'auto' }}
+                                  onError={(e) => {
+                                    console.error('Image failed to load:', imageUrl);
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              );
+                            }
+                            return <img src={src} alt={alt} {...props} />;
+                          }
+                        }}
+                      >
+                        {markdown}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                ) : (
+                  <Editor
+                    height="600px"
+                    defaultLanguage="markdown"
+                    value={markdown}
+                    onChange={(value) => setMarkdown(value || '')}
+                    theme="vs"
+                    onMount={(editor, _monaco) => {
+                    console.log('Editor mounted:', editor);
                     setEditorRef(editor);
-                  }}
-                  options={{
-                    wordWrap: 'on',
-                    lineNumbers: 'on',
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    fontSize: 14,
-                    fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                    padding: { top: 16, bottom: 16 },
-                    suggest: {
-                      showKeywords: true,
-                      showSnippets: true
-                    },
-                    quickSuggestions: true,
-                    parameterHints: { enabled: true },
-                    folding: true,
-                    renderWhitespace: 'selection',
-                    cursorBlinking: 'blink',
-                    smoothScrolling: true,
-                    find: {
-                      seedSearchStringFromSelection: 'always',
-                      autoFindInSelection: 'never',
-                      globalFindClipboard: false
-                    }
-                  }}
-                />
+                    }}
+                    options={{
+                      wordWrap: 'on',
+                      lineNumbers: 'on',
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      fontSize: 14,
+                      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                      padding: { top: 16, bottom: 16 },
+                      suggest: {
+                        showKeywords: true,
+                        showSnippets: true
+                      },
+                      quickSuggestions: true,
+                      parameterHints: { enabled: true },
+                      folding: true,
+                      renderWhitespace: 'selection',
+                      cursorBlinking: 'blink',
+                      smoothScrolling: true,
+                      find: {
+                        seedSearchStringFromSelection: 'always',
+                        autoFindInSelection: 'never',
+                        globalFindClipboard: false
+                      }
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
