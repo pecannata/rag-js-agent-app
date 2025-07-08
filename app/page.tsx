@@ -7,6 +7,7 @@ import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
 import Vectorize from './components/Vectorize';
+import MarkdownEditor from './components/MarkdownEditor';
 import { getVersionString, getCompactVersionInfo, VERSION_INFO } from './lib/version';
 
 interface ReActConfig {
@@ -31,7 +32,7 @@ export default function Home() {
   const [serpApiKey, setSerpApiKey] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
-  const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize'>('chat');
+const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | 'markdown'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere'); // Default to Cohere for deployment compatibility
   const [selectedModel, setSelectedModel] = useState<string>('qwen2.5:14b'); // Default model
@@ -267,7 +268,7 @@ export default function Home() {
 
         {/* Tab Navigation */}
         <div className="bg-white border-b border-gray-200">
-          <div className="flex">
+<div className="flex">
             <button
               onClick={() => setActiveTab('chat')}
               className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
@@ -307,6 +308,19 @@ export default function Home() {
                 <span className="font-bold">Vectorize</span>
               </span>
             </button>
+            <button
+              onClick={() => setActiveTab('markdown')}
+              className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
+                activeTab === 'markdown'
+                  ? 'border-orange-500 text-orange-600 bg-gradient-to-t from-orange-50 to-orange-25 shadow-md'
+                  : 'border-transparent text-gray-600 hover:text-orange-500 hover:border-orange-300 hover:bg-orange-25'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-xl">🖋️</span>
+                <span className="font-bold">Markdown Editor</span>
+              </span>
+            </button>
           </div>
         </div>
 
@@ -332,12 +346,16 @@ export default function Home() {
               onSelectSnippet={handleSelectSnippet}
               apiKey={apiKey}
             />
-          ) : (
-            <Vectorize 
-              apiKey={apiKey}
-            />
-          )}
-        </div>
+        ) : activeTab === 'markdown' ? (
+          <MarkdownEditor 
+            apiKey={apiKey}
+          />
+        ) : (
+          <Vectorize 
+            apiKey={apiKey}
+          />
+        )}
+      </div>
       </div>
     </div>
     </div>
