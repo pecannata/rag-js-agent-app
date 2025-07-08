@@ -1,0 +1,165 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+const VECTOR_HISTORY_FILE_PATH = path.join(process.cwd(), 'data', 'vector-message-history.json');
+
+interface VectorMessageHistoryEntry {
+  id: string;
+  message: string;
+  timestamp: string;
+  usageCount: number;
+}
+
+// Ensure the data directory and file exist
+async function ensureVectorHistoryFile() {
+  try {
+    await fs.access(VECTOR_HISTORY_FILE_PATH);
+  } catch (_error) {
+    // File doesn't exist, create it
+    const dataDir = path.dirname(VECTOR_HISTORY_FILE_PATH);
+    try {
+      await fs.access(dataDir);
+    } catch {
+      await fs.mkdir(dataDir, { recursive: true });
+    }
+    await fs.writeFile(VECTOR_HISTORY_FILE_PATH, JSON.stringify([], null, 2));
+  }
+}
+
+// Read vector message history from file
+async function readVectorMessageHistory(): Promise<VectorMessageHistoryEntry[]> {
+  try {
+    await ensureVectorHistoryFile();
+    const data = await fs.readFile(VECTOR_HISTORY_FILE_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading vector message history:', error);
+    return [];
+  }
+}
+
+// Write vector message history to file
+async function writeVectorMessageHistory(history: VectorMessageHistoryEntry[]): Promise<void> {
+  try {
+    await ensureVectorHistoryFile();
+    await fs.writeFile(VECTOR_HISTORY_FILE_PATH, JSON.stringify(history, null, 2));
+  } catch (error) {
+    console.error('Error writing vector message history:', error);
+    throw error;
+  }
+}
+
+// GET - Retrieve vector message history
+export async function GET() {
+  try {
+    const history = await readVectorMessageHistory();
+    
+    // Sort by timestamp (most recent first) and then by usage count (descending)
+    const sortedHistory = history
+      .sort((a, b) => {
+        // Primary sort: timestamp (most recent first)
+        const timestampDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        if (timestampDiff !== 0) {
+          return timestampDiff;
+        }
+        // Secondary sort: usage count (descending) for same timestamp
+        return b.usageCount - a.usageCount;
+      })
+      .slice(0, 10) // Keep only top 10 messages
+      .map(entry => entry.message); // Return only the message strings for simplicity
+    
+    return NextResponse.json({
+      success: true,
+      history: sortedHistory
+    });
+  } catch (error) {
+    console.error('Failed to get vector message history:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to retrieve vector message history'
+    }, { status: 500 });
+  }
+}
+
+// POST - Add or update message in vector history
+export async function POST(request: NextRequest) {
+  try {
+    const { message } = await request.json();
+    
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return NextResponse.json({
+        success: false,
+        error: 'Message is required and must be a non-empty string'
+      }, { status: 400 });
+    }
+    
+    const cleanMessage = message.trim();
+    const history = await readVectorMessageHistory();
+    
+    // Check if message already exists
+    const existingIndex = history.findIndex(entry => entry.message === cleanMessage);
+    
+    if (existingIndex >= 0) {
+      // Update existing message
+      const existingEntry = history[existingIndex];
+      if (existingEntry) {
+        existingEntry.usageCount += 1;
+        existingEntry.timestamp = new Date().toISOString();
+      }
+    } else {
+      // Add new message
+      const newEntry: VectorMessageHistoryEntry = {
+        id: Date.now().toString(),
+        message: cleanMessage,
+        timestamp: new Date().toISOString(),
+        usageCount: 1
+      };
+      history.push(newEntry);
+    }
+    
+    // Keep only the most recent/used 50 entries to prevent file from growing too large
+    const trimmedHistory = history
+      .sort((a, b) => {
+        // Primary sort: timestamp (most recent first)
+        const timestampDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        if (timestampDiff !== 0) {
+          return timestampDiff;
+        }
+        // Secondary sort: usage count (descending) for same timestamp
+        return b.usageCount - a.usageCount;
+      })
+      .slice(0, 50);
+    
+    await writeVectorMessageHistory(trimmedHistory);
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Message added to vector history successfully'
+    });
+  } catch (error) {
+    console.error('Failed to save message to vector history:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to save message to vector history'
+    }, { status: 500 });
+  }
+}
+
+// DELETE - Clear vector message history
+export async function DELETE() {
+  try {
+    await writeVectorMessageHistory([]);
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Vector message history cleared successfully'
+    });
+  } catch (error) {
+    console.error('Failed to clear vector message history:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to clear vector message history'
+    }, { status: 500 });
+  }
+}
