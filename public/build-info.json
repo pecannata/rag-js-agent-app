@@ -1,17 +1,17 @@
 {
-  "version": "1.0.43",
+  "version": "1.0.56",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-07T02:50:58.961Z",
-  "buildDate": "Jul 6, 2025",
-  "sourceVersion": "v1.0.42.070625",
+  "buildTime": "2025-07-08T20:10:44.050Z",
+  "buildDate": "Jul 8, 2025",
+  "sourceVersion": "v1.0.55.070825",
   "git": {
     "branch": "main",
-    "commit": "f4d4ef9f6de0047ceb3643ce8b34a759076fd0ab",
-    "shortCommit": "f4d4ef9f",
-    "commitDate": "2025-07-06 21:18:45 -0500",
-    "commitMessage": "Once in a while Llama 3.2 3B did a good job on the default query but it's domain reasoning is really bad for as something as simple has How many employees, it didn't run the database query. So, we tried qwen2.5:14b. It never produce really nice results but its domain checking was much better. Let's try Phi-3:14b"
+    "commit": "5e62d978f210716315c7f3bfb5ceeb7a08e06581",
+    "shortCommit": "5e62d978",
+    "commitDate": "2025-07-08 14:58:24 -0500",
+    "commitMessage": "Enhance Organize tab"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.42-f4d4ef9f-20250707-025058"
+  "buildSignature": "1.0.55-5e62d978-20250708-201044"
 }

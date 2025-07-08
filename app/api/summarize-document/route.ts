@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
       model: 'command-r-plus',
       temperature: 0.3, // Lower temperature for more consistent summaries
       streaming: false,
-      maxTokens: 16000,
+      // maxTokens: 16000, // Commented out due to TypeScript error
     });
 
     // Create document type-specific prompts focused on essential elements
-    const getPromptForDocumentType = (docType: string, filename: string, text: string, metadata?: any, userMessage?: string) => {
+    /* const _getPromptForDocumentType = (docType: string, filename: string, text: string, metadata?: any, userMessage?: string) => {
       const baseInstructions = `You are an expert document analyst. Your task is to create a focused, strategic summary that captures the essential intelligence and actionable insights of the document. Focus on core elements that directly support decision-making and strategic understanding.${userMessage ? `\n\n🎯 CRITICAL USER REQUIREMENT: The user has specifically requested: "${userMessage}". This is a MANDATORY requirement that must be addressed throughout your entire analysis. Every section of your summary should incorporate this perspective and directly respond to this request. This is not optional - it is the primary focus of your analysis.` : ''}`;
       
       const documentInfo = `Document: ${filename}
@@ -368,7 +368,7 @@ ${text}
 
 Detailed Comprehensive Summary:`;
       }
-    };
+    }; */
 
     // Chunk text if it's too long (Cohere has token limits)
     const maxChunkSize = 120000; // Conservative limit for Cohere

@@ -1663,3 +1663,953 @@ Import trace for requested module:
  GET /auth/signin 404 in 221ms
  GET /auth/signin 404 in 230ms
  GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 222ms
+ GET /auth/signin 404 in 224ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 212ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 208ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 213ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 213ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 213ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 212ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 215ms
+ ✓ Compiled in 525ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET /auth/signin 500 in 464ms
+ GET /auth/signin 500 in 224ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/next-font-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET /auth/signin 500 in 466ms
+ GET /auth/signin 500 in 227ms
+ GET /auth/signin 200 in 100ms
+ GET /auth/signin 200 in 17ms
+ ✓ Compiled /api/auth/[...nextauth] in 393ms (832 modules)
+ GET /api/auth/session 200 in 540ms
+ ⨯ Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ GET /api/auth/session 200 in 48ms
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET / 500 in 530ms
+ GET / 500 in 235ms
+ ⨯ Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET / 500 in 528ms
+ GET / 500 in 279ms
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET / 500 in 543ms
+ GET / 500 in 248ms
+ ⨯ Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET / 500 in 578ms
+ GET / 500 in 262ms
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Error: Cannot find module './243.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/app/page.js:74:29544)
+    at Object.<anonymous> (.next/server/app/page.js:74:29594) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ GET / 500 in 559ms
+ GET / 500 in 250ms
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/webpack-runtime.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/api/auth/[...nextauth]/route.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/require.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/load-components.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/utils.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/options.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/swc/index.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/config.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/next.js
+- /Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:198:28)
+    at <unknown> (.next/server/webpack-runtime.js:111:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:162:22)
+    at <unknown> (.next/server/pages/_document.js:1:339)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:381) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/fallback-build-manifest.json'
+}
+[?25h

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+// import ReactMarkdown from 'react-markdown';
+// import remarkGfm from 'remark-gfm';
 
 interface MarkdownEditorProps {
   apiKey: string;
@@ -47,14 +47,14 @@ interface ReadmeBrowseResponse {
   groupedReadmeFiles: { [key: string]: ReadmeFile[] };
 }
 
-export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
+export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps) {
   const [markdown, setMarkdown] = useState<string>('# Welcome to Markdown Editor\n\nThis is a **markdown editor** with Monaco Editor (VS Code).\n\n## Features\n\n- ✅ Professional code editor experience\n- ✅ Markdown syntax highlighting\n- ✅ IntelliSense and autocompletion\n- ✅ File browser for README*.md files\n- ✅ Document management\n\n## Getting Started\n\n1. Browse directories in the sidebar\n2. Click on README*.md files to open them\n3. Edit with full VS Code functionality\n4. Save and manage your documents\n\n**Happy writing!** 📝');
   const [currentPath, setCurrentPath] = useState<string>('');
   const [directories, setDirectories] = useState<DirectoryInfo[]>([]);
   const [readmeFiles, setReadmeFiles] = useState<ReadmeFile[]>([]);
   const [parentReadmeFiles, setParentReadmeFiles] = useState<ReadmeFile[]>([]);
-  const [groupedReadmeFiles, setGroupedReadmeFiles] = useState<{ [key: string]: ReadmeFile[] }>({});
-  const [parentPath, setParentPath] = useState<string>('');
+  const [_groupedReadmeFiles, _setGroupedReadmeFiles] = useState<{ [key: string]: ReadmeFile[] }>({});
+  const [_parentPath, _setParentPath] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
   const [documentTitle, setDocumentTitle] = useState('');
@@ -118,7 +118,7 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
         editorRef.revealRangeInCenter(firstMatch.range);
         
         // Add decorations to highlight all matches
-        const decorations = matches.map((match, index) => ({
+        const decorations = matches.map((match: any, index: number) => ({
           range: match.range,
           options: {
             className: index === 0 ? 'findMatch currentMatch' : 'findMatch',
@@ -172,7 +172,7 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
   const updateMatchDecorations = (activeIndex: number) => {
     if (!editorRef || currentMatches.length === 0) return;
     
-    const decorations = currentMatches.map((match, index) => ({
+    const decorations = currentMatches.map((match: any, index: number) => ({
       range: match.range,
       options: {
         className: index === activeIndex ? 'findMatch currentMatch' : 'findMatch',
@@ -184,13 +184,6 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
     setDecorationIds(newDecorationIds);
   };
 
-  // Handle find on Enter key
-  const handleFindKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleFind();
-    }
-  };
 
   const handleSave = async () => {
     if (!currentFilePath) {
@@ -296,11 +289,11 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
       if (response.ok) {
         const data: ReadmeBrowseResponse = await response.json();
         setCurrentPath(data.currentPath);
-        setParentPath(data.parentPath);
+        _setParentPath(data.parentPath);
         setDirectories(data.directories);
         setReadmeFiles(data.readmeFiles);
         setParentReadmeFiles(data.parentReadmeFiles || []);
-        setGroupedReadmeFiles(data.groupedReadmeFiles);
+        _setGroupedReadmeFiles(data.groupedReadmeFiles || {});
         // Persist the current path to localStorage
         localStorage.setItem('markdownEditor.currentPath', data.currentPath);
       } else {
@@ -552,11 +545,6 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
     );
   };
 
-  // Custom scrollbar styles
-  const scrollbarStyles = {
-    scrollbarWidth: 'thin' as const,
-    scrollbarColor: '#cbd5e1 #f1f5f9',
-  };
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -862,7 +850,7 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
                   value={markdown}
                   onChange={(value) => setMarkdown(value || '')}
                   theme="vs"
-                  onMount={(editor, monaco) => {
+                  onMount={(editor, _monaco) => {
                     setEditorRef(editor);
                   }}
                   options={{

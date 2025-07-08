@@ -1,0 +1,13 @@
+nohup: ignoring input
+
+> rag-js-agent-app@1.0.56 start
+> next start
+
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.149:3000
+
+ ✓ Starting...
+ ✓ Ready in 336ms
+(node:98650) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
