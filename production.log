@@ -1,6 +1,5 @@
-nohup: ignoring input
 
-> rag-js-agent-app@1.0.56 start
+> rag-js-agent-app@1.0.57 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -9,5 +8,5 @@ nohup: ignoring input
 
  ✓ Starting...
  ✓ Ready in 336ms
-(node:98650) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:11202) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)

@@ -404,7 +404,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                 </svg>
               </div>
-              <span className="text-xs font-bold text-slate-600 truncate flex-1">{dir.name}</span>
+              <span className="text-xs font-bold text-red-700 truncate flex-1">{dir.name}</span>
             </div>
             
             {/* Render README files in this directory */}
