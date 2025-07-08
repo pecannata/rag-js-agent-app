@@ -55,13 +55,16 @@ export async function GET() {
   try {
     const history = await readMessageHistory();
     
-    // Sort by usage count (descending) and then by timestamp (descending)
+    // Sort by timestamp (most recent first) and then by usage count (descending)
     const sortedHistory = history
       .sort((a, b) => {
-        if (b.usageCount !== a.usageCount) {
-          return b.usageCount - a.usageCount;
+        // Primary sort: timestamp (most recent first)
+        const timestampDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        if (timestampDiff !== 0) {
+          return timestampDiff;
         }
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        // Secondary sort: usage count (descending) for same timestamp
+        return b.usageCount - a.usageCount;
       })
       .slice(0, 10) // Keep only top 10 messages
       .map(entry => entry.message); // Return only the message strings for simplicity
@@ -118,10 +121,13 @@ export async function POST(request: NextRequest) {
     // Keep only the most recent/used 50 entries to prevent file from growing too large
     const trimmedHistory = history
       .sort((a, b) => {
-        if (b.usageCount !== a.usageCount) {
-          return b.usageCount - a.usageCount;
+        // Primary sort: timestamp (most recent first)
+        const timestampDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        if (timestampDiff !== 0) {
+          return timestampDiff;
         }
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        // Secondary sort: usage count (descending) for same timestamp
+        return b.usageCount - a.usageCount;
       })
       .slice(0, 50);
     
