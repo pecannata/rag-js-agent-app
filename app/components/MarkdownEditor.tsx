@@ -70,6 +70,127 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
   const [originalContent, setOriginalContent] = useState('');
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingFilePath, setPendingFilePath] = useState<string | null>(null);
+  const [findText, setFindText] = useState('');
+  const [decorationIds, setDecorationIds] = useState<string[]>([]);
+  const [findTimeout, setFindTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [currentMatches, setCurrentMatches] = useState<any[]>([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+
+  // Handle find functionality with throttling
+  const handleFind = () => {
+    if (!editorRef) return;
+    
+    // Clear previous decorations
+    if (decorationIds.length > 0) {
+      editorRef.deltaDecorations(decorationIds, []);
+      setDecorationIds([]);
+    }
+    
+    if (!findText.trim()) {
+      // Clear selection and matches if no search text
+      editorRef.setSelection(null);
+      setCurrentMatches([]);
+      setCurrentMatchIndex(0);
+      return;
+    }
+    
+    try {
+      const model = editorRef.getModel();
+      if (!model) return;
+      
+      // Find all matches
+      const matches = model.findMatches(
+        findText,
+        true, // searchOnlyEditableRange
+        false, // isRegex
+        false, // matchCase
+        null, // wordSeparators
+        true // captureMatches
+      );
+      
+      setCurrentMatches(matches);
+      setCurrentMatchIndex(0);
+      
+      if (matches.length > 0) {
+        // Select the first match
+        const firstMatch = matches[0];
+        editorRef.setSelection(firstMatch.range);
+        editorRef.revealRangeInCenter(firstMatch.range);
+        
+        // Add decorations to highlight all matches
+        const decorations = matches.map((match, index) => ({
+          range: match.range,
+          options: {
+            className: index === 0 ? 'findMatch currentMatch' : 'findMatch',
+            stickiness: 1
+          }
+        }));
+        
+        // Apply decorations and store their IDs
+        const newDecorationIds = editorRef.deltaDecorations([], decorations);
+        setDecorationIds(newDecorationIds);
+      } else {
+        // Clear selection if no matches
+        editorRef.setSelection(null);
+      }
+    } catch (error) {
+      console.error('Find error:', error);
+    }
+  };
+  
+  // Navigate to next match
+  const findNext = () => {
+    if (currentMatches.length === 0) return;
+    
+    const nextIndex = (currentMatchIndex + 1) % currentMatches.length;
+    setCurrentMatchIndex(nextIndex);
+    
+    const match = currentMatches[nextIndex];
+    editorRef.setSelection(match.range);
+    editorRef.revealRangeInCenter(match.range);
+    
+    // Update decorations to highlight current match
+    updateMatchDecorations(nextIndex);
+  };
+  
+  // Navigate to previous match
+  const findPrevious = () => {
+    if (currentMatches.length === 0) return;
+    
+    const prevIndex = currentMatchIndex === 0 ? currentMatches.length - 1 : currentMatchIndex - 1;
+    setCurrentMatchIndex(prevIndex);
+    
+    const match = currentMatches[prevIndex];
+    editorRef.setSelection(match.range);
+    editorRef.revealRangeInCenter(match.range);
+    
+    // Update decorations to highlight current match
+    updateMatchDecorations(prevIndex);
+  };
+  
+  // Update decorations to highlight current match
+  const updateMatchDecorations = (activeIndex: number) => {
+    if (!editorRef || currentMatches.length === 0) return;
+    
+    const decorations = currentMatches.map((match, index) => ({
+      range: match.range,
+      options: {
+        className: index === activeIndex ? 'findMatch currentMatch' : 'findMatch',
+        stickiness: 1
+      }
+    }));
+    
+    const newDecorationIds = editorRef.deltaDecorations(decorationIds, decorations);
+    setDecorationIds(newDecorationIds);
+  };
+
+  // Handle find on Enter key
+  const handleFindKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleFind();
+    }
+  };
 
   const handleSave = async () => {
     if (!currentFilePath) {
@@ -474,6 +595,20 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
         .custom-scrollbar::-webkit-scrollbar-thumb:vertical {
           min-height: 30px;
         }
+        
+        /* Find match highlighting */
+        .findMatch {
+          background-color: #ffeb3b !important;
+          border: 1px solid #ffc107 !important;
+          border-radius: 2px !important;
+        }
+        
+        /* Current match highlighting */
+        .currentMatch {
+          background-color: #ff9800 !important;
+          border: 2px solid #f57c00 !important;
+          border-radius: 2px !important;
+        }
       `}</style>
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -634,6 +769,92 @@ export default function MarkdownEditor({ apiKey }: MarkdownEditorProps) {
                   </button>
                 )}
               </div>
+              
+              {/* Find Box */}
+              <div className="bg-white px-4 py-3 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      value={findText}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFindText(value);
+                        
+                        // Clear previous timeout
+                        if (findTimeout) {
+                          clearTimeout(findTimeout);
+                        }
+                        
+                        // Set new timeout for throttling
+                        const newTimeout = setTimeout(() => {
+                          handleFind();
+                        }, 300); // 300ms delay
+                        
+                        setFindTimeout(newTimeout);
+                      }}
+                      onFocus={(e) => e.stopPropagation()}
+                      onBlur={(e) => e.stopPropagation()}
+                      placeholder="Find text..."
+                      className="w-full pl-10 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    {findText && (
+                      <button
+                        onClick={() => {
+                          setFindText('');
+                          if (editorRef && decorationIds.length > 0) {
+                            editorRef.deltaDecorations(decorationIds, []);
+                            setDecorationIds([]);
+                            editorRef.setSelection(null);
+                          }
+                          setCurrentMatches([]);
+                          setCurrentMatchIndex(0);
+                        }}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Match counter and navigation */}
+                  {currentMatches.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        {currentMatchIndex + 1} of {currentMatches.length}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={findPrevious}
+                          className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+                          title="Previous match"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={findNext}
+                          className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+                          title="Next match"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="flex-1 border border-gray-200 rounded-b-lg overflow-hidden">
                 <Editor
                   height="600px"

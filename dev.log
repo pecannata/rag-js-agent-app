@@ -1,0 +1,1665 @@
+nohup: ignoring input
+
+> rag-js-agent-app@1.0.43 dev
+> next dev
+
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.149:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1728ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1219ms (831 modules)
+ GET / 200 in 1533ms
+ GET / 200 in 1014ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 728ms (1085 modules)
+ GET /api/ollama/status 200 in 867ms
+ GET /api/auth/session 200 in 1381ms
+ GET /api/ollama/status 200 in 14ms
+ GET /api/ollama/status 200 in 10ms
+ GET / 200 in 173ms
+ GET / 200 in 34ms
+ GET /api/auth/session 200 in 27ms
+ GET /api/ollama/status 200 in 40ms
+ GET /api/auth/session 200 in 16ms
+ GET /api/ollama/status 200 in 21ms
+ GET /api/ollama/status 200 in 7ms
+ GET / 200 in 66ms
+ GET /api/auth/session 200 in 24ms
+ GET /api/ollama/status 200 in 29ms
+ GET /api/ollama/status 200 in 10ms
+ GET /api/auth/session 200 in 11ms
+ GET /api/ollama/status 200 in 6ms
+ ○ Compiling /api/browse-readme-files ...
+ ✓ Compiled /api/browse-readme-files in 588ms (1087 modules)
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 659ms
+ ✓ Compiled /api/read-file in 241ms (1089 modules)
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 272ms
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 274ms
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 5ms
+ ✓ Compiled in 1257ms (846 modules)
+ GET / 200 in 114ms
+ GET / 200 in 12ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 504ms (1165 modules)
+ GET / 200 in 368ms
+ GET / 200 in 10ms
+ GET / 200 in 13ms
+ GET / 200 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 947ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 214ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 248ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 217ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 220ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 216ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 219ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 220ms
+ ✓ Compiled /api/auth/[...nextauth] in 197ms (776 modules)
+ GET /api/auth/session 200 in 332ms
+ GET /api/auth/session 200 in 6ms
+ ✓ Compiled /api/browse-readme-files in 506ms (1136 modules)
+ ✓ Compiled in 1ms (514 modules)
+ GET / 200 in 354ms
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 490ms
+ ✓ Compiled /_error in 357ms (1185 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 515ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 978ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 25ms
+ ✓ Compiled in 359ms (1199 modules)
+ GET / 200 in 88ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 44ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 23ms
+ ✓ Compiled /api/auth/[...nextauth] in 362ms (734 modules)
+ GET /api/auth/session 200 in 486ms
+ GET / 200 in 179ms
+ GET /api/auth/session 200 in 16ms
+ ✓ Compiled /api/ollama/status in 90ms (749 modules)
+ GET /api/ollama/status 200 in 163ms
+ GET /api/ollama/status 200 in 8ms
+ GET /api/ollama/status 200 in 8ms
+ ✓ Compiled /api/browse-readme-files in 115ms (751 modules)
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 146ms
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 20ms
+ ✓ Compiled /api/read-file in 83ms (753 modules)
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 101ms
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 4ms
+ ✓ Compiled /_not-found in 649ms (1383 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/dd5036f8760e07bf.webpack.hot-update.json 404 in 435ms
+ GET / 200 in 88ms
+ GET / 200 in 84ms
+ GET /api/auth/session 200 in 68ms
+ GET /api/ollama/status 200 in 74ms
+ GET /api/ollama/status 200 in 7ms
+ GET /api/ollama/status 200 in 6ms
+ ✓ Compiled in 367ms (1393 modules)
+ GET / 200 in 92ms
+ ✓ Compiled /_error in 192ms (1422 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 237ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 19ms
+ ✓ Compiled in 451ms (1436 modules)
+ GET / 200 in 91ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 26ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 18ms
+ ✓ Compiled in 392ms (1136 modules)
+ GET / 200 in 85ms
+ ✓ Compiled /_error in 115ms (1165 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 142ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 17ms
+ ✓ Compiled in 189ms (1179 modules)
+ GET / 200 in 114ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 29ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 19ms
+ ✓ Compiled in 385ms (1136 modules)
+ GET / 200 in 75ms
+ ✓ Compiled /_error in 130ms (1165 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 160ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 20ms
+ ✓ Compiled in 171ms (1179 modules)
+ GET / 200 in 63ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 23ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 20ms
+ ✓ Compiled /api/auth/[...nextauth] in 361ms (734 modules)
+ GET /api/auth/session 200 in 490ms
+ GET / 200 in 163ms
+ GET /api/auth/session 200 in 17ms
+ ✓ Compiled /api/ollama/status in 95ms (749 modules)
+ GET /api/ollama/status 200 in 169ms
+ GET /api/ollama/status 200 in 8ms
+ GET /api/ollama/status 200 in 9ms
+ ✓ Compiled /api/browse-readme-files in 97ms (751 modules)
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 128ms
+ GET /api/browse-readme-files?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2F_2026%20Oracle%20Projects 200 in 19ms
+ ✓ Compiled /api/read-file in 75ms (753 modules)
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 93ms
+ GET /api/read-file?path=%2FUsers%2Fpcannata%2FMine%2FMy%20Repositories%2FREADME%20General.md 200 in 3ms
+ ✓ Compiled /_not-found in 611ms (1383 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/c87224d603566717.webpack.hot-update.json 404 in 404ms
+ GET / 200 in 26ms
+ GET / 200 in 82ms
+ GET /api/auth/session 200 in 57ms
+ GET /api/ollama/status 200 in 70ms
+ GET /api/ollama/status 200 in 6ms
+ GET /api/ollama/status 200 in 6ms
+ ✓ Compiled in 467ms (1393 modules)
+ GET / 200 in 68ms
+ ✓ Compiled /_error in 375ms (1422 modules)
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 645ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 219ms
+ ⨯ ./app/components/MarkdownEditor.tsx
+Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/app/components/MarkdownEditor.tsx[0m:498:1]
+ [2m495[0m |   };
+ [2m496[0m | 
+ [2m497[0m |   return (
+ [2m498[0m |     <div className="h-full flex flex-col bg-gray-50">
+     : [35;1m     ^^^[0m
+ [2m499[0m |       <style>{`
+ [2m500[0m |         .custom-scrollbar {
+ [2m501[0m |           scrollbar-width: thin;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/MarkdownEditor.tsx
+./app/page.tsx
+ ⨯ ./app/components/MarkdownEditor.tsx
+Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/app/components/MarkdownEditor.tsx[0m:498:1]
+ [2m495[0m |   };
+ [2m496[0m | 
+ [2m497[0m |   return (
+ [2m498[0m |     <div className="h-full flex flex-col bg-gray-50">
+     : [35;1m     ^^^[0m
+ [2m499[0m |       <style>{`
+ [2m500[0m |         .custom-scrollbar {
+ [2m501[0m |           scrollbar-width: thin;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/MarkdownEditor.tsx
+./app/page.tsx
+ ⨯ ./app/components/MarkdownEditor.tsx
+Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/app/components/MarkdownEditor.tsx[0m:498:1]
+ [2m495[0m |   };
+ [2m496[0m | 
+ [2m497[0m |   return (
+ [2m498[0m |     <div className="h-full flex flex-col bg-gray-50">
+     : [35;1m     ^^^[0m
+ [2m499[0m |       <style>{`
+ [2m500[0m |         .custom-scrollbar {
+ [2m501[0m |           scrollbar-width: thin;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/MarkdownEditor.tsx
+./app/page.tsx
+ GET /api/auth/session 500 in 296ms
+ POST /api/auth/_log 500 in 8ms
+ ○ Compiling /auth/signin ...
+ ⨯ ./app/components/MarkdownEditor.tsx
+Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/app/components/MarkdownEditor.tsx[0m:498:1]
+ [2m495[0m |   };
+ [2m496[0m | 
+ [2m497[0m |   return (
+ [2m498[0m |     <div className="h-full flex flex-col bg-gray-50">
+     : [35;1m     ^^^[0m
+ [2m499[0m |       <style>{`
+ [2m500[0m |         .custom-scrollbar {
+ [2m501[0m |           scrollbar-width: thin;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/MarkdownEditor.tsx
+./app/page.tsx
+ ⨯ ./app/components/MarkdownEditor.tsx
+Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/app/components/MarkdownEditor.tsx[0m:498:1]
+ [2m495[0m |   };
+ [2m496[0m | 
+ [2m497[0m |   return (
+ [2m498[0m |     <div className="h-full flex flex-col bg-gray-50">
+     : [35;1m     ^^^[0m
+ [2m499[0m |       <style>{`
+ [2m500[0m |         .custom-scrollbar {
+ [2m501[0m |           scrollbar-width: thin;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/MarkdownEditor.tsx
+./app/page.tsx
+ GET /auth/signin 500 in 827ms
+ GET /auth/signin 500 in 8ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 5ms
+ ✓ Compiled /_not-found in 498ms (1485 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /auth/signin 200 in 167ms
+ GET /_next/static/webpack/b0a0d7b9d12fe463.webpack.hot-update.json 404 in 169ms
+ GET /auth/signin 200 in 24ms
+ GET /_next/static/css/app/layout.css?v=1752004207545 404 in 20ms
+ GET /_next/static/chunks/main-app.js?v=1752004207545 404 in 43ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 43ms
+ GET /auth/signin 404 in 34ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /auth/signin 404 in 19ms
+ GET /auth/signin 404 in 24ms
+ GET /auth/signin 404 in 22ms
+ GET /auth/signin 404 in 18ms
+ GET /auth/signin 404 in 26ms
+ GET /auth/signin 404 in 15ms
+ GET /auth/signin 404 in 22ms
+ GET /auth/signin 404 in 22ms
+ GET /auth/signin 404 in 22ms
+ GET /auth/signin 404 in 25ms
+ GET /auth/signin 404 in 21ms
+ GET /auth/signin 404 in 19ms
+ GET /auth/signin 404 in 16ms
+ GET /auth/signin 404 in 11ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /auth/signin 404 in 16ms
+ GET /auth/signin 404 in 17ms
+ GET /auth/signin 404 in 17ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /auth/signin 404 in 18ms
+ GET /auth/signin 404 in 19ms
+ GET /auth/signin 404 in 25ms
+ GET /auth/signin 404 in 15ms
+ GET /auth/signin 404 in 25ms
+ GET /auth/signin 404 in 6ms
+ GET /auth/signin 404 in 21ms
+ GET /auth/signin 404 in 17ms
+ GET /auth/signin 404 in 12ms
+ GET /auth/signin 404 in 13ms
+ GET /auth/signin 404 in 12ms
+ GET /auth/signin 404 in 15ms
+ GET /auth/signin 404 in 12ms
+ GET /auth/signin 404 in 8ms
+ GET /auth/signin 404 in 15ms
+ GET /auth/signin 404 in 13ms
+ GET /auth/signin 404 in 12ms
+ GET /auth/signin 404 in 14ms
+ GET /auth/signin 404 in 11ms
+ GET /auth/signin 404 in 10ms
+ GET /auth/signin 404 in 14ms
+ GET /auth/signin 404 in 12ms
+ GET /auth/signin 404 in 13ms
+ ✓ Compiled in 429ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 75ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 55ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ✓ Compiled in 214ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ✓ Compiled in 245ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 60ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 48ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ✓ Compiled in 220ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 59ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 40ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ✓ Compiled in 256ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 246ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 55ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ✓ Compiled in 332ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 64ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ✓ Compiled in 206ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 55ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 44ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 84ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 57ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 42ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 31ms
+ GET /auth/signin 404 in 209ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 206ms
+ GET /auth/signin 404 in 207ms
+ GET /auth/signin 404 in 208ms
+ GET /auth/signin 404 in 207ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /auth/signin 404 in 207ms
+ GET /auth/signin 404 in 222ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 236ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 225ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 227ms
+ GET /auth/signin 404 in 225ms
+ GET /auth/signin 404 in 226ms
+ GET /auth/signin 404 in 224ms
+ GET /auth/signin 404 in 237ms
+ GET /auth/signin 404 in 230ms
+ GET /auth/signin 404 in 225ms
+ GET /auth/signin 404 in 228ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 222ms
+ GET /auth/signin 404 in 224ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 219ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 216ms
+ ✓ Compiled in 516ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 67ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 48ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 49ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 48ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 49ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 33ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ✓ Compiled in 341ms (1233 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 258ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 65ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 49ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 53ms
+ ✓ Compiled in 329ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 325ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 38ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 48ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 46ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 49ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 45ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 48ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 47ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 44ms
+ ✓ Compiled in 263ms (1247 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 58ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 60ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 52ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 51ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 50ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 87ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 57ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 45ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 54ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/app/auth/signin/page.js',
+  page: '/auth/signin'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/pcannata/Mine/My Repositories/_2026 Oracle Projects/Tools Development/rag-js-agent-app/rag-js-agent-app/.next/server/pages/_document.js'
+}
+ GET /auth/signin 500 in 32ms
+ GET /auth/signin 404 in 209ms
+ GET /auth/signin 404 in 212ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 206ms
+ GET /auth/signin 404 in 206ms
+ GET /auth/signin 404 in 206ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 224ms
+ GET /auth/signin 404 in 223ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 231ms
+ GET /auth/signin 404 in 227ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 231ms
+ GET /auth/signin 404 in 232ms
+ GET /auth/signin 404 in 226ms
+ GET /auth/signin 404 in 225ms
+ GET /auth/signin 404 in 226ms
+ GET /auth/signin 404 in 207ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 218ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 220ms
+ GET /auth/signin 404 in 216ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 214ms
+ GET /auth/signin 404 in 215ms
+ GET /auth/signin 404 in 217ms
+ GET /auth/signin 404 in 221ms
+ GET /auth/signin 404 in 230ms
+ GET /auth/signin 404 in 223ms
