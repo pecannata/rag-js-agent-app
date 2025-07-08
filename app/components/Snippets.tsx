@@ -32,6 +32,9 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
   
   // Ref for the edit form to enable auto-scrolling
   const editFormRef = useRef<HTMLDivElement>(null);
+  
+  // Store scroll position to return to after editing
+  const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
 
   // Load snippets from API and filter from localStorage on mount
   useEffect(() => {
@@ -122,10 +125,21 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
       setKeywordsText('');
       setEditingId(null);
       setIsCreating(false);
+      
+      // Return to the saved scroll position after a brief delay
+      setTimeout(() => {
+        window.scrollTo({ 
+          top: savedScrollPosition, 
+          behavior: 'smooth' 
+        });
+      }, 100);
     }
   };
 
   const handleEdit = (snippet: Snippet) => {
+    // Save current scroll position before editing
+    setSavedScrollPosition(window.scrollY);
+    
     setFormData({
       name: snippet.name,
       sqlQuery: snippet.sqlQuery,
@@ -203,6 +217,14 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
     setKeywordsText('');
     setEditingId(null);
     setIsCreating(false);
+    
+    // Return to the saved scroll position after a brief delay
+    setTimeout(() => {
+      window.scrollTo({ 
+        top: savedScrollPosition, 
+        behavior: 'smooth' 
+      });
+    }, 100);
   };
 
   const handleUseSnippet = (snippet: Snippet) => {
