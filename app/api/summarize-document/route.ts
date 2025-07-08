@@ -34,8 +34,6 @@ export async function POST(request: NextRequest) {
       model: 'command-r-plus',
       temperature: 0.3, // Lower temperature for more consistent summaries
       streaming: false,
-      // Try different parameter names for max tokens
-      max_tokens: 16000,
       maxTokens: 16000,
     });
 

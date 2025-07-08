@@ -14,11 +14,6 @@ interface MessageHistoryInputProps {
   rows?: number;
 }
 
-interface HistoryEntry {
-  message: string;
-  timestamp?: string;
-  usageCount?: number;
-}
 
 export default function MessageHistoryInput({
   value,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Snippet {
   id: string;
@@ -29,6 +29,9 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
   const [searchFilter, setSearchFilter] = useState('');
   const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
   const [keywordsText, setKeywordsText] = useState('');
+  
+  // Ref for the edit form to enable auto-scrolling
+  const editFormRef = useRef<HTMLDivElement>(null);
 
   // Load snippets from API and filter from localStorage on mount
   useEffect(() => {
@@ -132,6 +135,14 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
     setKeywordsText((snippet.keywords || []).join(', '));
     setEditingId(snippet.id);
     setIsCreating(true);
+    
+    // Scroll to the edit form after a brief delay to ensure it's rendered
+    setTimeout(() => {
+      editFormRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 100);
   };
 
   const handleGenerateKeywords = async () => {
@@ -254,7 +265,7 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
 
         {/* Create/Edit Form */}
         {isCreating && (
-          <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
+          <div ref={editFormRef} className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">
               {editingId ? 'Edit Snippet' : 'Create New Snippet'}
             </h3>
@@ -381,6 +392,7 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      type="button"
                       onClick={() => handleUseSnippet(snippet)}
                       className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
                       title="Use this snippet"
@@ -388,6 +400,7 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
                       Use
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleEdit(snippet)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
                       title="Edit snippet"
@@ -395,6 +408,7 @@ export default function Snippets({ onSelectSnippet, apiKey }: SnippetsProps) {
                       Edit
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDelete(snippet.id)}
                       className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
                       title="Delete snippet"

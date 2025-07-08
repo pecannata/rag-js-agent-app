@@ -14,11 +14,6 @@ interface VectorMessageHistoryInputProps {
   rows?: number;
 }
 
-interface HistoryEntry {
-  message: string;
-  timestamp?: string;
-  usageCount?: number;
-}
 
 export default function VectorMessageHistoryInput({
   value,
