@@ -463,11 +463,18 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
         e.preventDefault();
         handleSave();
       }
+      
+      // Prevent Enter key from triggering file upload when editor has focus
+      if (e.key === 'Enter' && editorRef && editorRef.hasTextFocus()) {
+        // Don't preventDefault here - let the editor handle Enter normally
+        // Just ensure no other handlers get triggered
+        e.stopPropagation();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentFilePath, markdown]);
+  }, [currentFilePath, markdown, editorRef]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -1300,11 +1307,23 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       className="hidden"
                       onChange={handleFileUpload}
                       accept="*/*"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }
+                      }}
                     />
                     <label
                       htmlFor="file-upload"
                       className="flex items-center gap-1 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                       title="Upload and insert file"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }
+                      }}
                     >
                       {isUploadingFile ? (
                         <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
@@ -1361,6 +1380,13 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                         }, 300); // 300ms delay
                         
                         setFindTimeout(newTimeout);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleFind();
+                        }
                       }}
                       onFocus={(e) => e.stopPropagation()}
                       onBlur={(e) => e.stopPropagation()}
