@@ -318,7 +318,7 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
             >
               <span className="flex items-center gap-2">
                 <span className="text-xl">🖋️</span>
-                <span className="font-bold">READMEs</span>
+                <span className="font-bold">Organizer</span>
               </span>
             </button>
           </div>
