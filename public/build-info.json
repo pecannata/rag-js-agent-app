@@ -1,17 +1,17 @@
 {
-  "version": "1.0.87",
+  "version": "1.0.90",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-09T15:40:28.497Z",
+  "buildTime": "2025-07-09T16:19:51.607Z",
   "buildDate": "Jul 9, 2025",
-  "sourceVersion": "v1.0.86.070925",
+  "sourceVersion": "v1.0.89.070925",
   "git": {
     "branch": "main",
-    "commit": "2b66716ec45dda0b65a4276934bea92ad17a31f7",
-    "shortCommit": "2b66716e",
-    "commitDate": "2025-07-09 10:38:14 -0500",
-    "commitMessage": "Implemented the file download functionality for the READMEs tab in Preview mode."
+    "commit": "abe2e56688dc3d7158357958cf7416c2676b9db2",
+    "shortCommit": "abe2e566",
+    "commitDate": "2025-07-09 10:57:25 -0500",
+    "commitMessage": "The custom toolbar for the Markdown editor has been successfully added. Here are the key changes:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.86-2b66716e-20250709-154028"
+  "buildSignature": "1.0.89-abe2e566-20250709-161951"
 }

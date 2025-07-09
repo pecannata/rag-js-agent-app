@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -80,7 +80,11 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
   const [savingDimensions, setSavingDimensions] = useState<string | null>(null);
+  const [autoSaveEnabled] = useState(true);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [wordCount, setWordCount] = useState(0);
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Toolbar functions for inserting markdown syntax
   const insertMarkdownSyntax = (before: string, after: string = '', defaultText: string = '') => {
@@ -127,14 +131,19 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   
   const insertBold = () => insertMarkdownSyntax('**', '**', 'bold text');
   const insertItalic = () => insertMarkdownSyntax('*', '*', 'italic text');
+  const insertStrikethrough = () => insertMarkdownSyntax('~~', '~~', 'strikethrough text');
   const insertHeader1 = () => insertMarkdownSyntax('# ', '', 'Header 1');
   const insertHeader2 = () => insertMarkdownSyntax('## ', '', 'Header 2');
   const insertHeader3 = () => insertMarkdownSyntax('### ', '', 'Header 3');
+  const insertBlockquote = () => insertMarkdownSyntax('> ', '', 'blockquote text');
   const insertUnorderedList = () => insertMarkdownSyntax('- ', '', 'List item');
   const insertOrderedList = () => insertMarkdownSyntax('1. ', '', 'List item');
+  const insertCheckbox = () => insertMarkdownSyntax('- [ ] ', '', 'task item');
   const insertLink = () => insertMarkdownSyntax('[', '](url)', 'link text');
   const insertCodeBlock = () => insertMarkdownSyntax('```\n', '\n```', 'code');
   const insertInlineCode = () => insertMarkdownSyntax('`', '`', 'code');
+  const insertHorizontalRule = () => insertMarkdownSyntax('\n---\n', '', '');
+  const insertTable = () => insertMarkdownSyntax('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n', '', '');
 
   // Handle find functionality with throttling
   const handleFind = () => {
@@ -359,6 +368,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
         // Reset unsaved changes flag
         setHasUnsavedChanges(false);
         setOriginalContent(markdown);
+        setLastSaved(new Date());
         // Could add a success message here if desired
       } else {
         const errorData = await response.json();
@@ -367,6 +377,27 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     } catch (error) {
       setError('Error saving file: ' + error);
     }
+  };
+
+  // Auto-save functionality
+  const triggerAutoSave = () => {
+    if (!autoSaveEnabled || !currentFilePath || !hasUnsavedChanges) return;
+    
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-save (3 seconds after last change)
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      handleSave();
+    }, 3000);
+  };
+
+  // Calculate word count
+  const calculateWordCount = (text: string) => {
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
   };
 
 
@@ -496,12 +527,80 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     loadPersistedData();
   }, []);
 
-  // Add keyboard shortcuts
+  // Enhanced keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      // Only handle shortcuts when editor has focus
+      if (!editorRef || !editorRef.hasTextFocus()) return;
+      
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+      
+      if (modifier && !e.shiftKey && !e.altKey) {
+        switch (e.key) {
+          case 's':
+            e.preventDefault();
+            handleSave();
+            break;
+          case 'b':
+            e.preventDefault();
+            insertBold();
+            break;
+          case 'i':
+            e.preventDefault();
+            insertItalic();
+            break;
+          case 'k':
+            e.preventDefault();
+            insertLink();
+            break;
+          case '/':
+            e.preventDefault();
+            insertCodeBlock();
+            break;
+          case 'u':
+            e.preventDefault();
+            insertUnorderedList();
+            break;
+        }
+      }
+      
+      // Shift + modifier combinations
+      if (modifier && e.shiftKey && !e.altKey) {
+        switch (e.key) {
+          case 'X':
+            e.preventDefault();
+            insertStrikethrough();
+            break;
+          case 'Q':
+            e.preventDefault();
+            insertBlockquote();
+            break;
+          case 'C':
+            e.preventDefault();
+            insertInlineCode();
+            break;
+          case 'T':
+            e.preventDefault();
+            insertTable();
+            break;
+        }
+      }
+      
+      // Header shortcuts (Ctrl/Cmd + 1-3)
+      if (modifier && ['1', '2', '3'].includes(e.key)) {
         e.preventDefault();
-        handleSave();
+        switch (e.key) {
+          case '1':
+            insertHeader1();
+            break;
+          case '2':
+            insertHeader2();
+            break;
+          case '3':
+            insertHeader3();
+            break;
+        }
       }
       
       // Prevent Enter key from triggering file upload when editor has focus
@@ -516,14 +615,18 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [currentFilePath, markdown, editorRef]);
 
-  // Track unsaved changes
+  // Track unsaved changes, auto-save, and word count
   useEffect(() => {
     if (originalContent !== '' && markdown !== originalContent) {
       setHasUnsavedChanges(true);
+      triggerAutoSave();
     } else if (markdown === originalContent) {
       setHasUnsavedChanges(false);
     }
-  }, [markdown, originalContent]);
+    
+    // Update word count
+    setWordCount(calculateWordCount(markdown));
+  }, [markdown, originalContent, autoSaveEnabled, currentFilePath]);
 
   // Save image dimensions to server when they change
   useEffect(() => {
@@ -1231,6 +1334,28 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
               <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h3 className="text-sm font-medium text-gray-700">📝 Monaco Editor (VS Code)</h3>
+                  
+                  {/* Word Count */}
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z"/>
+                    </svg>
+                    <span className="text-xs">{wordCount} words</span>
+                  </div>
+                  
+                  {/* Auto-save Status */}
+                  {autoSaveEnabled && currentFilePath && (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                      <span className="text-xs">
+                        {hasUnsavedChanges ? 'Auto-saving...' : 
+                         lastSaved ? `Saved ${lastSaved.toLocaleTimeString()}` : 'Auto-save on'}
+                      </span>
+                    </div>
+                  )}
+                  
                   {isUploadingImage && (
                     <div className="flex items-center gap-2 text-blue-600">
                       <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent"></div>
@@ -1409,6 +1534,21 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       Italic
                     </button>
                     
+                    {/* Strikethrough Button */}
+                    <button
+                      onClick={insertStrikethrough}
+                      className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Strikethrough (Ctrl+Shift+X)"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6.85 7.08C6.85 4.37 9.45 3 12.24 3c1.64 0 3 0.49 3.9 1.28c0.77 0.65 1.18 1.61 1.25 2.56l0.01 0.20h-2.42l-0.05-0.12c-0.25-0.63-0.85-1.16-1.71-1.16c-1.02 0-1.74 0.38-1.74 1.44c0 0.65 0.77 1.17 1.99 1.17h1.40v1.73h-1.40c-2.52 0-4.05-1.18-4.05-2.90zM6.85 7.08c0.13-0.86 0.67-1.64 1.46-2.18zm5.39 9.77c1.4 0 2.4-0.57 2.4-1.69c0-0.8-0.58-1.4-1.94-1.4H8.44v1.73h4.15c0.48 0 0.78 0.23 0.78 0.63c0 0.4-0.30 0.63-0.78 0.63H8.44v1.73h4.15c2.23 0 3.53-1.09 3.53-2.63c0-1.64-1.68-2.64-4.26-2.64H6.85V7.08z"/>
+                      </svg>
+                      Strike
+                    </button>
+                    
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    
                     {/* Headers */}
                     <button
                       onClick={insertHeader1}
@@ -1496,6 +1636,54 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                         <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
                       </svg>
                       ```
+                    </button>
+                    
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    
+                    {/* New Enhanced Buttons */}
+                    <button
+                      onClick={insertBlockquote}
+                      className="flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Blockquote (Ctrl+Shift+Q)"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
+                      </svg>
+                      Quote
+                    </button>
+                    
+                    <button
+                      onClick={insertCheckbox}
+                      className="flex items-center gap-1 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Checkbox"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1 .9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                      ☑ Task
+                    </button>
+                    
+                    <button
+                      onClick={insertHorizontalRule}
+                      className="flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Horizontal Rule"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 13H5v-2h14v2z"/>
+                      </svg>
+                      ---
+                    </button>
+                    
+                    <button
+                      onClick={insertTable}
+                      className="flex items-center gap-1 bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Table (Ctrl+Shift+T)"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5 4h14v2H5V4zm0 4h14v2H5V8zm0 4h14v2H5v-2zm0 4h14v2H5v-2z"/>
+                      </svg>
+                      Table
                     </button>
                   </div>
                 </div>
@@ -1603,6 +1791,20 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
+                          del: ({ children, ...props }) => (
+                            <del className="line-through text-gray-500" {...props}>
+                              {children}
+                            </del>
+                          ),
+                          input: ({ checked, ...props }) => (
+                            <input 
+                              type="checkbox" 
+                              checked={checked} 
+                              disabled 
+                              className="mr-2 align-middle" 
+                              {...props} 
+                            />
+                          ),
                           ul: ({ children, ...props }) => (
                             <ul className="list-disc ml-6 my-4 space-y-2" {...props}>
                               {children}
@@ -1613,10 +1815,75 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                               {children}
                             </ol>
                           ),
-                          li: ({ children, ...props }) => (
-                            <li className="ml-0" {...props}>
+                          li: ({ children, ...props }) => {
+                            // Check if this is a task list item
+                            const childrenArray = React.Children.toArray(children);
+                            const firstChild = childrenArray[0];
+                            
+                            // Handle task list items
+                            if (typeof firstChild === 'string' && firstChild.startsWith('[ ]')) {
+                              return (
+                                <li className="ml-0 flex items-center" {...props}>
+                                  <input type="checkbox" className="mr-2" disabled />
+                                  <span>{firstChild.substring(3)}</span>
+                                  {childrenArray.slice(1)}
+                                </li>
+                              );
+                            }
+                            
+                            if (typeof firstChild === 'string' && firstChild.startsWith('[x]')) {
+                              return (
+                                <li className="ml-0 flex items-center" {...props}>
+                                  <input type="checkbox" className="mr-2" checked disabled />
+                                  <span>{firstChild.substring(3)}</span>
+                                  {childrenArray.slice(1)}
+                                </li>
+                              );
+                            }
+                            
+                            return (
+                              <li className="ml-0" {...props}>
+                                {children}
+                              </li>
+                            );
+                          },
+                          blockquote: ({ children, ...props }) => (
+                            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4 text-gray-600" {...props}>
                               {children}
-                            </li>
+                            </blockquote>
+                          ),
+                          hr: ({ ...props }) => (
+                            <hr className="border-gray-300 my-8" {...props} />
+                          ),
+                          table: ({ children, ...props }) => (
+                            <table className="w-full border-collapse border border-gray-300 my-4" {...props}>
+                              {children}
+                            </table>
+                          ),
+                          thead: ({ children, ...props }) => (
+                            <thead className="bg-gray-50" {...props}>
+                              {children}
+                            </thead>
+                          ),
+                          tbody: ({ children, ...props }) => (
+                            <tbody {...props}>
+                              {children}
+                            </tbody>
+                          ),
+                          tr: ({ children, ...props }) => (
+                            <tr className="border-b border-gray-200" {...props}>
+                              {children}
+                            </tr>
+                          ),
+                          td: ({ children, ...props }) => (
+                            <td className="border border-gray-300 px-4 py-2" {...props}>
+                              {children}
+                            </td>
+                          ),
+                          th: ({ children, ...props }) => (
+                            <th className="border border-gray-300 px-4 py-2 font-semibold text-left" {...props}>
+                              {children}
+                            </th>
                           ),
                           a: ({ href, children, ...props }) => {
                             // Check that the link is a file and not an external link
