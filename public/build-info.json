@@ -1,17 +1,17 @@
 {
-  "version": "1.0.82",
+  "version": "1.0.84",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-09T01:37:35.547Z",
+  "buildTime": "2025-07-09T01:45:20.031Z",
   "buildDate": "Jul 8, 2025",
-  "sourceVersion": "v1.0.81.070825",
+  "sourceVersion": "v1.0.83.070825",
   "git": {
     "branch": "main",
-    "commit": "e521614eefff43d995ae83120d3d916113d3fbdc",
-    "shortCommit": "e521614e",
-    "commitDate": "2025-07-08 20:19:03 -0500",
-    "commitMessage": "implemented the image size saving functionality for the READMEs tab. Here's a summary of what was implemented:"
+    "commit": "cc4f22705e08d58be1f08db66986e606fa2245c3",
+    "shortCommit": "cc4f2270",
+    "commitDate": "2025-07-08 20:38:20 -0500",
+    "commitMessage": "Fix double scroll bar issue in READMEs edit mode"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.81-e521614e-20250709-013735"
+  "buildSignature": "1.0.83-cc4f2270-20250709-014520"
 }

@@ -376,6 +376,11 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
             loadFile(savedFilePath);
           }
         });
+      } else {
+        // If no saved path, still scroll to bottom for better layout
+        setTimeout(() => {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }, 500);
       }
     };
     
@@ -598,6 +603,11 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
         setHasUnsavedChanges(false);
         // Persist the current file path to localStorage
         localStorage.setItem('markdownEditor.currentFilePath', filePath);
+        
+        // Auto-scroll to bottom to enable proper editor scrolling
+        setTimeout(() => {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }, 100);
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to read file');
@@ -812,7 +822,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
 
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div className="h-screen flex flex-col bg-gray-50">
       <style>{`
         .custom-scrollbar {
           scrollbar-width: thin;
@@ -992,7 +1002,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
       <div className="flex flex-1 min-h-0">
         {/* File Browser Sidebar */}
         <div className="w-80 bg-gradient-to-b from-slate-50 to-slate-100 border-r border-slate-200 shadow-inner flex flex-col">
-          <div className="p-6 flex-1 overflow-y-auto custom-scrollbar min-h-0">
+          <div className="p-6 flex-1 overflow-y-auto custom-scrollbar" style={{ height: 'calc(100vh - 120px)' }}>
             {/* Current Path Card */}
             <div className="mb-4">
               <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
@@ -1101,7 +1111,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
         {/* Editor Area */}
         <div className="flex-1 flex flex-col p-6 min-h-0">
           {/* Monaco Editor */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0" style={{ height: 'calc(100vh - 120px)' }}>
               <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h3 className="text-sm font-medium text-gray-700">📝 Monaco Editor (VS Code)</h3>
