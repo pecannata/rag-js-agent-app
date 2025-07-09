@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing image or current path' }, { status: 400 });
     }
 
-    // Create images directory in the current path
-    const imagesDir = path.join(currentPath, 'images');
+    // Create README_images directory in the current path
+    const imagesDir = path.join(currentPath, 'README_images');
     
     try {
       await fs.mkdir(imagesDir, { recursive: true });
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     await fs.writeFile(filepath, buffer);
 
     // Return relative path for markdown
-    const relativePath = `./images/${filename}`;
+    const relativePath = `./README_images/${filename}`;
     
     return NextResponse.json({ 
       path: relativePath,

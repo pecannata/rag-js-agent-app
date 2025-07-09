@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No current path provided' }, { status: 400 });
     }
 
-    // Create files directory if it doesn't exist
-    const filesDir = path.join(currentPath, 'files');
+    // Create README_files directory if it doesn't exist
+    const filesDir = path.join(currentPath, 'README_files');
     if (!existsSync(filesDir)) {
       await mkdir(filesDir, { recursive: true });
     }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, buffer);
 
     // Return relative path for markdown
-    const relativePath = `./files/${fileName}`;
+    const relativePath = `./README_files/${fileName}`;
 
     console.log('File uploaded successfully:', {
       originalName,

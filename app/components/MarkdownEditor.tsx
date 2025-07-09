@@ -1433,7 +1433,11 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                             const stableKey = getStableImageKey(srcString, alt, currentFilePath || '');
                             
                             // Handle relative image paths
-                            if (srcString.startsWith('./images/')) {
+                            if (srcString.startsWith('./README_images/')) {
+                              const imagePath = srcString.replace('./README_images/', `${currentPath}/README_images/`);
+                              const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
+                            } else if (srcString.startsWith('./images/')) {
+                              // Support legacy image paths
                               const imagePath = srcString.replace('./images/', `${currentPath}/images/`);
                               const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
                               const savedDimensions = getSavedImageDimensions(srcString, alt);
