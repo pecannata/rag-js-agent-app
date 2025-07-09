@@ -48,7 +48,62 @@ interface ReadmeBrowseResponse {
 }
 
 export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps) {
-  const [markdown, setMarkdown] = useState<string>('# Welcome to Markdown Editor\n\nThis is a **markdown editor** with Monaco Editor (VS Code).\n\n## Features\n\n- ✅ Professional code editor experience\n- ✅ Markdown syntax highlighting\n- ✅ IntelliSense and autocompletion\n- ✅ File browser for README*.md files\n- ✅ Document management\n\n## Getting Started\n\n1. Browse directories in the sidebar\n2. Click on README*.md files to open them\n3. Edit with full VS Code functionality\n4. Save and manage your documents\n\n**Happy writing!** 📝');
+
+  const handleBrowseDirectory = async (path: string) => {
+    setNewFileLoading(true);
+    try {
+      const response = await fetch(`/api/browse-files?path=${encodeURIComponent(path)}`);
+      if (response.ok) {
+        const data: BrowseResponse = await response.json();
+        setNewFileDirectories(data.directories);
+        setNewFileParentPath(data.parentPath);
+        setNewFilePath(path);
+      } else {
+        console.error('Failed to browse directory');
+      }
+    } catch (error) {
+      console.error('Error browsing directory:', error);
+    } finally {
+      setNewFileLoading(false);
+    }
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
+    setCreatingFolder(true);
+    try {
+      const response = await fetch('/api/create-directory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dirPath: newFilePath,
+          dirName: newFolderName,
+        }),
+      });
+
+      if (response.ok) {
+        setShowNewFolderInput(false);
+        setNewFolderName('');
+        await handleBrowseDirectory(newFilePath);
+        
+        // If we're creating a folder in the current path, refresh the main directory listing
+        if (newFilePath === currentPath) {
+          await browseDirectory(currentPath);
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to create folder');
+      }
+
+    } catch (error) {
+      setError('Error creating folder: ' + error);
+    } finally {
+      setCreatingFolder(false);
+    }
+  };
+  const [markdown, setMarkdown] = useState<string>('# Welcome to Markdown Organizer\n\nThis is a **markdown organizer** with Monaco Editor (VS Code).\n\n## Features\n\n- ✅ Professional code editor experience\n- ✅ Markdown syntax highlighting\n- ✅ IntelliSense and autocompletion\n- ✅ File organizer for .md files\n- ✅ Document management\n- ✅ Create files and folders\n\n## Getting Started\n\n1. Browse directories in the Organizer sidebar\n2. Click on .md files to open them\n3. Create new files and folders\n4. Edit with full VS Code functionality\n5. Save and manage your documents\n\n**Happy organizing!** 📝');
   const [currentPath, setCurrentPath] = useState<string>('');
   const [directories, setDirectories] = useState<DirectoryInfo[]>([]);
   const [readmeFiles, setReadmeFiles] = useState<ReadmeFile[]>([]);
@@ -83,8 +138,20 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [autoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [wordCount, setWordCount] = useState(0);
+  const [showNewFileModal, setShowNewFileModal] = useState(false);
+  const [newFileName, setNewFileName] = useState('');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [newFilePath, setNewFilePath] = useState('');
+  const [newFileDirectories, setNewFileDirectories] = useState<DirectoryItem[]>([]);
+  const [newFileParentPath, setNewFileParentPath] = useState('');
+  const [newFileLoading, setNewFileLoading] = useState(false);
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [creatingFile, setCreatingFile] = useState(false);
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // Toolbar functions for inserting markdown syntax
   const insertMarkdownSyntax = (before: string, after: string = '', defaultText: string = '') => {
@@ -400,6 +467,191 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     return words.length;
   };
 
+  // File management functions
+  const handleNewFile = async () => {
+    setShowNewFileModal(true);
+    setNewFileName('');
+    setNewFileLoading(true);
+    
+    // Start at the current path if available, otherwise default to home directory
+    const startPath = currentPath || '';
+    setNewFilePath(startPath);
+    
+    try {
+      const response = await fetch(`/api/browse-files${startPath ? `?path=${encodeURIComponent(startPath)}` : ''}`);
+      if (response.ok) {
+        const data: BrowseResponse = await response.json();
+        setNewFileDirectories(data.directories);
+        setNewFileParentPath(data.parentPath);
+        setNewFilePath(data.currentPath);
+      } else {
+        console.error('Failed to browse directory');
+      }
+    } catch (error) {
+      console.error('Error browsing directory:', error);
+    } finally {
+      setNewFileLoading(false);
+    }
+  };
+
+  const createNewFile = async () => {
+    console.log('=== createNewFile called ===');
+    console.log('newFileName:', newFileName);
+    console.log('newFilePath:', newFilePath);
+    
+    if (!newFileName.trim() || !newFilePath) {
+      console.log('Validation failed - missing name or path');
+      setError('Please enter a file name and select a directory');
+      return;
+    }
+
+    setCreatingFile(true);
+    setError(null);
+
+    // Ensure the file has .md extension
+    const fileName = newFileName.endsWith('.md') ? newFileName : `${newFileName}.md`;
+    const filePath = `${newFilePath}/${fileName}`;
+
+    console.log('Creating file at:', filePath);
+
+    // Simple markdown content
+    const content = `# ${newFileName}\n\nStart writing here...`;
+    console.log('Content to save:', content);
+
+    try {
+      console.log('Making fetch request to /api/save-file');
+      const response = await fetch('/api/save-file', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: filePath,
+          content: content,
+        }),
+      });
+
+      console.log('Response received:', response.status, response.statusText);
+
+      if (response.ok) {
+        console.log('File created successfully');
+        // Load the new file
+        setMarkdown(content);
+        setOriginalContent(content);
+        setCurrentFilePath(filePath);
+        setDocumentTitle(fileName);
+        setHasUnsavedChanges(false);
+        setShowNewFileModal(false);
+        setError(null);
+
+        // Set the current path to the new file's directory and refresh the directory listing
+        console.log('Refreshing directory listing');
+        await browseDirectory(newFilePath);
+        console.log('Directory refreshed');
+      } else {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        setError(errorData.error || 'Failed to create file');
+      }
+    } catch (error) {
+      console.error('Catch error:', error);
+      setError('Error creating file: ' + String(error));
+    } finally {
+      console.log('Setting creatingFile to false');
+      setCreatingFile(false);
+    }
+  };
+
+  const exportAsHTML = () => {
+    const contentHtml = document.querySelector('.prose')?.innerHTML || '';
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${documentTitle || 'Markdown Document'}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; }
+    p { margin-bottom: 1em; }
+    ul, ol { margin-bottom: 1em; padding-left: 2em; }
+    blockquote { border-left: 4px solid #ccc; margin: 1em 0; padding-left: 1em; color: #666; font-style: italic; }
+    code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-family: 'Monaco', 'Consolas', monospace; }
+    pre { background: #f5f5f5; padding: 1em; border-radius: 5px; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    del { color: #888; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+    svg { width: 16px; height: 16px; vertical-align: middle; }
+    .inline-flex { display: inline-flex; align-items: center; gap: 4px; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  ${contentHtml}
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${documentTitle || 'document'}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAsPDF = () => {
+    // Create a new window with the content for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const contentHtml = document.querySelector('.prose')?.innerHTML || '';
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${documentTitle || 'Markdown Document'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; page-break-after: avoid; }
+    p { margin-bottom: 1em; }
+    ul, ol { margin-bottom: 1em; padding-left: 2em; }
+    blockquote { border-left: 4px solid #ccc; margin: 1em 0; padding-left: 1em; color: #666; font-style: italic; }
+    code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-family: 'Monaco', 'Consolas', monospace; }
+    pre { background: #f5f5f5; padding: 1em; border-radius: 5px; overflow-x: auto; page-break-inside: avoid; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; page-break-inside: avoid; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    del { color: #888; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+    svg { width: 16px; height: 16px; vertical-align: middle; }
+    .inline-flex { display: inline-flex; align-items: center; gap: 4px; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()" style="margin-bottom: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Print/Save as PDF</button>
+  </div>
+  ${contentHtml}
+</body>
+</html>`;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.focus();
+  };
+
 
   const handleSaveAndContinue = async () => {
     await handleSave();
@@ -526,6 +778,21 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     
     loadPersistedData();
   }, []);
+
+  // Click outside to close export modal
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportModal) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.export-modal')) {
+          setShowExportModal(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExportModal]);
 
   // Enhanced keyboard shortcuts
   useEffect(() => {
@@ -1212,7 +1479,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* Removed New and Export buttons - not needed for README editing */}
+            {/* Removed New and Export buttons - not needed for file editing */}
           </div>
         </div>
       </div>
@@ -1260,7 +1527,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 1l4 4-4 4" />
                 </svg>
               </div>
-              <h3 className="text-base font-semibold text-slate-800">File Browser</h3>
+              <h3 className="text-base font-semibold text-slate-800">Organizer</h3>
             </div>
 
             {/* Error Display */}
@@ -1275,7 +1542,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
               </div>
             )}
 
-            {/* README Files Display */}
+            {/* Files and Directories Display */}
             <div className="space-y-2">
               {!pathBrowserInitialized ? (
                 <div className="text-center py-6">
@@ -1317,7 +1584,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                         </svg>
                       </div>
-                      <p className="text-slate-500 text-xs font-medium">No README*.md files found</p>
+                      <p className="text-slate-500 text-xs font-medium">No files found</p>
                       <p className="text-slate-400 text-xs mt-1">Try selecting a different path</p>
                     </div>
                   )}
@@ -1499,6 +1766,57 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       </svg>
                       Save
                     </button>
+                  )}
+                  
+                  {/* New File Button */}
+                  <button
+                    onClick={handleNewFile}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Create new file"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    New File
+                  </button>
+                  
+                  {/* Export Button - Only show in Preview mode */}
+                  {isPreviewMode && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowExportModal(!showExportModal)}
+                        className="flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                        title="Export document"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export
+                      </button>
+                      
+                      {showExportModal && (
+                        <div className="export-modal absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                          <button
+                            onClick={() => { exportAsHTML(); setShowExportModal(false); }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            Export as HTML
+                          </button>
+                          <button
+                            onClick={() => { exportAsPDF(); setShowExportModal(false); }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Export as PDF
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -2271,6 +2589,174 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200"
               >
                 Save and Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* New File Modal */}
+      {showNewFileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-[600px] max-h-[700px] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h3 className="text-lg font-semibold">📝 Create New File</h3>
+              <button
+                onClick={() => setShowNewFileModal(false)}
+                className="text-white hover:text-gray-200 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Directory Browser Section */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Current Path Display */}
+              <div className="px-6 py-3 bg-gray-50 border-b">
+                <p className="text-sm text-gray-600 mb-1">Selected Directory:</p>
+                <p className="text-sm font-mono bg-white p-2 rounded border break-all">
+                  {newFilePath || 'Loading...'}
+                </p>
+              </div>
+              
+              {/* New Folder Input */}
+              {showNewFolderInput && (
+                <div className="px-6 py-3 bg-blue-50 border-b">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newFolderName.trim() && !creatingFolder) {
+                          handleCreateFolder();
+                        }
+                        if (e.key === 'Escape') {
+                          setShowNewFolderInput(false);
+                          setNewFolderName('');
+                        }
+                      }}
+                      placeholder="Enter new folder name"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleCreateFolder}
+                      disabled={!newFolderName.trim() || creatingFolder}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition duration-200"
+                    >
+                      {creatingFolder ? 'Creating...' : 'Create'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowNewFolderInput(false);
+                        setNewFolderName('');
+                      }}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Directory Browser */}
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-700">Choose Directory:</h4>
+                  <button
+                    onClick={() => setShowNewFolderInput(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200"
+                  >
+                    📁 New Folder
+                  </button>
+                </div>
+                
+                {newFileLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {/* Up Directory Button */}
+                    {newFilePath && newFileParentPath && newFilePath !== newFileParentPath && (
+                      <button
+                        onClick={() => handleBrowseDirectory(newFileParentPath)}
+                        className="w-full text-left p-3 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center gap-3"
+                      >
+                        <span className="text-lg">📁</span>
+                        <span className="font-medium">..</span>
+                        <span className="text-sm text-gray-500">(Up one level)</span>
+                      </button>
+                    )}
+                    
+                    {/* Directories */}
+                    {newFileDirectories.map((dir) => (
+                      <button
+                        key={dir.path}
+                        onClick={() => handleBrowseDirectory(dir.path)}
+                        className="w-full text-left p-3 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center gap-3"
+                      >
+                        <span className="text-lg">📁</span>
+                        <span className="font-medium truncate">{dir.name}</span>
+                      </button>
+                    ))}
+                    
+                    {newFileDirectories.length === 0 && (
+                      <p className="text-gray-500 text-center py-8">
+                        No directories found
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {/* File Creation Form */}
+              <div className="px-6 py-4 border-t space-y-4">
+                <div>
+                  <label htmlFor="fileName" className="block text-sm font-medium text-gray-700 mb-1">
+                    File Name
+                  </label>
+                  <input
+                    type="text"
+                    id="fileName"
+                    value={newFileName}
+                    onChange={(e) => setNewFileName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newFileName.trim() && newFilePath) {
+                        createNewFile();
+                      }
+                    }}
+                    placeholder="Enter file name (e.g., my-document)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">.md extension will be added automatically</p>
+                </div>
+                
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <p className="text-sm font-medium text-gray-700 mb-1">File will be created as:</p>
+                  <p className="text-xs text-gray-600">
+                    {newFilePath ? `${newFilePath}/${newFileName ? (newFileName.endsWith('.md') ? newFileName : `${newFileName}.md`) : 'filename.md'}` : 'Select a directory first'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowNewFileModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createNewFile}
+                disabled={!newFileName.trim() || !newFilePath || creatingFile}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition duration-200"
+              >
+                {creatingFile ? 'Creating...' : 'Create File'}
               </button>
             </div>
           </div>

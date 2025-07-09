@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied to: ' + resolvedPath }, { status: 403 });
     }
     
-    // Ensure the file is a README*.md file
+    // Ensure the file is a .md file
     const fileName = path.basename(filePath).toLowerCase();
-    if (!fileName.startsWith('readme') || !fileName.endsWith('.md')) {
-      return NextResponse.json({ error: 'Can only save README*.md files' }, { status: 400 });
+    if (!fileName.endsWith('.md')) {
+      return NextResponse.json({ error: 'Can only save .md files' }, { status: 400 });
     }
     
     // Save the file

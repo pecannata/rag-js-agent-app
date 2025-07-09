@@ -1,17 +1,17 @@
 {
-  "version": "1.0.90",
+  "version": "1.0.99",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-09T16:19:51.607Z",
+  "buildTime": "2025-07-09T17:29:31.853Z",
   "buildDate": "Jul 9, 2025",
-  "sourceVersion": "v1.0.89.070925",
+  "sourceVersion": "v1.0.98.070925",
   "git": {
     "branch": "main",
-    "commit": "abe2e56688dc3d7158357958cf7416c2676b9db2",
-    "shortCommit": "abe2e566",
-    "commitDate": "2025-07-09 10:57:25 -0500",
-    "commitMessage": "The custom toolbar for the Markdown editor has been successfully added. Here are the key changes:"
+    "commit": "d0ef617e760e48ed7f259a0fda5bf545ae12a58a",
+    "shortCommit": "d0ef617e",
+    "commitDate": "2025-07-09 11:22:07 -0500",
+    "commitMessage": "Did"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.89-abe2e566-20250709-161951"
+  "buildSignature": "1.0.98-d0ef617e-20250709-172931"
 }
