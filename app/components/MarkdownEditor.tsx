@@ -76,6 +76,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [currentMatches, setCurrentMatches] = useState<any[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
   const [savingDimensions, setSavingDimensions] = useState<string | null>(null);
@@ -349,6 +350,74 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const handleCancelFileSwitch = () => {
     setPendingFilePath(null);
     setShowUnsavedWarning(false);
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !currentPath) {
+      setError('No file selected or current path not available');
+      return;
+    }
+
+    setIsUploadingFile(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('currentPath', currentPath);
+
+      const response = await fetch('/api/upload-file', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const fileName = file.name;
+        const fileExtension = fileName.split('.').pop()?.toLowerCase();
+        
+        // Create appropriate markdown syntax based on file type
+        let markdownSyntax = '';
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+          markdownSyntax = `![${fileName}](${data.path})`;
+        } else {
+          markdownSyntax = `[${fileName}](${data.path})`;
+        }
+
+        // Insert the markdown syntax at the current cursor position
+        if (editorRef) {
+          const selection = editorRef.getSelection();
+          const range = {
+            startLineNumber: selection?.startLineNumber || 1,
+            startColumn: selection?.startColumn || 1,
+            endLineNumber: selection?.endLineNumber || 1,
+            endColumn: selection?.endColumn || 1,
+          };
+
+          editorRef.executeEdits('upload-file', [{
+            range: range,
+            text: markdownSyntax,
+          }]);
+
+          // Move cursor to end of inserted text
+          const newPosition = {
+            lineNumber: range.startLineNumber,
+            column: range.startColumn + markdownSyntax.length,
+          };
+          editorRef.setPosition(newPosition);
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to upload file');
+      }
+    } catch (error) {
+      setError('Error uploading file: ' + error);
+    } finally {
+      setIsUploadingFile(false);
+      // Clear the file input
+      event.target.value = '';
+    }
   };
 
   // Load persisted path, file, and image dimensions on component mount
@@ -1121,6 +1190,12 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       <span className="text-xs">Uploading image...</span>
                     </div>
                   )}
+                  {isUploadingFile && (
+                    <div className="flex items-center gap-2 text-teal-600">
+                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-teal-600 border-t-transparent"></div>
+                      <span className="text-xs">Uploading file...</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -1218,6 +1293,29 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     </svg>
                     Image from clipboard
                   </button>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept="*/*"
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="flex items-center gap-1 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      title="Upload and insert file"
+                    >
+                      {isUploadingFile ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                      ) : (
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      )}
+                      {isUploadingFile ? 'Uploading...' : 'Upload File'}
+                    </label>
+                  </div>
                   {currentFilePath && (
                     <button
                       onClick={handleSave}
