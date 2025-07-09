@@ -156,6 +156,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [showTOCInsertModal, setShowTOCInsertModal] = useState(false);
   const [tocInsertLevel, setTocInsertLevel] = useState(3); // Level for inserting TOC
   const [tocIncludeSpacing, setTocIncludeSpacing] = useState(false); // Add spacing between levels
+  const [showCheatSheet, setShowCheatSheet] = useState(false); // Markdown cheat sheet modal
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -253,8 +254,8 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     if (tocIncludeSpacing) {
       // Group headers by level and add spacing between different levels using sections
       let lastLevel = 0;
-      let currentSection = [];
-      const sections = [];
+      let currentSection: typeof filteredHeaders = [];
+      const sections: typeof filteredHeaders[] = [];
       
       filteredHeaders.forEach((header, index) => {
         if (header.isSpace) {
@@ -301,10 +302,10 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
       });
     } else {
       // Standard TOC with manual spacing markers - break into separate list sections
-      let currentSection = [];
-      const sections = [];
+      let currentSection: typeof filteredHeaders = [];
+      const sections: typeof filteredHeaders[] = [];
       
-      filteredHeaders.forEach((header, index) => {
+      filteredHeaders.forEach((header) => {
         if (header.isSpace) {
           // End current section and start a new one
           if (currentSection.length > 0) {
@@ -2023,6 +2024,18 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     New File
                   </button>
                   
+                  {/* Markdown Cheat Sheet Button */}
+                  <button
+                    onClick={() => setShowCheatSheet(true)}
+                    className="flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Markdown Cheat Sheet"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Cheat Sheet
+                  </button>
+                  
                   {/* Export Button - Only show in Preview mode */}
                   {isPreviewMode && (
                     <div className="relative">
@@ -3244,6 +3257,212 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition duration-200"
                 >
                   Insert TOC
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Markdown Cheat Sheet Modal */}
+      {showCheatSheet && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">📝 Markdown Cheat Sheet</h2>
+                <button
+                  onClick={() => setShowCheatSheet(false)}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Headers */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">📋 Headers</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded"># H1</code>
+                      <span className="text-gray-600">Main Title</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">## H2</code>
+                      <span className="text-gray-600">Section</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">### H3</code>
+                      <span className="text-gray-600">Subsection</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">#### H4</code>
+                      <span className="text-gray-600">Sub-subsection</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Text Formatting */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">✨ Text Formatting</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">**bold**</code>
+                      <span className="font-bold">bold</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">*italic*</code>
+                      <span className="italic">italic</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">~~strike~~</code>
+                      <span className="line-through">strikethrough</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="bg-gray-200 px-2 py-1 rounded">`code`</code>
+                      <span className="bg-gray-200 px-1 rounded font-mono text-xs">inline code</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Lists */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">📝 Lists</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">- item</code>
+                      <span className="text-gray-600 ml-2">Bullet list</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">1. item</code>
+                      <span className="text-gray-600 ml-2">Numbered list</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">- [ ] task</code>
+                      <span className="text-gray-600 ml-2">Task list</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">- [x] done</code>
+                      <span className="text-gray-600 ml-2">Completed task</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Links & Images */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">🔗 Links & Images</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded text-xs">[text](url)</code>
+                      <span className="text-gray-600 ml-2">Link</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded text-xs">![alt](url)</code>
+                      <span className="text-gray-600 ml-2">Image</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded text-xs">[ref]: url</code>
+                      <span className="text-gray-600 ml-2">Reference</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Code Blocks */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">💻 Code Blocks</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">```js</code>
+                      <span className="text-gray-600 ml-2">Code block</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">```</code>
+                      <span className="text-gray-600 ml-2">Close block</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2">
+                      Languages: js, python, html, css, etc.
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Other Elements */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-800">🔧 Other Elements</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">{'> quote'}</code>
+                      <span className="text-gray-600 ml-2">Blockquote</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded">---</code>
+                      <span className="text-gray-600 ml-2">Horizontal rule</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded text-xs">| A | B |</code>
+                      <span className="text-gray-600 ml-2">Table</span>
+                    </div>
+                    <div>
+                      <code className="bg-gray-200 px-2 py-1 rounded text-xs">|---|---|</code>
+                      <span className="text-gray-600 ml-2">Table separator</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Keyboard Shortcuts */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-semibold mb-3 text-blue-900">⌨️ Keyboard Shortcuts</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span>Bold</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+B</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Italic</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+I</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Save</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+S</kbd>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span>Link</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+K</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Code Block</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+/</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Unordered List</span>
+                      <kbd className="bg-white px-2 py-1 rounded border">Ctrl+U</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Pro Tips */}
+              <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                <h3 className="font-semibold mb-3 text-green-900">💡 Pro Tips</h3>
+                <ul className="text-sm text-green-800 space-y-1">
+                  <li>• Use the toolbar buttons for quick formatting</li>
+                  <li>• Paste images directly into the editor</li>
+                  <li>• Use the TOC button to generate table of contents</li>
+                  <li>• Files are auto-saved every 3 seconds</li>
+                  <li>• Use {'<!-- TOC-SPACE -->'} for custom TOC spacing</li>
+                </ul>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowCheatSheet(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Got it!
                 </button>
               </div>
             </div>
