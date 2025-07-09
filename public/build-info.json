@@ -1,17 +1,17 @@
 {
-  "version": "1.0.85",
+  "version": "1.0.87",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-09T01:52:22.577Z",
-  "buildDate": "Jul 8, 2025",
-  "sourceVersion": "v1.0.84.070825",
+  "buildTime": "2025-07-09T15:40:28.497Z",
+  "buildDate": "Jul 9, 2025",
+  "sourceVersion": "v1.0.86.070925",
   "git": {
     "branch": "main",
-    "commit": "6768acb9312ef8dba2a052ffaf952bbdd0e1a4ca",
-    "shortCommit": "6768acb9",
-    "commitDate": "2025-07-08 20:45:48 -0500",
-    "commitMessage": "Auto-scroll main window to bottom when files are loaded"
+    "commit": "2b66716ec45dda0b65a4276934bea92ad17a31f7",
+    "shortCommit": "2b66716e",
+    "commitDate": "2025-07-09 10:38:14 -0500",
+    "commitMessage": "Implemented the file download functionality for the READMEs tab in Preview mode."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.84-6768acb9-20250709-015222"
+  "buildSignature": "1.0.86-2b66716e-20250709-154028"
 }

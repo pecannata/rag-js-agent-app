@@ -82,6 +82,60 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [savingDimensions, setSavingDimensions] = useState<string | null>(null);
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
 
+  // Toolbar functions for inserting markdown syntax
+  const insertMarkdownSyntax = (before: string, after: string = '', defaultText: string = '') => {
+    if (!editorRef) return;
+    
+    const selection = editorRef.getSelection();
+    if (!selection) return;
+    
+    const model = editorRef.getModel();
+    if (!model) return;
+    
+    const selectedText = model.getValueInRange(selection);
+    const textToInsert = selectedText || defaultText;
+    const newText = `${before}${textToInsert}${after}`;
+    
+    editorRef.executeEdits('toolbar-insert', [{
+      range: selection,
+      text: newText
+    }]);
+    
+    // Set cursor position after insertion
+    const startLine = selection.startLineNumber;
+    const startCol = selection.startColumn;
+    const endCol = startCol + newText.length;
+    
+    if (!selectedText && defaultText) {
+      // Select the default text so user can replace it
+      const selectStart = startCol + before.length;
+      const selectEnd = startCol + before.length + defaultText.length;
+      editorRef.setSelection({
+        startLineNumber: startLine,
+        startColumn: selectStart,
+        endLineNumber: startLine,
+        endColumn: selectEnd
+      });
+    } else {
+      // Move cursor to end of inserted text
+      editorRef.setPosition({
+        lineNumber: startLine,
+        column: endCol
+      });
+    }
+  };
+  
+  const insertBold = () => insertMarkdownSyntax('**', '**', 'bold text');
+  const insertItalic = () => insertMarkdownSyntax('*', '*', 'italic text');
+  const insertHeader1 = () => insertMarkdownSyntax('# ', '', 'Header 1');
+  const insertHeader2 = () => insertMarkdownSyntax('## ', '', 'Header 2');
+  const insertHeader3 = () => insertMarkdownSyntax('### ', '', 'Header 3');
+  const insertUnorderedList = () => insertMarkdownSyntax('- ', '', 'List item');
+  const insertOrderedList = () => insertMarkdownSyntax('1. ', '', 'List item');
+  const insertLink = () => insertMarkdownSyntax('[', '](url)', 'link text');
+  const insertCodeBlock = () => insertMarkdownSyntax('```\n', '\n```', 'code');
+  const insertInlineCode = () => insertMarkdownSyntax('`', '`', 'code');
+
   // Handle find functionality with throttling
   const handleFind = () => {
     if (!editorRef) return;
@@ -270,20 +324,6 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     });
   };
 
-  // Helper function to reset all image dimensions for current file
-  const resetAllImageDimensions = () => {
-    if (!currentFilePath) return;
-    
-    setImageDimensions(prev => {
-      const newDimensions = { ...prev };
-      Object.keys(newDimensions).forEach(key => {
-        if (key.startsWith(currentFilePath + ':')) {
-          delete newDimensions[key];
-        }
-      });
-      return newDimensions;
-    });
-  };
 
 
   // Helper function to get saved image dimensions
@@ -1338,6 +1378,129 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                 </div>
               </div>
               
+              {/* Markdown Toolbar */}
+              {!isPreviewMode && (
+                <div className="bg-white px-4 py-3 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-500">🔧 Markdown Formatting Tools</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Bold Button */}
+                    <button
+                      onClick={insertBold}
+                      className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Bold (Ctrl+B)"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h8.5c2.76 0 5 2.24 5 5 0 1.1-.35 2.12-.94 2.95.59.83.94 1.85.94 2.95 0 2.76-2.24 5-5 5H6V4zm3 6h4.5c1.1 0 2-.9 2-2s-.9-2-2-2H9v4zm0 6h5.5c1.1 0 2-.9 2-2s-.9-2-2-2H9v4z"/>
+                      </svg>
+                      Bold
+                    </button>
+                    
+                    {/* Italic Button */}
+                    <button
+                      onClick={insertItalic}
+                      className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Italic (Ctrl+I)"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/>
+                      </svg>
+                      Italic
+                    </button>
+                    
+                    {/* Headers */}
+                    <button
+                      onClick={insertHeader1}
+                      className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Header 1"
+                    >
+                      H1
+                    </button>
+                    
+                    <button
+                      onClick={insertHeader2}
+                      className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Header 2"
+                    >
+                      H2
+                    </button>
+                    
+                    <button
+                      onClick={insertHeader3}
+                      className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Header 3"
+                    >
+                      H3
+                    </button>
+                    
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    
+                    {/* Lists */}
+                    <button
+                      onClick={insertUnorderedList}
+                      className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Unordered List"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/>
+                      </svg>
+                      List
+                    </button>
+                    
+                    <button
+                      onClick={insertOrderedList}
+                      className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Ordered List"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/>
+                      </svg>
+                      1. List
+                    </button>
+                    
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    
+                    {/* Link */}
+                    <button
+                      onClick={insertLink}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Link"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                      </svg>
+                      Link
+                    </button>
+                    
+                    {/* Code */}
+                    <button
+                      onClick={insertInlineCode}
+                      className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Inline Code"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                      </svg>
+                      Code
+                    </button>
+                    
+                    <button
+                      onClick={insertCodeBlock}
+                      className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Code Block"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                      </svg>
+                      ```
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {/* Find Box */}
               <div className="bg-white px-4 py-3 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-2">
@@ -1436,10 +1599,25 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
               <div className="flex-1 border border-gray-200 rounded-b-lg overflow-hidden">
                 {isPreviewMode ? (
                   <div className="h-full p-6 bg-white overflow-y-auto custom-scrollbar">
-                    <div className="max-w-none prose prose-sm prose-slate">
+                    <div className="max-w-none prose prose-sm prose-slate prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4">
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
+                          ul: ({ children, ...props }) => (
+                            <ul className="list-disc ml-6 my-4 space-y-2" {...props}>
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({ children, ...props }) => (
+                            <ol className="list-decimal ml-6 my-4 space-y-2" {...props}>
+                              {children}
+                            </ol>
+                          ),
+                          li: ({ children, ...props }) => (
+                            <li className="ml-0" {...props}>
+                              {children}
+                            </li>
+                          ),
                           a: ({ href, children, ...props }) => {
                             // Check that the link is a file and not an external link
                             const isFileLink = href && 
