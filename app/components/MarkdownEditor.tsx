@@ -1216,18 +1216,6 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     </svg>
                     {isPreviewMode ? 'Edit' : 'Preview'}
                   </button>
-                  {isPreviewMode && currentFilePath && (
-                    <button
-                      onClick={resetAllImageDimensions}
-                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                      title="Reset all image sizes to default"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Reset All Image Sizes
-                    </button>
-                  )}
                   <button
                     onClick={async () => {
                       try {
@@ -1452,6 +1440,46 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
+                          a: ({ href, children, ...props }) => {
+                            // Check that the link is a file and not an external link
+                            const isFileLink = href && 
+                              !href.startsWith('http') && 
+                              !href.startsWith('mailto:') && 
+                              !href.startsWith('#') && 
+                              !href.startsWith('javascript:');
+                            
+                            
+                            let downloadUrl = href;
+                            if (isFileLink && href?.startsWith('./')) {
+                              // Handle relative file paths
+                              let filePath = href.replace('./', `${currentPath}/`);
+                              
+                              // Check if the path is already URL-encoded by looking for % characters
+                              // If not encoded, encode it. If already encoded, use as is.
+                              const isAlreadyEncoded = href.includes('%');
+                              if (!isAlreadyEncoded) {
+                                // Path has spaces/special chars but isn't encoded - encode it
+                                filePath = filePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+                              }
+                              
+                              downloadUrl = `/api/serve-file?path=${encodeURIComponent(filePath)}`;
+                            }
+                            
+                            return (
+                              <span className="inline-flex items-center gap-1">
+                                {isFileLink && (
+                                  <a href={downloadUrl} download className="inline-flex items-center text-blue-600 hover:text-blue-800 mr-2" title="Download file">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                                    </svg>
+                                  </a>
+                                )}
+                                <a href={href} {...props}>
+                                  {children}
+                                </a>
+                              </span>
+                            );
+                          },
                           img: ({ src, alt, ...props }) => {
                             // Get stable key and display index for this image
                             const srcString = typeof src === 'string' ? src : '';
@@ -1462,6 +1490,64 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                             if (srcString.startsWith('./README_images/')) {
                               const imagePath = srcString.replace('./README_images/', `${currentPath}/README_images/`);
                               const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
+                              const savedDimensions = getSavedImageDimensions(srcString, alt);
+                              
+                              return (
+                                <div 
+                                  className="resizable-image-wrapper"
+                                  style={{
+                                    resize: 'both',
+                                    overflow: 'hidden',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    display: 'inline-block',
+                                    minWidth: '100px',
+                                    minHeight: '100px',
+                                    maxWidth: '100%',
+                                    width: `${savedDimensions.width}px`,
+                                    height: `${savedDimensions.height}px`,
+                                    margin: '1rem 0',
+                                    position: 'relative'
+                                  }}
+                                  onMouseUp={(e) => {
+                                    const element = e.currentTarget;
+                                    const rect = element.getBoundingClientRect();
+                                    saveImageDimensions(srcString, rect.width, rect.height, alt);
+                                  }}
+                                  title="Resize me! Dimensions are automatically saved."
+                                >
+                                  <img 
+                                    src={imageUrl} 
+                                    alt={alt} 
+                                    {...props}
+                                    style={{ 
+                                      width: '100%', 
+                                      height: '100%', 
+                                      objectFit: 'contain',
+                                      display: 'block'
+                                    }}
+                                    onError={(e) => {
+                                      console.error('Image failed to load:', imageUrl);
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                  {savingDimensions === stableKey && (
+                                    <div className="absolute top-1 right-1 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium animate-pulse">
+                                      Saved! 💾
+                                    </div>
+                                  )}
+                                  <div className="absolute top-1 left-1 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-medium opacity-75">
+                                    #{displayIndex + 1} {savedDimensions.width}×{savedDimensions.height}
+                                  </div>
+                                  <button
+                                    onClick={() => resetImageDimensions(srcString, alt)}
+                                    className="absolute bottom-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs font-medium opacity-75 hover:opacity-100 transition-opacity"
+                                    title="Reset to default size"
+                                  >
+                                    ↺
+                                  </button>
+                                </div>
+                              );
                             } else if (srcString.startsWith('./images/')) {
                               // Support legacy image paths
                               const imagePath = srcString.replace('./images/', `${currentPath}/images/`);

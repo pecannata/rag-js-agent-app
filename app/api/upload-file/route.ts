@@ -36,8 +36,9 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
 
-    // Return relative path for markdown
-    const relativePath = `./README_files/${fileName}`;
+    // Return relative path for markdown - URL encode the filename for proper markdown parsing
+    const encodedFileName = encodeURIComponent(fileName);
+    const relativePath = `./README_files/${encodedFileName}`;
 
     console.log('File uploaded successfully:', {
       originalName,
