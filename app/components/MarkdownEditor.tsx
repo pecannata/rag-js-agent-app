@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -77,6 +77,9 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
+  const [savingDimensions, setSavingDimensions] = useState<string | null>(null);
+  const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
 
   // Handle find functionality with throttling
   const handleFind = () => {
@@ -186,6 +189,110 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     setDecorationIds(newDecorationIds);
   };
 
+  // Helper function to create a hash from string
+  const createHash = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  };
+
+  // Helper function to get surrounding context for an image
+  const getImageContext = (markdownContent: string, imageSrc: string, imageAlt: string) => {
+    const imageMarkdown = `![${imageAlt}](${imageSrc})`;
+    const imageIndex = markdownContent.indexOf(imageMarkdown);
+    
+    if (imageIndex === -1) return '';
+    
+    // Get 100 characters before and after the image for context
+    const contextStart = Math.max(0, imageIndex - 100);
+    const contextEnd = Math.min(markdownContent.length, imageIndex + imageMarkdown.length + 100);
+    
+    return markdownContent.substring(contextStart, contextEnd);
+  };
+
+  // Helper function to get stable image key based on content
+  const getStableImageKey = (src: string, alt: string | undefined, filePath: string) => {
+    const context = getImageContext(markdown, src, alt || '');
+    const contextHash = createHash(context);
+    const imageKey = `${src}:${alt || ''}:${contextHash}`;
+    
+    // Check if we already have this image in our map
+    if (!imageContextMapRef.current.has(imageKey)) {
+      const currentIndices = Array.from(imageContextMapRef.current.values()).map(v => v.index);
+      const nextIndex = currentIndices.length > 0 ? Math.max(...currentIndices) + 1 : 0;
+      imageContextMapRef.current.set(imageKey, { index: nextIndex, context });
+    }
+    
+    const mappedData = imageContextMapRef.current.get(imageKey)!;
+    return `${filePath}:${contextHash}:${mappedData.index}`;
+  };
+
+  // Helper function to get display index for an image
+  const getDisplayIndex = (src: string, alt: string | undefined) => {
+    const context = getImageContext(markdown, src, alt || '');
+    const contextHash = createHash(context);
+    const imageKey = `${src}:${alt || ''}:${contextHash}`;
+    
+    return imageContextMapRef.current.get(imageKey)?.index || 0;
+  };
+
+
+  // Helper function to save image dimensions
+  const saveImageDimensions = (src: string, width: number, height: number, alt?: string) => {
+    if (!currentFilePath) return;
+    
+    const imageKey = getStableImageKey(src, alt, currentFilePath);
+    setSavingDimensions(imageKey);
+    
+    setImageDimensions(prev => ({
+      ...prev,
+      [imageKey]: { width: Math.round(width), height: Math.round(height) }
+    }));
+    
+    // Clear the saving indicator after a short delay
+    setTimeout(() => setSavingDimensions(null), 1000);
+  };
+
+  // Helper function to reset image dimensions
+  const resetImageDimensions = (src: string, alt?: string) => {
+    if (!currentFilePath) return;
+    
+    const imageKey = getStableImageKey(src, alt, currentFilePath);
+    setImageDimensions(prev => {
+      const newDimensions = { ...prev };
+      delete newDimensions[imageKey];
+      return newDimensions;
+    });
+  };
+
+  // Helper function to reset all image dimensions for current file
+  const resetAllImageDimensions = () => {
+    if (!currentFilePath) return;
+    
+    setImageDimensions(prev => {
+      const newDimensions = { ...prev };
+      Object.keys(newDimensions).forEach(key => {
+        if (key.startsWith(currentFilePath + ':')) {
+          delete newDimensions[key];
+        }
+      });
+      return newDimensions;
+    });
+  };
+
+
+  // Helper function to get saved image dimensions
+  const getSavedImageDimensions = (src: string, alt?: string) => {
+    if (!currentFilePath) return { width: 300, height: 200 };
+    
+    const imageKey = getStableImageKey(src, alt, currentFilePath);
+    return imageDimensions[imageKey] || { width: 300, height: 200 };
+  };
+
 
   const handleSave = async () => {
     if (!currentFilePath) {
@@ -244,20 +351,35 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     setShowUnsavedWarning(false);
   };
 
-  // Load persisted path and file on component mount
+  // Load persisted path, file, and image dimensions on component mount
   useEffect(() => {
-    const savedPath = localStorage.getItem('markdownEditor.currentPath');
-    const savedFilePath = localStorage.getItem('markdownEditor.currentFilePath');
-    
-    if (savedPath) {
-      setPathBrowserInitialized(true);
-      browseDirectory(savedPath).then(() => {
-        // After loading the directory, try to open the saved file
-        if (savedFilePath) {
-          loadFile(savedFilePath);
+    const loadPersistedData = async () => {
+      const savedPath = localStorage.getItem('markdownEditor.currentPath');
+      const savedFilePath = localStorage.getItem('markdownEditor.currentFilePath');
+      
+      // Load image dimensions from server
+      try {
+        const response = await fetch('/api/image-dimensions');
+        if (response.ok) {
+          const data = await response.json();
+          setImageDimensions(data.imageDimensions || {});
         }
-      });
-    }
+      } catch (error) {
+        console.error('Error loading image dimensions:', error);
+      }
+      
+      if (savedPath) {
+        setPathBrowserInitialized(true);
+        browseDirectory(savedPath).then(() => {
+          // After loading the directory, try to open the saved file
+          if (savedFilePath) {
+            loadFile(savedFilePath);
+          }
+        });
+      }
+    };
+    
+    loadPersistedData();
   }, []);
 
   // Add keyboard shortcuts
@@ -281,6 +403,33 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
       setHasUnsavedChanges(false);
     }
   }, [markdown, originalContent]);
+
+  // Save image dimensions to server when they change
+  useEffect(() => {
+    const saveImageDimensions = async () => {
+      try {
+        await fetch('/api/image-dimensions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageDimensions }),
+        });
+      } catch (error) {
+        console.error('Error saving image dimensions:', error);
+      }
+    };
+    
+    // Only save if we have some dimensions to save
+    if (Object.keys(imageDimensions).length > 0) {
+      saveImageDimensions();
+    }
+  }, [imageDimensions]);
+
+  // Clear image context map when switching files
+  useEffect(() => {
+    imageContextMapRef.current.clear();
+  }, [currentFilePath]);
 
   // Handle image paste functionality
   useEffect(() => {
@@ -976,6 +1125,18 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     </svg>
                     {isPreviewMode ? 'Edit' : 'Preview'}
                   </button>
+                  {isPreviewMode && currentFilePath && (
+                    <button
+                      onClick={resetAllImageDimensions}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Reset all image sizes to default"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Reset All Image Sizes
+                    </button>
+                  )}
                   <button
                     onClick={async () => {
                       try {
@@ -1046,7 +1207,7 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    📋 Image
+                    Image from clipboard
                   </button>
                   {currentFilePath && (
                     <button
@@ -1159,10 +1320,17 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                         remarkPlugins={[remarkGfm]}
                         components={{
                           img: ({ src, alt, ...props }) => {
+                            // Get stable key and display index for this image
+                            const srcString = typeof src === 'string' ? src : '';
+                            const displayIndex = getDisplayIndex(srcString, alt);
+                            const stableKey = getStableImageKey(srcString, alt, currentFilePath || '');
+                            
                             // Handle relative image paths
-                            if (typeof src === 'string' && src.startsWith('./images/')) {
-                              const imagePath = src.replace('./images/', `${currentPath}/images/`);
+                            if (srcString.startsWith('./images/')) {
+                              const imagePath = srcString.replace('./images/', `${currentPath}/images/`);
                               const imageUrl = `/api/serve-image?path=${encodeURIComponent(imagePath)}`;
+                              const savedDimensions = getSavedImageDimensions(srcString, alt);
+                              
                               return (
                                 <div 
                                   className="resizable-image-wrapper"
@@ -1175,11 +1343,17 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                                     minWidth: '100px',
                                     minHeight: '100px',
                                     maxWidth: '100%',
-                                    width: '300px',
-                                    height: '200px',
+                                    width: `${savedDimensions.width}px`,
+                                    height: `${savedDimensions.height}px`,
                                     margin: '1rem 0',
                                     position: 'relative'
                                   }}
+                                  onMouseUp={(e) => {
+                                    const element = e.currentTarget;
+                                    const rect = element.getBoundingClientRect();
+                                    saveImageDimensions(srcString, rect.width, rect.height, alt);
+                                  }}
+                                  title="Resize me! Dimensions are automatically saved."
                                 >
                                   <img 
                                     src={imageUrl} 
@@ -1196,10 +1370,26 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                                       e.currentTarget.style.display = 'none';
                                     }}
                                   />
+                                  {savingDimensions === stableKey && (
+                                    <div className="absolute top-1 right-1 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium animate-pulse">
+                                      Saved! 💾
+                                    </div>
+                                  )}
+                                  <div className="absolute top-1 left-1 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-medium opacity-75">
+                                    #{displayIndex + 1} {savedDimensions.width}×{savedDimensions.height}
+                                  </div>
+                                  <button
+                                    onClick={() => resetImageDimensions(srcString, alt)}
+                                    className="absolute bottom-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs font-medium opacity-75 hover:opacity-100 transition-opacity"
+                                    title="Reset to default size"
+                                  >
+                                    ↺
+                                  </button>
                                 </div>
                               );
                             }
                             // Handle regular images
+                            const savedDimensions = getSavedImageDimensions(srcString, alt);
                             return (
                               <div 
                                 className="resizable-image-wrapper"
@@ -1212,11 +1402,17 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                                   minWidth: '100px',
                                   minHeight: '100px',
                                   maxWidth: '100%',
-                                  width: '300px',
-                                  height: '200px',
+                                  width: `${savedDimensions.width}px`,
+                                  height: `${savedDimensions.height}px`,
                                   margin: '1rem 0',
                                   position: 'relative'
                                 }}
+                                onMouseUp={(e) => {
+                                  const element = e.currentTarget;
+                                  const rect = element.getBoundingClientRect();
+                                  saveImageDimensions(srcString, rect.width, rect.height, alt);
+                                }}
+                                title="Resize me! Dimensions are automatically saved."
                               >
                                 <img 
                                   src={src} 
@@ -1229,6 +1425,21 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                                     display: 'block'
                                   }}
                                 />
+                                {savingDimensions === stableKey && (
+                                  <div className="absolute top-1 right-1 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium animate-pulse">
+                                    Saved! 💾
+                                  </div>
+                                )}
+                                <div className="absolute top-1 left-1 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-medium opacity-75">
+                                  #{displayIndex + 1} {savedDimensions.width}×{savedDimensions.height}
+                                </div>
+                                <button
+                                  onClick={() => resetImageDimensions(srcString, alt)}
+                                  className="absolute bottom-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs font-medium opacity-75 hover:opacity-100 transition-opacity"
+                                  title="Reset to default size"
+                                >
+                                  ↺
+                                </button>
                               </div>
                             );
                           }
