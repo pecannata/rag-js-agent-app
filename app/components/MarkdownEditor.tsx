@@ -149,8 +149,16 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [newFolderName, setNewFolderName] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [creatingFile, setCreatingFile] = useState(false);
+  const [isSideBySideMode] = useState(false);
+  const [showTOC, setShowTOC] = useState(false);
+  const [tocHeaders, setTocHeaders] = useState<{id: string, level: number, text: string, isSpace?: boolean}[]>([]);
+  const [tocMaxLevel, setTocMaxLevel] = useState(3); // Default to show H1, H2, H3
+  const [showTOCInsertModal, setShowTOCInsertModal] = useState(false);
+  const [tocInsertLevel, setTocInsertLevel] = useState(3); // Level for inserting TOC
+  const [tocIncludeSpacing, setTocIncludeSpacing] = useState(false); // Add spacing between levels
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
 
   // Toolbar functions for inserting markdown syntax
@@ -211,6 +219,140 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const insertInlineCode = () => insertMarkdownSyntax('`', '`', 'code');
   const insertHorizontalRule = () => insertMarkdownSyntax('\n---\n', '', '');
   const insertTable = () => insertMarkdownSyntax('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n', '', '');
+  const insertTOCSpace = () => insertMarkdownSyntax('<!-- TOC-SPACE -->\n', '', '');
+  
+  // Function to insert Table of Contents
+  const insertTOC = () => {
+    setShowTOCInsertModal(true);
+  };
+  
+  // Function to actually insert TOC with specified level
+  const performTOCInsert = (maxLevel: number) => {
+    const headers = generateTOC(markdown);
+    const filteredHeaders = headers.filter(header => header.isSpace || header.level <= maxLevel);
+    
+    // Debug: Log the filtered headers
+    console.log('Filtered headers for TOC:');
+    console.log(filteredHeaders);
+    
+    if (filteredHeaders.filter(h => !h.isSpace).length === 0) {
+      // If no headers found, insert a placeholder
+      insertMarkdownSyntax('\n## Table of Contents\n\n*No headers found. Add some headers (# Header) to your document to generate a table of contents.*\n\n', '', '');
+      // Force save after insertion
+      setTimeout(() => {
+        if (currentFilePath) {
+          setHasUnsavedChanges(true);
+          handleSave();
+        }
+      }, 100);
+      return;
+    }
+    
+    let tocContent = '\n## Table of Contents\n\n';
+    
+    if (tocIncludeSpacing) {
+      // Group headers by level and add spacing between different levels using sections
+      let lastLevel = 0;
+      let currentSection = [];
+      const sections = [];
+      
+      filteredHeaders.forEach((header, index) => {
+        if (header.isSpace) {
+          // End current section and start a new one
+          if (currentSection.length > 0) {
+            sections.push(currentSection);
+            currentSection = [];
+          }
+        } else {
+          // Add automatic spacing logic
+          if (header.level === 1 && index > 0 && lastLevel > 0) {
+            // New H1 section - end current section and start new one
+            if (currentSection.length > 0) {
+              sections.push(currentSection);
+              currentSection = [];
+            }
+          } else if (header.level < lastLevel && currentSection.length > 0) {
+            // Moving to higher level - end current section and start new one
+            sections.push(currentSection);
+            currentSection = [];
+          }
+          
+          currentSection.push(header);
+          lastLevel = header.level;
+        }
+      });
+      
+      // Add the final section
+      if (currentSection.length > 0) {
+        sections.push(currentSection);
+      }
+      
+      // Generate TOC with separate list sections
+      sections.forEach((section, sectionIndex) => {
+        section.forEach(header => {
+          const indent = '  '.repeat(header.level - 1);
+          tocContent += `${indent}- [${header.text}](#${header.id})\n`;
+        });
+        
+        // Add visible spacing between sections (except after the last section)
+        if (sectionIndex < sections.length - 1) {
+          tocContent += '\n&nbsp;\n';
+        }
+      });
+    } else {
+      // Standard TOC with manual spacing markers - break into separate list sections
+      let currentSection = [];
+      const sections = [];
+      
+      filteredHeaders.forEach((header, index) => {
+        if (header.isSpace) {
+          // End current section and start a new one
+          if (currentSection.length > 0) {
+            sections.push(currentSection);
+            currentSection = [];
+          }
+        } else {
+          currentSection.push(header);
+        }
+      });
+      
+      // Add the final section
+      if (currentSection.length > 0) {
+        sections.push(currentSection);
+      }
+      
+      // Generate TOC with separate list sections
+      sections.forEach((section, sectionIndex) => {
+        section.forEach(header => {
+          const indent = '  '.repeat(header.level - 1);
+          tocContent += `${indent}- [${header.text}](#${header.id})\n`;
+        });
+        
+        // Add visible spacing between sections (except after the last section)
+        if (sectionIndex < sections.length - 1) {
+          tocContent += '\n&nbsp;\n';
+        }
+      });
+    }
+    
+    tocContent += '\n';
+    
+    // Debug: Log the generated TOC content
+    console.log('Generated TOC content:');
+    console.log(JSON.stringify(tocContent));
+    
+    insertMarkdownSyntax(tocContent, '', '');
+    
+    // Force save after insertion
+    setTimeout(() => {
+      if (currentFilePath) {
+        setHasUnsavedChanges(true);
+        handleSave();
+      }
+    }, 100);
+    
+    setShowTOCInsertModal(false);
+  };
 
   // Handle find functionality with throttling
   const handleFind = () => {
@@ -409,6 +551,76 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     const imageKey = getStableImageKey(src, alt, currentFilePath);
     return imageDimensions[imageKey] || { width: 300, height: 200 };
   };
+
+  // Helper function to generate unique header IDs
+  const generateHeaderId = (level: number, text: string, idCounts: Map<string, number>) => {
+    const levelPrefix = `h${level}`;
+    const baseId = `header-${levelPrefix}-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+    
+    // Ensure unique IDs by adding a counter if needed
+    let id = baseId;
+    const count = idCounts.get(baseId) || 0;
+    if (count > 0) {
+      id = `${baseId}-${count}`;
+    }
+    idCounts.set(baseId, count + 1);
+    
+    return id;
+  };
+
+  // Helper function to generate table of contents
+  const generateTOC = (markdownContent: string) => {
+    const lines = markdownContent.split('\n');
+    const headers: {id: string, level: number, text: string, isSpace?: boolean}[] = [];
+    const idCounts = new Map<string, number>();
+    
+    lines.forEach((line) => {
+      const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+      const tocSpaceMatch = line.match(/^<!--\s*TOC-SPACE\s*-->/);
+      
+      if (headerMatch && headerMatch[1] && headerMatch[2]) {
+        const level = headerMatch[1].length;
+        const text = headerMatch[2].trim();
+        const id = generateHeaderId(level, text, idCounts);
+        headers.push({ id, level, text });
+      } else if (tocSpaceMatch) {
+        // Add a special spacing entry
+        headers.push({ id: '', level: 0, text: '', isSpace: true });
+      }
+    });
+    
+    return headers;
+  };
+
+  // Helper function to filter TOC headers by max level
+  const getFilteredTOCHeaders = () => {
+    // Ensure we're comparing numbers
+    const maxLevel = Number(tocMaxLevel);
+    const filtered = tocHeaders.filter(header => {
+      // Include spacing markers or headers within level limit
+      if (header.isSpace) return true;
+      const headerLevel = Number(header.level);
+      return headerLevel <= maxLevel;
+    });
+    return filtered;
+  };
+
+  // Helper function to sync scroll between editor and preview
+  const syncScrollToPreview = () => {
+    if (!editorRef || !previewRef.current || !isSideBySideMode) return;
+    
+    const editorScrollTop = editorRef.getScrollTop();
+    const editorScrollHeight = editorRef.getScrollHeight();
+    const previewScrollHeight = previewRef.current.scrollHeight;
+    const previewClientHeight = previewRef.current.clientHeight;
+    
+    if (editorScrollHeight > 0 && previewScrollHeight > previewClientHeight) {
+      const scrollRatio = editorScrollTop / (editorScrollHeight - editorRef.getLayoutInfo().height);
+      const previewScrollTop = scrollRatio * (previewScrollHeight - previewClientHeight);
+      previewRef.current.scrollTop = previewScrollTop;
+    }
+  };
+
 
 
   const handleSave = async () => {
@@ -893,7 +1105,28 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
     
     // Update word count
     setWordCount(calculateWordCount(markdown));
+    
+    // Update TOC
+    const headers = generateTOC(markdown);
+    setTocHeaders(headers);
   }, [markdown, originalContent, autoSaveEnabled, currentFilePath]);
+
+  // Set up scroll sync for side-by-side mode
+  useEffect(() => {
+    if (!editorRef || !isSideBySideMode) return;
+    
+    const handleEditorScroll = () => {
+      syncScrollToPreview();
+    };
+    
+    editorRef.onDidScrollChange(handleEditorScroll);
+    
+    return () => {
+      if (editorRef) {
+        editorRef.onDidScrollChange(null);
+      }
+    };
+  }, [editorRef, isSideBySideMode]);
 
   // Save image dimensions to server when they change
   useEffect(() => {
@@ -1638,6 +1871,16 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                 </div>
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => setShowTOC(!showTOC)}
+                    className={`flex items-center gap-1 ${showTOC ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95`}
+                    title="Toggle Table of Contents"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    TOC
+                  </button>
+                  <button
                     onClick={() => setIsPreviewMode(!isPreviewMode)}
                     className={`flex items-center gap-1 ${isPreviewMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600'} text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95`}
                     title="Toggle Preview Mode"
@@ -2003,6 +2246,33 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                       </svg>
                       Table
                     </button>
+                    
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    
+                    {/* Table of Contents Button */}
+                    <button
+                      onClick={insertTOC}
+                      className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Insert Table of Contents"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      TOC
+                    </button>
+                    
+                    {/* TOC Space Button */}
+                    <button
+                      onClick={insertTOCSpace}
+                      className="flex items-center gap-1 bg-indigo-400 hover:bg-indigo-500 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Insert TOC Spacing Marker"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 12h18m-9-9v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                      </svg>
+                      +Space
+                    </button>
                   </div>
                 </div>
               )}
@@ -2102,13 +2372,145 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                 </div>
               </div>
               
+              {/* Table of Contents */}
+              {showTOC && tocHeaders.length > 0 && (
+                <div className="bg-white px-4 py-2 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                      <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                      TOC
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      <label htmlFor="toc-level" className="text-xs text-gray-500">Max:</label>
+                      <select 
+                        id="toc-level" 
+                        value={tocMaxLevel}
+                        onChange={(e) => {
+                          const newValue = Number(e.target.value);
+                          setTocMaxLevel(newValue);
+                        }}
+                        className="px-1 py-0.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value={1}>H1 Only</option>
+                        <option value={2}>H1-H2</option>
+                        <option value={3}>H1-H3</option>
+                        <option value={4}>H1-H4</option>
+                        <option value={5}>H1-H5</option>
+                        <option value={6}>H1-H6</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="max-h-12 overflow-y-auto">
+                    {getFilteredTOCHeaders().length > 0 ? (
+                      <ul className="space-y-0 text-xs">
+                        {getFilteredTOCHeaders().map((header) => {
+                          const indentClass = header.level === 1 ? 'ml-0' : 
+                                            header.level === 2 ? 'ml-4' : 
+                                            header.level === 3 ? 'ml-8' : 
+                                            header.level === 4 ? 'ml-12' : 
+                                            header.level === 5 ? 'ml-16' : 'ml-20';
+                          return (
+                          <li key={header.id} className={`${indentClass} text-gray-700 hover:text-blue-600 transition-colors`}>
+                            <a 
+                              href={`#${header.id}`} 
+                              className="flex items-center gap-1 py-0 px-1 rounded hover:bg-blue-50 transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // In preview mode, try to scroll to the header
+                                if (isPreviewMode) {
+                                  const element = document.getElementById(header.id);
+                                  if (element) {
+                                    element.scrollIntoView({ behavior: 'smooth' });
+                                  }
+                                } else {
+                                  // In edit mode, find the header text and position cursor there
+                                  if (editorRef) {
+                                    const model = editorRef.getModel();
+                                    if (model) {
+                                      const content = model.getValue();
+                                      const lines = content.split('\n');
+                                      const headerRegex = new RegExp(`^#{${header.level}}\\s+${header.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+                                      
+                                      for (let i = 0; i < lines.length; i++) {
+                                        if (headerRegex.test(lines[i])) {
+                                          editorRef.setPosition({ lineNumber: i + 1, column: 1 });
+                                          editorRef.revealLineInCenter(i + 1);
+                                          editorRef.focus();
+                                          break;
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }}
+                            >
+                              <span className="text-gray-400 text-xs w-4 flex-shrink-0">{'#'.repeat(header.level)}</span>
+                              <span className="truncate text-xs">{header.text}</span>
+                            </a>
+                          </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-gray-500 italic">No headers found for the selected levels</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex-1 border border-gray-200 rounded-b-lg overflow-hidden">
                 {isPreviewMode ? (
                   <div className="h-full p-6 bg-white overflow-y-auto custom-scrollbar">
                     <div className="max-w-none prose prose-sm prose-slate prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4">
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
-                        components={{
+                        components={(() => {
+                          // Use the same headers that were generated for TOC to ensure ID consistency
+                          const headerMap = new Map<string, string>();
+                          tocHeaders.forEach(header => {
+                            const key = `${header.level}-${header.text}`;
+                            headerMap.set(key, header.id);
+                          });
+                          
+                          return {
+                            h1: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `1-${text}`;
+                              const id = headerMap.get(key) || `header-h1-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h1 id={id} className="text-2xl font-bold mb-4 text-gray-900" {...props}>{children}</h1>;
+                            },
+                            h2: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `2-${text}`;
+                              const id = headerMap.get(key) || `header-h2-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h2 id={id} className="text-xl font-bold mb-3 text-gray-800" {...props}>{children}</h2>;
+                            },
+                            h3: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `3-${text}`;
+                              const id = headerMap.get(key) || `header-h3-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h3 id={id} className="text-lg font-bold mb-2 text-gray-700" {...props}>{children}</h3>;
+                            },
+                            h4: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `4-${text}`;
+                              const id = headerMap.get(key) || `header-h4-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h4 id={id} className="text-base font-bold mb-2 text-gray-600" {...props}>{children}</h4>;
+                            },
+                            h5: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `5-${text}`;
+                              const id = headerMap.get(key) || `header-h5-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h5 id={id} className="text-sm font-bold mb-2 text-gray-500" {...props}>{children}</h5>;
+                            },
+                            h6: ({ children, ...props }) => {
+                              const text = React.Children.toArray(children).join('');
+                              const key = `6-${text}`;
+                              const id = headerMap.get(key) || `header-h6-${text.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+                              return <h6 id={id} className="text-xs font-bold mb-2 text-gray-400" {...props}>{children}</h6>;
+                            },
                           del: ({ children, ...props }) => (
                             <del className="line-through text-gray-500" {...props}>
                               {children}
@@ -2429,7 +2831,8 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                               </div>
                             );
                           }
-                        }}
+                        };
+                      })()}
                       >
                         {markdown}
                       </ReactMarkdown>
@@ -2758,6 +3161,91 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
               >
                 {creatingFile ? 'Creating...' : 'Create File'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* TOC Insert Modal */}
+      {showTOCInsertModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Insert Table of Contents</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Maximum Header Level to Include:
+                  </label>
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4, 5, 6].map(level => {
+                      const headerCount = generateTOC(markdown).filter(h => h.level <= level).length;
+                      const levelText = level === 1 ? 'H1 only' : `H1 through H${level}`;
+                      return (
+                        <label key={level} className="flex items-center">
+                          <input
+                            type="radio"
+                            name="tocLevel"
+                            value={level}
+                            checked={tocInsertLevel === level}
+                            onChange={(e) => setTocInsertLevel(Number(e.target.value))}
+                            className="mr-3"
+                          />
+                          <span className="text-sm">
+                            {levelText} ({headerCount} headers)
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={tocIncludeSpacing}
+                      onChange={(e) => setTocIncludeSpacing(e.target.checked)}
+                      className="mr-3"
+                    />
+                    <span className="text-sm">
+                      Add automatic spacing between header sections
+                    </span>
+                  </label>
+                  <div className="text-xs text-gray-500 ml-6 mt-1">
+                    Adds blank lines to visually separate different header levels
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-3 rounded-md">
+                  <div className="text-sm font-medium text-blue-900 mb-1">
+                    💡 Tip: Manual TOC Spacing
+                  </div>
+                  <div className="text-xs text-blue-700">
+                    Add <code className="bg-blue-100 px-1 rounded">{'<!-- TOC-SPACE -->'}</code> anywhere in your markdown to create custom spacing in the generated TOC.
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-500">
+                  Preview: This will include all headers from H1 through H{tocInsertLevel}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowTOCInsertModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => performTOCInsert(tocInsertLevel)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition duration-200"
+                >
+                  Insert TOC
+                </button>
+              </div>
             </div>
           </div>
         </div>
