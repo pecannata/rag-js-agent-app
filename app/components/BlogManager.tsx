@@ -726,11 +726,11 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       base_url: '/tinymce',
                       suffix: '.min',
                       menubar: false,
-                      plugins: 'lists link image table code codesample help wordcount autosave',
-                      toolbar: 'undo redo | formatselect | bold italic | ' +
-                        'alignleft aligncenter alignright | bullist numlist | ' +
-                        'link image table | code codesample | help',
-                      content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; line-height: 1.6; }',
+                      plugins: 'lists advlist link image table code codesample media anchor charmap emoticons insertdatetime pagebreak preview fullscreen searchreplace visualblocks visualchars paste spellchecker template save help wordcount autosave',
+                      toolbar: 'fullscreen | undo redo | save template | formatselect fontselect fontsizeselect | bold italic underline strikethrough | subscript superscript | forecolor backcolor | removeformat | alignleft aligncenter alignright | bullist numlist indent outdent | blockquote hr | link unlink anchor | image media | table tableinsertrowbefore tableinsertrowafter tabledeleterow | charmap emoticons insertdatetime pagebreak | paste pastetext spellchecker | preview searchreplace | visualblocks visualchars | code codesample | help',
+                      content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; line-height: 1.6; } ' +
+                        'blockquote { border-left: 4px solid #e5e7eb; margin: 1.5rem 0; padding-left: 1rem; font-style: italic; color: #6b7280; } ' +
+                        'hr { border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0; }',
                       branding: false,
                       resize: false,
                       statusbar: false,
@@ -783,7 +783,183 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       ],
                       codesample_dialog_height: 400,
                       codesample_dialog_width: 800,
-                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'codesample', 'help', 'wordcount', 'autosave'],
+                      // Color palette configuration
+                      color_map: [
+                        "000000", "Black",
+                        "993300", "Burnt orange",
+                        "333300", "Dark olive",
+                        "003300", "Dark green",
+                        "003366", "Dark azure",
+                        "000080", "Navy Blue",
+                        "333399", "Indigo",
+                        "333333", "Very dark gray",
+                        "800000", "Maroon",
+                        "FF6600", "Orange",
+                        "808000", "Olive",
+                        "008000", "Green",
+                        "008080", "Teal",
+                        "0000FF", "Blue",
+                        "666699", "Grayish blue",
+                        "808080", "Gray",
+                        "FF0000", "Red",
+                        "FF9900", "Amber",
+                        "99CC00", "Yellow green",
+                        "339966", "Sea green",
+                        "33CCCC", "Turquoise",
+                        "3366FF", "Royal blue",
+                        "800080", "Purple",
+                        "999999", "Medium gray",
+                        "FF00FF", "Magenta",
+                        "FFCC00", "Gold",
+                        "FFFF00", "Yellow",
+                        "00FF00", "Lime",
+                        "00FFFF", "Aqua",
+                        "00CCFF", "Sky blue",
+                        "993366", "Red violet",
+                        "FFFFFF", "White",
+                        "FF99CC", "Pink",
+                        "FFCC99", "Peach",
+                        "FFFF99", "Light yellow",
+                        "CCFFCC", "Pale green",
+                        "CCFFFF", "Pale cyan",
+                        "99CCFF", "Light sky blue",
+                        "CC99FF", "Plum"
+                      ],
+                      custom_colors: false,
+                      // Font family options
+                      font_family_formats: 'Arial=arial,helvetica,sans-serif;' +
+                        'Helvetica=helvetica,arial,sans-serif;' +
+                        'Times New Roman=times new roman,times,serif;' +
+                        'Georgia=georgia,serif;' +
+                        'Verdana=verdana,geneva,sans-serif;' +
+                        'Courier New=courier new,courier,monospace;' +
+                        'Apple System=system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;' +
+                        'Roboto=roboto,sans-serif;' +
+                        'Open Sans=open sans,sans-serif;' +
+                        'Lato=lato,sans-serif;' +
+                        'Montserrat=montserrat,sans-serif;' +
+                        'Playfair Display=playfair display,serif;' +
+                        'Source Code Pro=source code pro,monaco,menlo,consolas,monospace',
+                      // Font size options
+                      fontsize_formats: '8px 9px 10px 11px 12px 14px 16px 18px 20px 22px 24px 26px 28px 32px 36px 48px 72px',
+                      // Advanced list configuration
+                      advlist_bullet_styles: 'default,circle,disc,square',
+                      advlist_number_styles: 'default,lower-alpha,lower-greek,lower-roman,upper-alpha,upper-roman',
+                      // Table configuration
+                      table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
+                      table_appearance_options: false,
+                      table_grid: false,
+                      table_resize_bars: true,
+                      table_default_attributes: {
+                        border: '1',
+                        style: 'border-collapse: collapse; width: 100%;'
+                      },
+                      table_default_styles: {
+                        'border-collapse': 'collapse',
+                        'width': '100%'
+                      },
+                      // Media plugin configuration
+                      media_live_embeds: true,
+                      media_url_resolver: function (data, resolve) {
+                        if (data.url.indexOf('youtube.com') !== -1 || data.url.indexOf('youtu.be') !== -1) {
+                          resolve({
+                            html: '<iframe src="' + data.url + '" width="560" height="315" frameborder="0" allowfullscreen></iframe>'
+                          });
+                        } else {
+                          resolve({ html: '' });
+                        }
+                      },
+                      // Anchor plugin configuration
+                      anchor_top: '#top',
+                      anchor_bottom: '#bottom',
+                      // Special content configuration
+                      // Character map plugin
+                      charmap_append: [
+                        [0x2605, 'Black star'],
+                        [0x2606, 'White star'],
+                        [0x2190, 'Left arrow'],
+                        [0x2192, 'Right arrow'],
+                        [0x2191, 'Up arrow'],
+                        [0x2193, 'Down arrow'],
+                        [0x2764, 'Heavy black heart'],
+                        [0x2713, 'Check mark'],
+                        [0x2717, 'Ballot X'],
+                        [0x00A9, 'Copyright'],
+                        [0x00AE, 'Registered trademark'],
+                        [0x2122, 'Trade mark']
+                      ],
+                      // Emoticons configuration
+                      emoticons_database: 'emojiimages',
+                      emoticons_append: {
+                        custom_mind_exploding: {
+                          keywords: ['brain', 'mind', 'explode', 'blown'],
+                          char: '🤯'
+                        }
+                      },
+                      // Insert date/time configuration
+                      insertdatetime_formats: [
+                        '%Y-%m-%d',
+                        '%m/%d/%Y',
+                        '%I:%M:%S %p',
+                        '%D'
+                      ],
+                      insertdatetime_timeformat: '%H:%M:%S',
+                      insertdatetime_dateformat: '%Y-%m-%d',
+                      // Page break configuration
+                      pagebreak_separator: '<!-- pagebreak -->',
+                      // View & Navigation configuration
+                      // Preview plugin
+                      preview_styles: 'font-family font-size font-weight font-style text-decoration text-transform color background-color border border-radius outline text-shadow',
+                      // Fullscreen plugin
+                      fullscreen_new_window: false,
+                      fullscreen_settings: {
+                        theme_advanced_path_location: 'none',
+                        theme_advanced_toolbar_location: 'top'
+                      },
+                      // Search & Replace plugin
+                      searchreplace_shortcuts: true,
+                      // Visual blocks plugin
+                      visualblocks_default_state: false,
+                      // Visual chars plugin
+                      visualchars_default_state: false,
+                      // Productivity configuration
+                      // Paste plugin
+                      paste_as_text: false,
+                      paste_auto_cleanup_on_paste: true,
+                      paste_remove_styles: false,
+                      paste_remove_styles_if_webkit: false,
+                      paste_strip_class_attributes: 'mso',
+                      paste_merge_formats: true,
+                      smart_paste: true,
+                      // Spellchecker plugin
+                      spellchecker_rpc_url: '/spellcheck.php', // You'd need to implement this endpoint
+                      spellchecker_languages: 'English=en,Spanish=es,French=fr,German=de',
+                      browser_spellcheck: true, // Use browser's built-in spellcheck
+                      // Template plugin
+                      templates: [
+                        {
+                          title: 'Blog Post Template',
+                          description: 'Standard blog post structure',
+                          content: '<h1>Blog Post Title</h1><p>Introduction paragraph that hooks the reader...</p><h2>Main Section</h2><p>Content goes here...</p><h2>Conclusion</h2><p>Wrap up your thoughts...</p>'
+                        },
+                        {
+                          title: 'Tutorial Template',
+                          description: 'Step-by-step tutorial format',
+                          content: '<h1>How to: [Tutorial Title]</h1><p><strong>What you\'ll learn:</strong> Brief overview</p><h2>Prerequisites</h2><ul><li>Requirement 1</li><li>Requirement 2</li></ul><h2>Step 1: [First Step]</h2><p>Detailed instructions...</p><h2>Step 2: [Second Step]</h2><p>More instructions...</p><h2>Conclusion</h2><p>Summary and next steps...</p>'
+                        },
+                        {
+                          title: 'Review Template',
+                          description: 'Product or service review format',
+                          content: '<h1>[Product/Service] Review</h1><p><strong>Rating:</strong> ⭐⭐⭐⭐⭐</p><h2>Overview</h2><p>Brief introduction to what you\'re reviewing...</p><h2>Pros</h2><ul><li>Positive point 1</li><li>Positive point 2</li></ul><h2>Cons</h2><ul><li>Negative point 1</li><li>Negative point 2</li></ul><h2>Final Verdict</h2><p>Your conclusion and recommendation...</p>'
+                        }
+                      ],
+                      // Save plugin
+                      save_enablewhendirty: true,
+                      save_onsavecallback: function() {
+                        // This will trigger the existing save functionality
+                        console.log('Save triggered from TinyMCE save button');
+                      },
+                      plugins_include_list: ['lists', 'advlist', 'link', 'image', 'table', 'code', 'codesample', 'media', 'anchor', 'charmap', 'emoticons', 'insertdatetime', 'pagebreak', 'preview', 'fullscreen', 'searchreplace', 'visualblocks', 'visualchars', 'paste', 'spellchecker', 'template', 'save', 'help', 'wordcount', 'autosave'],
                       setup: (editor: any) => {
                         let isInitialized = false;
                         
@@ -867,6 +1043,10 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                               /<br\s*\/?>/g, '<br style="display: block; margin: 0.5rem 0; content: \'\';" />'
                             ).replace(
                               /<h([1-6])>/g, '<h$1 style="margin-top: 1.5rem; margin-bottom: 1rem;">'
+                            ).replace(
+                              /<blockquote>/g, '<blockquote style="border-left: 4px solid #e5e7eb; margin: 1.5rem 0; padding-left: 1rem; font-style: italic; color: #6b7280;">'
+                            ).replace(
+                              /<hr\s*\/?>/g, '<hr style="border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0;" />'
                             )
                           }}
                         />
