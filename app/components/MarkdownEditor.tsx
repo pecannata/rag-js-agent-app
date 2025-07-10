@@ -260,6 +260,9 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
         document.body.style.userSelect = '';
       };
     }
+    
+    // Return empty cleanup function for non-resizing state
+    return () => {};
   }, [isResizing, resizeStart]);
 
   // Toolbar functions for inserting markdown syntax
