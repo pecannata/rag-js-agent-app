@@ -14,11 +14,13 @@ interface BlogPost {
   content: string;
   excerpt: string;
   author: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'published' | 'archived' | 'scheduled';
   tags: string[];
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  scheduledDate?: string;
+  isScheduled?: boolean;
 }
 
 interface BlogManagerProps {
@@ -35,7 +37,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'archived'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'archived' | 'scheduled'>('all');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -127,7 +129,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     content: '',
     excerpt: '',
     tags: '',
-    status: 'draft' as 'draft' | 'published' | 'archived'
+    status: 'draft' as 'draft' | 'published' | 'archived' | 'scheduled',
+    scheduledDate: '',
+    isScheduled: false
   });
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -192,7 +196,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
         formData.content !== currentPost.content ||
         formData.excerpt !== currentPost.excerpt ||
         formData.tags !== (currentPost.tags || []).join(', ') ||
-        formData.status !== currentPost.status;
+        formData.status !== currentPost.status ||
+        formData.scheduledDate !== (currentPost.scheduledDate || '') ||
+        formData.isScheduled !== (currentPost.isScheduled || false);
       
       setHasUnsavedChanges(hasChanges);
       
@@ -238,7 +244,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
       content: '# New Blog Post\n\nWrite an engaging introduction that hooks your readers and introduces the main topic.\n\n## Overview\n\nProvide a brief overview of what readers will learn or discover in this post.\n\n## Key Points\n\n- **Point 1**: Explain your first main point with details and examples\n- **Point 2**: Elaborate on your second key point\n- **Point 3**: Share your third insight or finding\n\n## Implementation\n\nIf applicable, provide practical steps or examples here.\n\n## Conclusion\n\nSummarize the key takeaways and encourage reader engagement.\n\n---\n\n*What are your thoughts on this topic? Share your experience in the comments below!*',
       excerpt: '',
       tags: '',
-      status: 'draft'
+      status: 'draft',
+      scheduledDate: '',
+      isScheduled: false
     });
     setIsCreating(true);
     setIsEditing(true);
@@ -253,7 +261,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
       content: post.content || '',
       excerpt: post.excerpt || '',
       tags: (post.tags || []).join(', '),
-      status: post.status || 'draft'
+      status: post.status || 'draft',
+      scheduledDate: post.scheduledDate || '',
+      isScheduled: post.isScheduled || false
     });
     setIsCreating(false);
     setIsEditing(true);
@@ -268,7 +278,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
       content: post.content || '',
       excerpt: post.excerpt || '',
       tags: (post.tags || []).join(', '),
-      status: post.status || 'draft'
+      status: post.status || 'draft',
+      scheduledDate: post.scheduledDate || '',
+      isScheduled: post.isScheduled || false
     });
     setIsCreating(false);
     setIsEditing(false);
@@ -498,12 +510,21 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
           </div>
           <div className="flex items-center gap-2">
             {!isEditing && (
-              <button
-                onClick={handleNewPost}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                ✏️ New Post
-              </button>
+              <>
+                <button
+                  onClick={handleNewPost}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  ✏️ New Post
+                </button>
+                <button
+                  onClick={() => window.open('/demo', '_blank')}
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  title="See Phase 2 Demo: Scheduling, Email System & Dashboard"
+                >
+                  🎉 Phase 2 Demo
+                </button>
+              </>
             )}
             {isEditing && (
               <>
@@ -575,6 +596,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                 <option value="all">All Posts</option>
                 <option value="draft">Drafts</option>
                 <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
                 <option value="archived">Archived</option>
               </select>
             </div>
@@ -609,9 +631,15 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                           <span className={`px-2 py-1 text-xs rounded-full ${
                             (post.status || 'draft') === 'published' ? 'bg-green-100 text-green-800' :
                             (post.status || 'draft') === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                            (post.status || 'draft') === 'scheduled' ? 'bg-blue-100 text-blue-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {post.status || 'draft'}
+                            {post.status === 'scheduled' && post.scheduledDate && (
+                              <span className="ml-1 text-xs">
+                                📅 {new Date(post.scheduledDate).toLocaleDateString()}
+                              </span>
+                            )}
                           </span>
                           <span className="text-xs text-gray-500">
                             {post.updatedAt ? new Date(post.updatedAt).toLocaleDateString() : 'Unknown date'}
@@ -695,6 +723,62 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       rows={2}
                       className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                     />
+                    
+                    {/* Scheduling Controls */}
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center gap-4 mb-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.status === 'scheduled'}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                handleFormChange('status', 'scheduled');
+                                // Set default scheduled date to 1 hour from now if not set
+                                if (!formData.scheduledDate) {
+                                  const tomorrow = new Date();
+                                  tomorrow.setHours(tomorrow.getHours() + 1);
+                                  const isoString = tomorrow.toISOString().slice(0, 16);
+                                  handleFormChange('scheduledDate', isoString);
+                                }
+                              } else {
+                                handleFormChange('status', 'draft');
+                              }
+                            }}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          📅 Schedule this post for later
+                        </label>
+                      </div>
+                      
+                      {formData.status === 'scheduled' && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Scheduled Publication Date & Time
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={formData.scheduledDate}
+                              onChange={(e) => handleFormChange('scheduledDate', e.target.value)}
+                              min={new Date().toISOString().slice(0, 16)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                          </div>
+                          
+                          {formData.scheduledDate && (
+                            <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+                              📅 <strong>Will be published:</strong> {new Date(formData.scheduledDate).toLocaleString()}
+                              {new Date(formData.scheduledDate) <= new Date() && (
+                                <span className="text-orange-600 ml-2">
+                                  ⚠️ This date is in the past - post will be published immediately
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Editor Toolbar */}
@@ -1007,14 +1091,26 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <span>By {currentPost?.author || 'Unknown Author'}</span>
                             <span>•</span>
-                            <span>{currentPost?.publishedAt ? new Date(currentPost.publishedAt).toLocaleDateString() : 'Not published'}</span>
+                            <span>
+                              {(formData.status || currentPost?.status) === 'scheduled' ? (
+                                formData.scheduledDate || currentPost?.scheduledDate ? 
+                                  `Scheduled for ${new Date(formData.scheduledDate || currentPost?.scheduledDate || '').toLocaleDateString()}` :
+                                  'Scheduled (date not set)'
+                              ) : (
+                                currentPost?.publishedAt ? new Date(currentPost.publishedAt).toLocaleDateString() : 'Not published'
+                              )}
+                            </span>
                             <span>•</span>
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               (formData.status || currentPost?.status) === 'published' ? 'bg-green-100 text-green-800' :
                               (formData.status || currentPost?.status) === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                              (formData.status || currentPost?.status) === 'scheduled' ? 'bg-blue-100 text-blue-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
                               {formData.status || currentPost?.status}
+                              {(formData.status || currentPost?.status) === 'scheduled' && (
+                                <span className="ml-1">📅</span>
+                              )}
                             </span>
                           </div>
                           {(formData.tags || (currentPost?.tags || []).length > 0) && (

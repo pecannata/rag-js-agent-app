@@ -178,26 +178,34 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-gray-900">Agentic RAG Chat</h1>
-            <div className="flex items-center gap-2">
-              <span 
-                className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-mono cursor-help"
-                title={getVersionString()}
-              >
-                {getCompactVersionInfo()}
-              </span>
-              {VERSION_INFO.environment === 'production' && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-semibold text-gray-900">Agentic RAG Chat</h1>
+              <div className="flex items-center gap-2">
                 <span 
-                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-mono cursor-help"
-                  title={`Deployed from: ${VERSION_INFO.sourceVersion} on branch: ${VERSION_INFO.gitBranch} | Built: ${VERSION_INFO.buildDate}`}
+                  className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-mono cursor-help"
+                  title={getVersionString()}
                 >
-                  🌱 {VERSION_INFO.gitBranch}@{VERSION_INFO.sourceVersion.includes('@') ? VERSION_INFO.sourceVersion.split('@')[1] : VERSION_INFO.sourceVersion}
+                  {getCompactVersionInfo()}
                 </span>
-              )}
+                {VERSION_INFO.environment === 'production' && (
+                  <span 
+                    className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-mono cursor-help"
+                    title={`Deployed from: ${VERSION_INFO.sourceVersion} on branch: ${VERSION_INFO.gitBranch} | Built: ${VERSION_INFO.buildDate}`}
+                  >
+                    🌱 {VERSION_INFO.gitBranch}@{VERSION_INFO.sourceVersion.includes('@') ? VERSION_INFO.sourceVersion.split('@')[1] : VERSION_INFO.sourceVersion}
+                  </span>
+                )}
+                {/* Demo Button */}
+                <button
+                  onClick={() => window.open('/demo', '_blank')}
+                  className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium hover:bg-purple-200 transition-colors cursor-pointer"
+                  title="Open Phase 2 Demo - Blog Scheduler & Email System"
+                >
+                  🎉 Phase 2 Demo
+                </button>
+              </div>
             </div>
-          </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
               Welcome, {session.user?.email}

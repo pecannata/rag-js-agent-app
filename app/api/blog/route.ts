@@ -46,6 +46,8 @@ async function insertBlogPostSafely(postData: {
   status: string;
   tags: string;
   publishedAt: string | null;
+  scheduledDate?: string | null;
+  isScheduled?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`📝 Content Length: ${postData.content.length} characters`);
@@ -53,7 +55,7 @@ async function insertBlogPostSafely(postData: {
     // Directly insert the content as CLOB
     const insertQuery = `
       INSERT INTO blog_posts (
-        title, slug, content, excerpt, author, status, tags, published_at
+        title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
       ) VALUES (
         '${escapeSqlString(postData.title)}',
         '${escapeSqlString(postData.slug)}',
@@ -62,7 +64,9 @@ async function insertBlogPostSafely(postData: {
         '${escapeSqlString(postData.author)}',
         '${escapeSqlString(postData.status)}',
         '${escapeSqlString(postData.tags)}',
-        ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'}
+        ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+        ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+        ${postData.isScheduled ? 1 : 0}
       ) RETURNING content INTO :content
     `;
 
@@ -91,6 +95,8 @@ async function updateBlogPostSafely(postData: {
   status: string;
   tags: string;
   publishedAt: string | null;
+  scheduledDate?: string | null;
+  isScheduled?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`📝 Update: Content Length: ${postData.content.length} characters`);
@@ -120,7 +126,9 @@ async function updateBlogPostSafely(postData: {
           status = '${escapeSqlString(postData.status)}',
           tags = '${escapeSqlString(postData.tags)}',
           updated_at = CURRENT_TIMESTAMP,
-          published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'}
+          published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+          scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+          is_scheduled = ${postData.isScheduled ? 1 : 0}
         WHERE id = ${postData.id}
       `;
       
@@ -136,7 +144,9 @@ async function updateBlogPostSafely(postData: {
         status = '${escapeSqlString(postData.status)}',
         tags = '${escapeSqlString(postData.tags)}',
         updated_at = CURRENT_TIMESTAMP,
-        published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'}
+        published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+        scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+        is_scheduled = ${postData.isScheduled ? 1 : 0}
       WHERE id = ${postData.id}
     `;
     
@@ -175,11 +185,13 @@ interface BlogPost {
   content: string;
   excerpt: string;
   author: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'published' | 'archived' | 'scheduled';
   tags: string[];
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
+  scheduledDate?: string;
+  isScheduled?: boolean;
 }
 
 // Oracle database execution function with CLOB handling
@@ -415,7 +427,9 @@ export async function GET(request: NextRequest) {
         tags,
         TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
         TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
-        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at,
+        TO_CHAR(scheduled_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as scheduled_date,
+        is_scheduled
       FROM blog_posts
     `;
     
@@ -463,7 +477,9 @@ export async function GET(request: NextRequest) {
       tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
       createdAt: post.created_at,
       updatedAt: post.updated_at,
-      publishedAt: post.published_at
+      publishedAt: post.published_at,
+      scheduledDate: post.scheduled_date,
+      isScheduled: post.is_scheduled === 1
     }));
     
     return NextResponse.json({ success: true, posts });
@@ -512,7 +528,18 @@ export async function POST(request: NextRequest) {
     // Set default values
     const author = 'Blog Author'; // You might want to get this from session
     const now = new Date().toISOString();
-    const publishedAt = postData.status === 'published' ? now : null;
+    
+    // Handle scheduling logic
+    let publishedAt = null;
+    let scheduledDate = null;
+    let isScheduled = false;
+    
+    if (postData.status === 'published') {
+      publishedAt = now;
+    } else if (postData.status === 'scheduled' && postData.scheduledDate) {
+      scheduledDate = postData.scheduledDate;
+      isScheduled = true;
+    }
     
     // Generate excerpt if not provided
     let excerpt = postData.excerpt;
@@ -542,7 +569,9 @@ export async function POST(request: NextRequest) {
       author: author,
       status: postData.status,
       tags: postData.tags.join(', '),
-      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null
+      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null,
+      scheduledDate: scheduledDate ? scheduledDate.replace('T', ' ').replace('Z', '') : null,
+      isScheduled: isScheduled
     });
     
     if (!result.success) {
@@ -565,7 +594,9 @@ export async function POST(request: NextRequest) {
         tags,
         TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
         TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
-        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at,
+        TO_CHAR(scheduled_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as scheduled_date,
+        is_scheduled
       FROM blog_posts 
       WHERE slug = '${slug}'
     `;
@@ -588,7 +619,9 @@ export async function POST(request: NextRequest) {
         tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
         createdAt: post.created_at,
         updatedAt: post.updated_at,
-        publishedAt: post.published_at
+        publishedAt: post.published_at,
+        scheduledDate: post.scheduled_date,
+        isScheduled: post.is_scheduled === 1
       };
       
       return NextResponse.json({ success: true, post: formattedPost });
