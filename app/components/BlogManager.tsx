@@ -29,6 +29,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,7 +93,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     }
     
     autoSaveTimeoutRef.current = setTimeout(() => {
-      handleSave(false); // Auto-save as draft
+      handleAutoSave(); // Auto-save as draft
     }, 3000);
   };
 
@@ -188,12 +189,64 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     setHasUnsavedChanges(false);
   };
 
+  const handleAutoSave = async () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      return; // Don't auto-save if required fields are missing
+    }
+
+    if (loading) {
+      return; // Don't auto-save if manual operation is in progress
+    }
+
+    setAutoSaving(true);
+    setError(null);
+
+    try {
+      const postData = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        status: 'draft', // Auto-save always saves as draft
+        id: currentPost?.id
+      };
+
+      const response = await fetch('/api/blog', {
+        method: isCreating ? 'POST' : 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentPost(data.post);
+        setIsCreating(false);
+        setHasUnsavedChanges(false);
+        setLastSaved(new Date());
+        // Don't reload posts list for auto-save to avoid disrupting user
+      } else {
+        // Don't show auto-save errors to avoid disrupting user experience
+        console.warn('Auto-save failed:', response.status);
+      }
+    } catch (error) {
+      console.warn('Auto-save error:', error);
+    } finally {
+      setAutoSaving(false);
+    }
+  };
+
   const handleSave = async (publish: boolean = false) => {
     console.log('🚀 Publishing attempt:', { publish, isCreating, currentPost: currentPost?.id });
     
     if (!formData.title.trim() || !formData.content.trim()) {
       setError('Title and content are required');
       return;
+    }
+
+    // Clear any pending auto-save
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = null;
     }
 
     setLoading(true);
@@ -365,7 +418,12 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
             </h2>
             {lastSaved && (
               <span className="text-sm text-green-600">
-                Saved {lastSaved.toLocaleTimeString()}
+                {autoSaving ? 'Auto-saving...' : `Saved ${lastSaved.toLocaleTimeString()}`}
+              </span>
+            )}
+            {autoSaving && !lastSaved && (
+              <span className="text-sm text-blue-600">
+                Auto-saving...
               </span>
             )}
           </div>

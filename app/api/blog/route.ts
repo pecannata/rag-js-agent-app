@@ -234,6 +234,11 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
   try {
     console.log('🔍 Blog Database Query Execution:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
     
+    // Determine query type for better handling
+    const queryType = sqlQuery.trim().toUpperCase().split(/\s+/)[0] || '';
+    const isDataQuery = ['SELECT'].includes(queryType);
+    const isModificationQuery = ['UPDATE', 'INSERT', 'DELETE', 'CREATE', 'DROP', 'ALTER'].includes(queryType);
+    
     // Execute the SQLclScript.sh with the SQL query
     // Simple escaping - just escape double quotes for the shell command
     const escapedQuery = sqlQuery.replace(/"/g, '\\"');
@@ -245,9 +250,20 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     }
     
     console.log('✅ Blog database query executed successfully');
-    console.log('📤 Raw Oracle Output (first 500 chars):', stdout.substring(0, 500) + (stdout.length > 500 ? '...' : ''));
     
-    // Parse JSON response
+    // Handle modification queries (UPDATE, INSERT, DELETE) that typically return empty or status messages
+    if (isModificationQuery) {
+      const trimmedOutput = stdout.trim();
+      console.log('📝 Modification query completed', queryType, '- Output:', trimmedOutput || '(empty - success)');
+      return { success: true, data: trimmedOutput || 'Operation completed successfully' };
+    }
+    
+    // For data queries (SELECT), expect JSON output
+    if (isDataQuery) {
+      console.log('📤 Raw Oracle Output (first 500 chars):', stdout.substring(0, 500) + (stdout.length > 500 ? '...' : ''));
+    }
+    
+    // Parse JSON response for SELECT queries
     try {
       const jsonData = JSON.parse(stdout);
       console.log('✅ Successfully parsed as JSON. Structure:', JSON.stringify(jsonData, null, 2).substring(0, 500));
@@ -270,16 +286,23 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
       return { success: true, data: [jsonData] };
       
     } catch (_parseError) {
-      // If not JSON, check if it's an empty result or plain text
+      // If not JSON, handle appropriately based on query type
       const trimmedOutput = stdout.trim();
-      console.log('⚠️ Could not parse as JSON. Trimmed output:', trimmedOutput.substring(0, 200));
-      if (trimmedOutput === '' || trimmedOutput === 'no rows selected' || trimmedOutput.toLowerCase().includes('no rows')) {
-        console.log('✅ Treating as empty result set');
-        return { success: true, data: [] };
+      
+      if (isDataQuery) {
+        console.log('⚠️ SELECT query could not parse as JSON. Trimmed output:', trimmedOutput.substring(0, 200));
+        if (trimmedOutput === '' || trimmedOutput === 'no rows selected' || trimmedOutput.toLowerCase().includes('no rows')) {
+          console.log('✅ Treating as empty result set');
+          return { success: true, data: [] };
+        }
+        // For other non-JSON output from SELECT, return as-is
+        console.log('ℹ️ Returning raw output as string');
+        return { success: true, data: trimmedOutput };
+      } else {
+        // For non-SELECT queries, empty or non-JSON output is typically success
+        console.log('✅ Non-SELECT query completed successfully');
+        return { success: true, data: trimmedOutput || 'Operation completed successfully' };
       }
-      // For other non-JSON output, return as-is
-      console.log('ℹ️ Returning raw output as string');
-      return { success: true, data: trimmedOutput };
     }
   } catch (error) {
     console.error('❌ Blog database execution error:', error);
