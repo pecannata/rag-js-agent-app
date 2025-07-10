@@ -40,15 +40,85 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
-  // Initialize converters
+  // Initialize converters with better formatting preservation
   const turndownService = useRef(new TurndownService({
     headingStyle: 'atx',
-    codeBlockStyle: 'fenced'
+    codeBlockStyle: 'fenced',
+    // Keep unknown tags as HTML
+    keepReplacement: function(content, node) {
+      return node.isBlock ? '\n\n' + node.outerHTML + '\n\n' : node.outerHTML;
+    },
+    // Preserve alignment and styling
+    rules: {
+      // Preserve paragraphs with alignment
+      alignedParagraph: {
+        filter: function (node) {
+          return node.nodeName === 'P' && node.style && node.style.textAlign && node.style.textAlign !== 'left';
+        },
+        replacement: function (content, node) {
+          const align = node.style.textAlign;
+          return `\n\n<p style="text-align: ${align};">${content}</p>\n\n`;
+        }
+      },
+      // Preserve divs with alignment
+      alignedDiv: {
+        filter: function (node) {
+          return node.nodeName === 'DIV' && node.style && node.style.textAlign;
+        },
+        replacement: function (content, node) {
+          const align = node.style.textAlign;
+          return `\n\n<div style="text-align: ${align};">${content}</div>\n\n`;
+        }
+      },
+      // Preserve any element with text-align style
+      textAlign: {
+        filter: function (node) {
+          return node.style && node.style.textAlign && node.style.textAlign !== 'left';
+        },
+        replacement: function (content, node) {
+          const tagName = node.nodeName.toLowerCase();
+          const align = node.style.textAlign;
+          return `<${tagName} style="text-align: ${align};">${content}</${tagName}>`;
+        }
+      },
+      // Preserve image dimensions and styling
+      images: {
+        filter: 'img',
+        replacement: function (content, node) {
+          const alt = node.getAttribute('alt') || '';
+          const src = node.getAttribute('src') || '';
+          const width = node.getAttribute('width') || node.style.width;
+          const height = node.getAttribute('height') || node.style.height;
+          const style = node.getAttribute('style') || '';
+          
+          let attributes = '';
+          if (width) attributes += ` width="${width}"`;
+          if (height) attributes += ` height="${height}"`;
+          if (style && !width && !height) attributes += ` style="${style}"`;
+          
+          return src ? `<img src="${src}" alt="${alt}"${attributes} />` : '';
+        }
+      },
+      // Preserve styled spans
+      styledSpan: {
+        filter: function (node) {
+          return node.nodeName === 'SPAN' && (node.style.cssText || node.getAttribute('style'));
+        },
+        replacement: function (content, node) {
+          const style = node.style.cssText || node.getAttribute('style');
+          return `<span style="${style}">${content}</span>`;
+        }
+      }
+    }
   }));
   const showdownConverter = useRef(new Converter({
     tables: true,
     strikethrough: true,
-    tasklists: true
+    tasklists: true,
+    // Allow raw HTML to preserve formatting
+    rawHTML: true,
+    // Preserve line breaks
+    simpleLineBreaks: true
   }));
   
   // Form state for new/editing posts
@@ -62,13 +132,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // HTML/Markdown conversion utilities
-  const markdownToHtml = (markdown: string): string => {
-    return showdownConverter.current.makeHtml(markdown);
-  };
-
-  const htmlToMarkdown = (html: string): string => {
-    return turndownService.current.turndown(html);
+  // HTML remain unchanged
+  const processHtmlContent = (html: string): string => {
+    return html; // Keep HTML as is without conversion
   };
 
   // Keyboard shortcuts
@@ -358,15 +424,10 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   };
 
   const generateExcerpt = (content: string) => {
-    // Remove markdown syntax and get first 200 characters
+    // Remove HTML tags and get first 200 characters
     const plainText = (content || '')
-      .replace(/#{1,6}\s+/g, '') // Remove headers
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
-      .replace(/\*(.*?)\*/g, '$1') // Remove italic
-      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
-      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-      .replace(/`(.*?)`/g, '$1') // Remove inline code
-      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .replace(/<[^>]*>/g, '') // Remove all HTML tags
+      .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
       .trim();
     
     return plainText.length > 200 ? plainText.substring(0, 200) + '...' : plainText;
@@ -394,8 +455,17 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
 
   // TinyMCE editor change handler
   const handleEditorChange = (content: string) => {
-    const markdownContent = htmlToMarkdown(content);
-    handleFormChange('content', markdownContent);
+    // Process HTML content directly
+    const processedContent = processHtmlContent(content);
+    // Update formData if content changed
+    if (processedContent !== formData.content) {
+      setFormData(prev => ({
+        ...prev,
+        content: processedContent,
+        // Auto-generate excerpt when content changes
+        excerpt: generateExcerpt(processedContent)
+      }));
+    }
   };
 
   return (
@@ -656,7 +726,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       base_url: '/tinymce',
                       suffix: '.min',
                       menubar: false,
-                      plugins: 'lists link image table code help wordcount',
+                      plugins: 'lists link image table code help wordcount autosave',
                       toolbar: 'undo redo | formatselect | bold italic | ' +
                         'alignleft aligncenter alignright | bullist numlist | ' +
                         'link image table | code | help',
@@ -671,17 +741,57 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       promotion: false,
                       forced_root_block: 'p',
                       forced_root_block_attrs: {},
-                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'help', 'wordcount'],
+                      // Prevent content reinitialization
+                      auto_focus: false,
+                      // Keep undo history
+                      custom_undo_redo_levels: 50,
+                      // Preserve content formatting
+                      keep_styles: true,
+                      verify_html: false,
+                      // Don't clean up content aggressively
+                      cleanup: false,
+                      cleanup_on_startup: false,
+                      trim_span_elements: false,
+                      // Image handling
+                      image_dimensions: true,
+                      image_class_list: [
+                        {title: 'None', value: ''},
+                        {title: 'Responsive', value: 'img-responsive'}
+                      ],
+                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'help', 'wordcount', 'autosave'],
                       setup: (editor: any) => {
+                        let isInitialized = false;
+                        
                         editor.on('init', () => {
                           console.log('TinyMCE initialized successfully');
+                          isInitialized = true;
                         });
+                        
+                        // Prevent content from being reset
+                        editor.on('BeforeSetContent', (e: any) => {
+                          if (isInitialized && e.content && e.content !== editor.getContent()) {
+                            console.log('Content being set:', e.content.substring(0, 100));
+                          }
+                        });
+                        
+                        // Track content changes without interference
+                        editor.on('Change', () => {
+                          if (isInitialized) {
+                            // Small delay to ensure change is processed
+                            setTimeout(() => {
+                              const content = editor.getContent();
+                              if (content !== formData.content) {
+                                handleEditorChange(content);
+                              }
+                            }, 10);
+                          }
+                        });
+                        
                         // Disable any automatic onboarding
                         editor.on('NewDocument', () => {});
                       },
                     }}
-                    value={markdownToHtml(formData.content)}
-                    initialValue={markdownToHtml(formData.content)}
+                    value={formData.content}
                     onEditorChange={handleEditorChange}
                   />
                 ) : (
@@ -718,9 +828,12 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                         </header>
 
                         {/* Post Content */}
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {formData.content || currentPost?.content || ''}
-                        </ReactMarkdown>
+                        <div 
+                          className="prose-content"
+                          dangerouslySetInnerHTML={{
+                            __html: formData.content || currentPost?.content || ''
+                          }}
+                        />
                       </article>
                     </div>
                   </div>
