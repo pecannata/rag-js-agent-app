@@ -726,10 +726,10 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       base_url: '/tinymce',
                       suffix: '.min',
                       menubar: false,
-                      plugins: 'lists link image table code help wordcount autosave',
+                      plugins: 'lists link image table code codesample help wordcount autosave',
                       toolbar: 'undo redo | formatselect | bold italic | ' +
                         'alignleft aligncenter alignright | bullist numlist | ' +
-                        'link image table | code | help',
+                        'link image table | code codesample | help',
                       content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; line-height: 1.6; }',
                       branding: false,
                       resize: false,
@@ -758,7 +758,32 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                         {title: 'None', value: ''},
                         {title: 'Responsive', value: 'img-responsive'}
                       ],
-                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'help', 'wordcount', 'autosave'],
+                      // Code sample configuration
+                      codesample_languages: [
+                        {text: 'HTML/XML', value: 'markup'},
+                        {text: 'JavaScript', value: 'javascript'},
+                        {text: 'TypeScript', value: 'typescript'},
+                        {text: 'CSS', value: 'css'},
+                        {text: 'PHP', value: 'php'},
+                        {text: 'Ruby', value: 'ruby'},
+                        {text: 'Python', value: 'python'},
+                        {text: 'Java', value: 'java'},
+                        {text: 'C', value: 'c'},
+                        {text: 'C#', value: 'csharp'},
+                        {text: 'C++', value: 'cpp'},
+                        {text: 'Go', value: 'go'},
+                        {text: 'Rust', value: 'rust'},
+                        {text: 'SQL', value: 'sql'},
+                        {text: 'JSON', value: 'json'},
+                        {text: 'YAML', value: 'yaml'},
+                        {text: 'Bash', value: 'bash'},
+                        {text: 'PowerShell', value: 'powershell'},
+                        {text: 'Docker', value: 'dockerfile'},
+                        {text: 'Markdown', value: 'markdown'}
+                      ],
+                      codesample_dialog_height: 400,
+                      codesample_dialog_width: 800,
+                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'codesample', 'help', 'wordcount', 'autosave'],
                       setup: (editor: any) => {
                         let isInitialized = false;
                         
