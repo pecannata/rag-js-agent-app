@@ -1,5 +1,5 @@
 
-> rag-js-agent-app@1.0.93 start
+> rag-js-agent-app@1.0.114 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -7,6 +7,93 @@
    - Network:      http://192.168.1.149:3000
 
  ✓ Starting...
- ✓ Ready in 331ms
-(node:75398) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+ ✓ Ready in 355ms
+(node:93090) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
+✅ Ollama service is available and ready
+
+🚀 Starting ReAct Domain Analysis...
+🤔 ReAct Domain Checker - Analyzing semantic similarity...
+Context Keywords: Employee
+User Message: How many employees did you find? And find the manager of each employee and tell me the department name of the manager and the location of the manager including the location's state (in a separate column) and the current population of the state (in a separate column) and the surrounding states. Even if values are null, please put each employee, manager, department, state, population, and a list of surrounding states in one table at the end of your analysis.
+🎯 Domain Analysis Result: {
+  shouldExecute: true,
+  reasoning: "The user message is clearly discussing employees, managers of those employees, and the departments and locations associated with these roles. The context keyword 'Employee' directly aligns with the query about finding employee details and related information such as manager data, department names, and location specifics.",
+  confidence: 1,
+  thresholdMet: true
+}
+✅ Domain analysis PASSED - Executing database query
+🔍 Executing Oracle database query: select * from emp join dept on emp.deptno = dept.deptno
+✅ Database query executed successfully
+🧠 Starting multi-step ReAct analysis...
+🕰️ Starting LLM analysis with timeout...
+🔍 Query being analyzed: How many employees did you find? And find the manager of each employee and tell me the department name of the manager and the location of the manager including the location's state (in a separate column) and the current population of the state (in a separate column) and the surrounding states. Even if values are null, please put each employee, manager, department, state, population, and a list of surrounding states in one table at the end of your analysis.
+🗃️ Database available: Yes
+🔑 SerpAPI key available: Yes (...7bc4)
+✅ LLM analysis completed
+📝 Step Analysis Response: {
+  "steps": [
+    {
+      "step": 1,
+      "description": "Count the number of employees in the database.",
+      "method": "database",
+      "needsExecution": true,
+      "searchQuery": "",
+      "confidence": 1.0
+    },
+    {
+      "step": 2,
+      "description": "Find the manager for each employee and retrieve their department name and location.",
+      "method": "database",
+      "needsExecution": true,
+      "searchQuery": "",
+      "confidence": 1.0
+    },
+    {
+      "step": 3,
+      "de...
+🎯 Multi-step Analysis: { totalSteps: 4, needsWebSearch: true, webSearchSteps: [ 'step 3' ] }
+🌐 Executing 1 web search step(s)...
+🔧 Enhanced search query: ""current population of Dallas, Texas in 2025""
+🔍 Step 3: Searching for ""current population of Dallas, Texas in 2025""
+🌐 SERPAPI CALL INITIATED
+🔍 SerpAPI Query: "current population of Dallas, Texas in 2025"
+🔑 SerpAPI Key: ...0bb87bc4
+❌ SERPAPI CALL FAILED: {
+  "error": "Your account has run out of searches."
+}
+📊 Database result available for LLM context
+📊 Database contains 1 rows of data
+📊 Database data preview: {"results":[{"columns":[{"name":"EMPNO","type":"NUMBER"},{"name":"ENAME","type":"VARCHAR2"},{"name":"JOB","type":"VARCHAR2"},{"name":"MGR","type":"NUMBER"},{"name":"HIREDATE","type":"DATE"},{"name":"S...
+📊 Database context length: 4938 characters
+📝 Final prompt length: 6003
+📝 Database context included: true
+📝 Web search context included: false
+📝 Knowledge context included: false
+✅ Database context: ALL ROWS PRESERVED (no truncation)
+📊 Database context: preserved 1 rows
+📝 Prompt preview (last 500 chars):     "deptno": 30,
+          "dname": "SALES",
+          "loc": "CHICAGO"
+        },
+        {
+          "empno": 7698,
+          "ename": "BLAKE",
+          "job": "MANAGER",
+          "mgr": 7839,
+          "hiredate": "01-MAY-81",
+          "sal": 2850,
+          "comm": "",
+          "deptno": 30,
+          "dname": "SALES",
+          "loc": "CHICAGO"
+        }
+      ]
+    }
+  ]
+}
+
+Thought: Let me analyze this request and provide a helpful response using the available information.
+
+Assistant:
+📊 Detected 14 database records in final prompt
