@@ -157,10 +157,110 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
   const [tocInsertLevel, setTocInsertLevel] = useState(3); // Level for inserting TOC
   const [tocIncludeSpacing, setTocIncludeSpacing] = useState(false); // Add spacing between levels
   const [showCheatSheet, setShowCheatSheet] = useState(false); // Markdown cheat sheet modal
+  const [showNotepad, setShowNotepad] = useState(false); // Notepad modal
+  const [notepadContent, setNotepadContent] = useState(''); // Notepad content
+  const [notepadLoading, setNotepadLoading] = useState(false); // Notepad loading state
+  const [notepadSaving, setNotepadSaving] = useState(false); // Notepad saving state
+  const [notepadDimensions, setNotepadDimensions] = useState({ width: 384, height: 320 }); // Notepad dimensions
+  const [isResizing, setIsResizing] = useState(false); // Notepad resize state
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 384, height: 320 }); // Resize start position
   const imageContextMapRef = useRef<Map<string, {index: number, context: string}>>(new Map());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
+
+  // Notepad functions
+  const openNotepad = async () => {
+    setShowNotepad(true);
+    setNotepadLoading(true);
+    
+    try {
+      const response = await fetch('/api/notepad');
+      if (response.ok) {
+        const data = await response.json();
+        setNotepadContent(data.content || '');
+      } else {
+        console.error('Failed to load notepad');
+        setNotepadContent('');
+      }
+    } catch (error) {
+      console.error('Error loading notepad:', error);
+      setNotepadContent('');
+    } finally {
+      setNotepadLoading(false);
+    }
+  };
+  
+  const saveNotepad = async () => {
+    setNotepadSaving(true);
+    
+    try {
+      const response = await fetch('/api/notepad', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: notepadContent }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to save notepad');
+      }
+    } catch (error) {
+      console.error('Error saving notepad:', error);
+    } finally {
+      setNotepadSaving(false);
+    }
+  };
+  
+  const closeNotepad = () => {
+    setShowNotepad(false);
+  };
+  
+  // Resize functions for notepad
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: notepadDimensions.width,
+      height: notepadDimensions.height
+    });
+  };
+  
+  const handleResizeMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = e.clientY - resizeStart.y;
+    
+    const newWidth = Math.max(300, resizeStart.width + deltaX); // Min width 300px
+    const newHeight = Math.max(200, resizeStart.height + deltaY); // Min height 200px
+    
+    setNotepadDimensions({ width: newWidth, height: newHeight });
+  };
+  
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+  };
+  
+  // Add event listeners for resize
+  React.useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = 'nw-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        document.removeEventListener('mousemove', handleResizeMove);
+        document.removeEventListener('mouseup', handleResizeEnd);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isResizing, resizeStart]);
 
   // Toolbar functions for inserting markdown syntax
   const insertMarkdownSyntax = (before: string, after: string = '', defaultText: string = '') => {
@@ -2024,6 +2124,18 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
                     New File
                   </button>
                   
+                  {/* Notepad Button */}
+                  <button
+                    onClick={openNotepad}
+                    className="flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    title="Open Notepad"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Notepad
+                  </button>
+                  
                   {/* Markdown Cheat Sheet Button */}
                   <button
                     onClick={() => setShowCheatSheet(true)}
@@ -3468,6 +3580,99 @@ export default function MarkdownEditor({ apiKey: _apiKey }: MarkdownEditorProps)
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Notepad Popup */}
+      {showNotepad && (
+        <>
+          {/* Backdrop to close popup when clicking outside */}
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={closeNotepad}
+          ></div>
+          
+          {/* Popup positioned relative to button */}
+          <div 
+            className="fixed top-32 right-8 z-50 bg-white border border-gray-300 rounded-lg shadow-xl flex flex-col"
+            style={{ 
+              width: `${notepadDimensions.width}px`, 
+              height: `${notepadDimensions.height}px` 
+            }}
+          >
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-yellow-50">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                📝 Quick Notes
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={saveNotepad}
+                  disabled={notepadSaving}
+                  className="flex items-center gap-1 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                  title="Save notes"
+                >
+                  {notepadSaving ? (
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                  ) : (
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  )}
+                  {notepadSaving ? 'Saving' : 'Save'}
+                </button>
+                <button
+                  onClick={closeNotepad}
+                  className="text-gray-500 hover:text-gray-700 p-1 rounded"
+                  title="Close notepad"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 p-3">
+              {notepadLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-yellow-500 border-t-transparent mx-auto mb-2"></div>
+                    <p className="text-gray-600 text-sm">Loading...</p>
+                  </div>
+                </div>
+              ) : (
+                <textarea
+                  value={notepadContent}
+                  onChange={(e) => setNotepadContent(e.target.value)}
+                  className="w-full h-full resize-none border border-gray-300 rounded p-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                  placeholder="Jot down quick notes here..."
+                  autoFocus
+                />
+              )}
+            </div>
+            
+            <div className="p-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-600 relative">
+              <div className="flex items-center justify-between">
+                <span>💾 Click Save to persist</span>
+                <span>{notepadContent.length} chars</span>
+              </div>
+              
+              {/* Resize Handle */}
+              <div
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize opacity-50 hover:opacity-75 transition-opacity"
+                onMouseDown={handleResizeStart}
+                title="Drag to resize"
+              >
+                <svg 
+                  className="w-4 h-4 text-gray-400" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M22 22H2v-2h20v2zm0-4H12v-2h10v2zm0-4H16v-2h6v2z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
