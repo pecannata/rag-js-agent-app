@@ -830,8 +830,19 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                         {/* Post Content */}
                         <div 
                           className="prose-content"
+                          style={{
+                            lineHeight: '1.6',
+                            fontSize: '16px',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif'
+                          }}
                           dangerouslySetInnerHTML={{
-                            __html: formData.content || currentPost?.content || ''
+                            __html: (formData.content || currentPost?.content || '').replace(
+                              /<p>/g, '<p style="margin-bottom: 1rem; margin-top: 0;">'
+                            ).replace(
+                              /<br\s*\/?>/g, '<br style="display: block; margin: 0.5rem 0; content: \'\';" />'
+                            ).replace(
+                              /<h([1-6])>/g, '<h$1 style="margin-top: 1.5rem; margin-bottom: 1rem;">'
+                            )
                           }}
                         />
                       </article>
