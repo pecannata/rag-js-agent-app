@@ -1,17 +1,17 @@
 {
-  "version": "1.0.124",
+  "version": "1.0.127",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-10T13:11:04.311Z",
+  "buildTime": "2025-07-10T13:42:08.263Z",
   "buildDate": "Jul 10, 2025",
-  "sourceVersion": "v1.0.123.071025",
+  "sourceVersion": "v1.0.126.071025",
   "git": {
     "branch": "main",
-    "commit": "3676891efb7ecd347549ba95bdb7600491cd756f",
-    "shortCommit": "3676891e",
-    "commitDate": "2025-07-10 07:49:07 -0500",
-    "commitMessage": "On the Blog tab, when I retrieve a blog from the database, the clob that displays i the main blog window is truncated. This might be due to SQLclScript.sh. It uses SQLcl, which might be doing the truncation. Please investigate."
+    "commit": "5fcc4d7aafb92925f52e9a9367764024fb9bf821",
+    "shortCommit": "5fcc4d7a",
+    "commitDate": "2025-07-10 08:25:01 -0500",
+    "commitMessage": "Separated the loading states into two distinct variables and fixed save bug with updates not returning anything:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.123-3676891e-20250710-131104"
+  "buildSignature": "1.0.126-5fcc4d7a-20250710-134208"
 }

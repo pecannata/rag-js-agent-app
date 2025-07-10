@@ -520,14 +520,6 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
             ) : filteredPosts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>No posts found</p>
-                {posts.length === 0 && (
-                  <button
-                    onClick={handleNewPost}
-                    className="mt-2 text-blue-500 hover:text-blue-600 underline"
-                  >
-                    Create your first post
-                  </button>
-                )}
               </div>
             ) : (
               <div className="space-y-1 p-2">
@@ -756,13 +748,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Welcome to Blog Manager</h3>
-                <p className="text-gray-600 mb-4">Create and manage your blog posts with MDX support</p>
-                <button
-                  onClick={handleNewPost}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
-                >
-                  Create Your First Post
-                </button>
+                <p className="text-gray-600">Select a post from the sidebar to view or edit it, or click "New Post" to create a new one</p>
               </div>
             </div>
           )}
