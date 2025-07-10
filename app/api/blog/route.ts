@@ -49,80 +49,33 @@ async function insertBlogPostSafely(postData: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`📝 Content Length: ${postData.content.length} characters`);
-    
-    // Convert content to hex to avoid all SQL escaping issues
-    const contentHex = stringToHex(postData.content);
-    console.log(`🔄 Content converted to hex: ${contentHex.length} hex chars`);
-    
-    // Split hex into chunks that are safe for Oracle (2000 hex chars = 1000 actual chars)
-    const maxHexChunkSize = 2000;
-    const hexChunks = [];
-    
-    for (let i = 0; i < contentHex.length; i += maxHexChunkSize) {
-      const chunk = contentHex.substring(i, i + maxHexChunkSize);
-      hexChunks.push(chunk);
-    }
-    
-    console.log(`📝 Content split into ${hexChunks.length} hex chunks`);
-    
-    // For small content, use direct insert with hex conversion
-    if (hexChunks.length === 1) {
-      const insertQuery = `
-        INSERT INTO blog_posts (
-          title, slug, content, excerpt, author, status, tags, published_at
-        ) VALUES (
-          '${escapeSqlString(postData.title)}',
-          '${escapeSqlString(postData.slug)}',
-          UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}')),
-          '${escapeSqlString(postData.excerpt)}',
-          '${escapeSqlString(postData.author)}',
-          '${escapeSqlString(postData.status)}',
-          '${escapeSqlString(postData.tags)}',
-          ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'}
-        )
-      `;
-      
-      return await executeOracleQuery(insertQuery);
-    }
-    
-    // For large content, insert with first hex chunk then append others
+
+    // Directly insert the content as CLOB
     const insertQuery = `
       INSERT INTO blog_posts (
         title, slug, content, excerpt, author, status, tags, published_at
       ) VALUES (
         '${escapeSqlString(postData.title)}',
         '${escapeSqlString(postData.slug)}',
-        UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}')),
+        EMPTY_CLOB(),
         '${escapeSqlString(postData.excerpt)}',
         '${escapeSqlString(postData.author)}',
         '${escapeSqlString(postData.status)}',
         '${escapeSqlString(postData.tags)}',
         ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'}
-      )
+      ) RETURNING content INTO :content
     `;
-    
-    const insertResult = await executeOracleQuery(insertQuery);
+
+    const insertResult = await executeOracleQueryWithClob(insertQuery, postData.content, { 
+      title: postData.title, 
+      slug: postData.slug 
+    });
     if (!insertResult.success) {
       return insertResult;
     }
-    
-    // Append remaining hex chunks
-    for (let i = 1; i < hexChunks.length; i++) {
-      const updateQuery = `
-        UPDATE blog_posts 
-        SET content = content || UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[i]}'))
-        WHERE slug = '${escapeSqlString(postData.slug)}'
-      `;
-      
-      const updateResult = await executeOracleQuery(updateQuery);
-      if (!updateResult.success) {
-        console.error(`❌ Failed to append hex chunk ${i + 1}:`, updateResult.error);
-        return updateResult;
-      }
-    }
-    
+
     return { success: true };
-    
+
   } catch (error) {
     console.error('❌ Error in insertBlogPostSafely:', error);
     return { success: false, error: (error as Error).message };
@@ -227,6 +180,68 @@ interface BlogPost {
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
+}
+
+// Oracle database execution function with CLOB handling
+async function executeOracleQueryWithClob(sqlQuery: string, clobContent: string, postData?: { title: string; slug: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    console.log('🔍 Blog Database CLOB Query Execution:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
+    console.log(`📝 CLOB Content Length: ${clobContent.length} characters`);
+
+    // Fall back to the original hex-based chunking approach for large content
+    console.log('🔄 Reverting to hex-chunking approach for reliable CLOB insertion');
+    
+    const contentHex = stringToHex(clobContent);
+    console.log(`🔄 Content converted to hex: ${contentHex.length} hex chars`);
+    
+    // Split hex into chunks that are safe for Oracle (2000 hex chars = 1000 actual chars)
+    const maxHexChunkSize = 2000;
+    const hexChunks = [];
+    
+    for (let i = 0; i < contentHex.length; i += maxHexChunkSize) {
+      const chunk = contentHex.substring(i, i + maxHexChunkSize);
+      hexChunks.push(chunk);
+    }
+    
+    console.log(`📝 Content split into ${hexChunks.length} hex chunks`);
+    
+    // For small content, use direct insert with hex conversion
+    if (hexChunks.length === 1) {
+      const insertQuery = sqlQuery.replace('EMPTY_CLOB()', `UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}'))`).replace(' RETURNING content INTO :content', '');
+      return await executeOracleQuery(insertQuery);
+    }
+    
+    // For large content, insert with first hex chunk then append others
+    const insertQuery = sqlQuery.replace('EMPTY_CLOB()', `UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}'))`).replace(' RETURNING content INTO :content', '');
+    
+    const insertResult = await executeOracleQuery(insertQuery);
+    if (!insertResult.success) {
+      return insertResult;
+    }
+    
+    // Append remaining hex chunks using provided post data
+    if (postData) {
+      for (let i = 1; i < hexChunks.length; i++) {
+        const appendQuery = `
+          UPDATE blog_posts 
+          SET content = content || UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[i]}'))
+          WHERE title = '${escapeSqlString(postData.title)}' AND slug = '${escapeSqlString(postData.slug)}'
+        `;
+        
+        const appendResult = await executeOracleQuery(appendQuery);
+        if (!appendResult.success) {
+          console.error(`❌ Failed to append hex chunk ${i + 1}:`, appendResult.error);
+          return appendResult;
+        }
+      }
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('❌ Blog database CLOB execution error:', error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 
 // Oracle database execution function

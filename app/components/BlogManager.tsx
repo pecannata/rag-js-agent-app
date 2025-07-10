@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Editor from '@monaco-editor/react';
+import { Editor as TinyMCEEditor } from '@tinymce/tinymce-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import TurndownService from 'turndown';
+import { Converter } from 'showdown';
 
 interface BlogPost {
   id: number;
@@ -35,9 +37,19 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'archived'>('all');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [editorRef, setEditorRef] = useState<any>(null);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  
+  // Initialize converters
+  const turndownService = useRef(new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced'
+  }));
+  const showdownConverter = useRef(new Converter({
+    tables: true,
+    strikethrough: true,
+    tasklists: true
+  }));
   
   // Form state for new/editing posts
   const [formData, setFormData] = useState({
@@ -49,6 +61,15 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   });
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // HTML/Markdown conversion utilities
+  const markdownToHtml = (markdown: string): string => {
+    return showdownConverter.current.makeHtml(markdown);
+  };
+
+  const htmlToMarkdown = (html: string): string => {
+    return turndownService.current.turndown(html);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -148,7 +169,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     setCurrentPost(null);
     setFormData({
       title: '',
-      content: '# New Blog Post\n\nWrite an engaging introduction that hooks your readers and introduces the main topic.\n\n## Overview\n\nProvide a brief overview of what readers will learn or discover in this post.\n\n## Key Points\n\n### Point 1\n\nExplain your first main point with details and examples.\n\n### Point 2\n\nElaborate on your second key point.\n\n### Point 3\n\nShare your third insight or finding.\n\n## Implementation\n\nIf applicable, provide practical steps or code examples:\n\n```javascript\n// Example code snippet\nconst example = "Hello, World!";\nconsole.log(example);\n```\n\n## Conclusion\n\nSummarize the key takeaways and encourage reader engagement.\n\n---\n\n*What are your thoughts on this topic? Share your experience in the comments below!*',
+      content: '# New Blog Post\n\nWrite an engaging introduction that hooks your readers and introduces the main topic.\n\n## Overview\n\nProvide a brief overview of what readers will learn or discover in this post.\n\n## Key Points\n\n- **Point 1**: Explain your first main point with details and examples\n- **Point 2**: Elaborate on your second key point\n- **Point 3**: Share your third insight or finding\n\n## Implementation\n\nIf applicable, provide practical steps or examples here.\n\n## Conclusion\n\nSummarize the key takeaways and encourage reader engagement.\n\n---\n\n*What are your thoughts on this topic? Share your experience in the comments below!*',
       excerpt: '',
       tags: '',
       status: 'draft'
@@ -371,33 +392,11 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     }));
   };
 
-  // Markdown toolbar functions
-  const insertMarkdown = (before: string, after: string = '', defaultText: string = '') => {
-    if (!editorRef) return;
-    
-    const selection = editorRef.getSelection();
-    if (!selection) return;
-    
-    const model = editorRef.getModel();
-    if (!model) return;
-    
-    const selectedText = model.getValueInRange(selection);
-    const textToInsert = selectedText || defaultText;
-    const newText = `${before}${textToInsert}${after}`;
-    
-    editorRef.executeEdits('toolbar-insert', [{
-      range: selection,
-      text: newText
-    }]);
+  // TinyMCE editor change handler
+  const handleEditorChange = (content: string) => {
+    const markdownContent = htmlToMarkdown(content);
+    handleFormChange('content', markdownContent);
   };
-
-  const insertBold = () => insertMarkdown('**', '**', 'bold text');
-  const insertItalic = () => insertMarkdown('*', '*', 'italic text');
-  const insertLink = () => insertMarkdown('[', '](url)', 'link text');
-  const insertImage = () => insertMarkdown('![', '](image-url)', 'alt text');
-  const insertCode = () => insertMarkdown('`', '`', 'code');
-  const insertCodeBlock = () => insertMarkdown('```\n', '\n```', 'code');
-  const insertHeader = (level: number) => insertMarkdown('#'.repeat(level) + ' ', '', `Header ${level}`);
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -628,39 +627,9 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                     />
                   </div>
 
-                  {/* Markdown Toolbar */}
+                  {/* Editor Toolbar */}
                   <div className="bg-gray-100 border-b border-gray-200 px-4 py-2">
                     <div className="flex items-center gap-2 text-sm">
-                      <button onClick={insertBold} className="px-2 py-1 hover:bg-gray-200 rounded" title="Bold">
-                        <strong>B</strong>
-                      </button>
-                      <button onClick={insertItalic} className="px-2 py-1 hover:bg-gray-200 rounded italic" title="Italic">
-                        I
-                      </button>
-                      <div className="w-px h-4 bg-gray-300"></div>
-                      <button onClick={() => insertHeader(1)} className="px-2 py-1 hover:bg-gray-200 rounded" title="H1">
-                        H1
-                      </button>
-                      <button onClick={() => insertHeader(2)} className="px-2 py-1 hover:bg-gray-200 rounded" title="H2">
-                        H2
-                      </button>
-                      <button onClick={() => insertHeader(3)} className="px-2 py-1 hover:bg-gray-200 rounded" title="H3">
-                        H3
-                      </button>
-                      <div className="w-px h-4 bg-gray-300"></div>
-                      <button onClick={insertLink} className="px-2 py-1 hover:bg-gray-200 rounded" title="Link">
-                        🔗
-                      </button>
-                      <button onClick={insertImage} className="px-2 py-1 hover:bg-gray-200 rounded" title="Image">
-                        🖼️
-                      </button>
-                      <button onClick={insertCode} className="px-2 py-1 hover:bg-gray-200 rounded" title="Code">
-                        {'</>'}
-                      </button>
-                      <button onClick={insertCodeBlock} className="px-2 py-1 hover:bg-gray-200 rounded" title="Code Block">
-                        📋
-                      </button>
-                      <div className="w-px h-4 bg-gray-300"></div>
                       <button
                         onClick={() => setIsPreviewMode(!isPreviewMode)}
                         className={`px-3 py-1 rounded ${isPreviewMode ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'}`}
@@ -680,20 +649,40 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
               {/* Content Area */}
               <div className="flex-1 min-h-0">
                 {isEditing && !isPreviewMode ? (
-                  <Editor
-                    height="100%"
-                    defaultLanguage="markdown"
-                    value={formData.content}
-                    onChange={(value) => handleFormChange('content', value || '')}
-                    onMount={(editor) => setEditorRef(editor)}
-                    theme="vs"
-                    options={{
-                      minimap: { enabled: false },
-                      wordWrap: 'on',
-                      lineNumbers: 'on',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
+                  <TinyMCEEditor
+                    apiKey='qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc'
+                    init={{
+                      height: '100%',
+                      base_url: '/tinymce',
+                      suffix: '.min',
+                      menubar: false,
+                      plugins: 'lists link image table code help wordcount',
+                      toolbar: 'undo redo | formatselect | bold italic | ' +
+                        'alignleft aligncenter alignright | bullist numlist | ' +
+                        'link image table | code | help',
+                      content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; line-height: 1.6; }',
+                      branding: false,
+                      resize: false,
+                      statusbar: false,
+                      convert_urls: false,
+                      relative_urls: false,
+                      remove_script_host: false,
+                      document_base_url: '/',
+                      promotion: false,
+                      forced_root_block: 'p',
+                      forced_root_block_attrs: {},
+                      plugins_include_list: ['lists', 'link', 'image', 'table', 'code', 'help', 'wordcount'],
+                      setup: (editor: any) => {
+                        editor.on('init', () => {
+                          console.log('TinyMCE initialized successfully');
+                        });
+                        // Disable any automatic onboarding
+                        editor.on('NewDocument', () => {});
+                      },
                     }}
+                    value={markdownToHtml(formData.content)}
+                    initialValue={markdownToHtml(formData.content)}
+                    onEditorChange={handleEditorChange}
                   />
                 ) : (
                   <div className="h-full overflow-y-auto">

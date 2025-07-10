@@ -1,17 +1,17 @@
 {
-  "version": "1.0.127",
+  "version": "1.0.143",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-10T13:42:08.263Z",
+  "buildTime": "2025-07-10T15:53:31.470Z",
   "buildDate": "Jul 10, 2025",
-  "sourceVersion": "v1.0.126.071025",
+  "sourceVersion": "v1.0.142.071025",
   "git": {
     "branch": "main",
-    "commit": "5fcc4d7aafb92925f52e9a9367764024fb9bf821",
-    "shortCommit": "5fcc4d7a",
-    "commitDate": "2025-07-10 08:25:01 -0500",
-    "commitMessage": "Separated the loading states into two distinct variables and fixed save bug with updates not returning anything:"
+    "commit": "b6f1d520df905c4e614e5b6ffceaecb6b5e27686",
+    "shortCommit": "b6f1d520",
+    "commitDate": "2025-07-10 08:43:23 -0500",
+    "commitMessage": "Remove the \"Create first bog\" button"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.126-5fcc4d7a-20250710-134208"
+  "buildSignature": "1.0.142-b6f1d520-20250710-155331"
 }
