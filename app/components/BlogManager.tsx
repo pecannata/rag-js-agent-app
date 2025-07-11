@@ -2,10 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Editor as TinyMCEEditor } from '@tinymce/tinymce-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import TurndownService from 'turndown';
-import { Converter } from 'showdown';
 
 interface BlogPost {
   id: number;
@@ -42,86 +38,6 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
-  // Initialize converters with better formatting preservation
-  const turndownService = useRef(new TurndownService({
-    headingStyle: 'atx',
-    codeBlockStyle: 'fenced',
-    // Keep unknown tags as HTML
-    keepReplacement: function(content, node) {
-      return node.isBlock ? '\n\n' + node.outerHTML + '\n\n' : node.outerHTML;
-    },
-    // Preserve alignment and styling
-    rules: {
-      // Preserve paragraphs with alignment
-      alignedParagraph: {
-        filter: function (node) {
-          return node.nodeName === 'P' && node.style && node.style.textAlign && node.style.textAlign !== 'left';
-        },
-        replacement: function (content, node) {
-          const align = node.style.textAlign;
-          return `\n\n<p style="text-align: ${align};">${content}</p>\n\n`;
-        }
-      },
-      // Preserve divs with alignment
-      alignedDiv: {
-        filter: function (node) {
-          return node.nodeName === 'DIV' && node.style && node.style.textAlign;
-        },
-        replacement: function (content, node) {
-          const align = node.style.textAlign;
-          return `\n\n<div style="text-align: ${align};">${content}</div>\n\n`;
-        }
-      },
-      // Preserve any element with text-align style
-      textAlign: {
-        filter: function (node) {
-          return node.style && node.style.textAlign && node.style.textAlign !== 'left';
-        },
-        replacement: function (content, node) {
-          const tagName = node.nodeName.toLowerCase();
-          const align = node.style.textAlign;
-          return `<${tagName} style="text-align: ${align};">${content}</${tagName}>`;
-        }
-      },
-      // Preserve image dimensions and styling
-      images: {
-        filter: 'img',
-        replacement: function (content, node) {
-          const alt = node.getAttribute('alt') || '';
-          const src = node.getAttribute('src') || '';
-          const width = node.getAttribute('width') || node.style.width;
-          const height = node.getAttribute('height') || node.style.height;
-          const style = node.getAttribute('style') || '';
-          
-          let attributes = '';
-          if (width) attributes += ` width="${width}"`;
-          if (height) attributes += ` height="${height}"`;
-          if (style && !width && !height) attributes += ` style="${style}"`;
-          
-          return src ? `<img src="${src}" alt="${alt}"${attributes} />` : '';
-        }
-      },
-      // Preserve styled spans
-      styledSpan: {
-        filter: function (node) {
-          return node.nodeName === 'SPAN' && (node.style.cssText || node.getAttribute('style'));
-        },
-        replacement: function (content, node) {
-          const style = node.style.cssText || node.getAttribute('style');
-          return `<span style="${style}">${content}</span>`;
-        }
-      }
-    }
-  }));
-  const showdownConverter = useRef(new Converter({
-    tables: true,
-    strikethrough: true,
-    tasklists: true,
-    // Allow raw HTML to preserve formatting
-    rawHTML: true,
-    // Preserve line breaks
-    simpleLineBreaks: true
-  }));
   
   // Form state for new/editing posts
   const [formData, setFormData] = useState({
@@ -826,7 +742,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       forced_root_block: 'p',
                       forced_root_block_attrs: {},
                       // Prevent content reinitialization
-                      auto_focus: false,
+                      // auto_focus: false, // Remove this line as false is not a valid value
                       // Keep undo history
                       custom_undo_redo_levels: 50,
                       // Preserve content formatting
@@ -944,7 +860,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       },
                       // Media plugin configuration
                       media_live_embeds: true,
-                      media_url_resolver: function (data, resolve) {
+                      media_url_resolver: function (data: any, resolve: any) {
                         if (data.url.indexOf('youtube.com') !== -1 || data.url.indexOf('youtu.be') !== -1) {
                           resolve({
                             html: '<iframe src="' + data.url + '" width="560" height="315" frameborder="0" allowfullscreen></iframe>'

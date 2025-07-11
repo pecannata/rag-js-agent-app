@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Mac Stop Script for RAG-JS-Agent-App
+# Run this script to stop the production server
+
+echo "🛑 Stopping production server..."
+
+# Try to stop using saved PID first
+if [ -f "app.pid" ]; then
+    PID=$(cat app.pid)
+    echo "📋 Found saved PID: $PID"
+    
+    if ps -p $PID > /dev/null 2>&1; then
+        echo "🔄 Stopping process $PID..."
+        kill $PID
+        
+        # Wait a moment and check if it's stopped
+        sleep 2
+        if ps -p $PID > /dev/null 2>&1; then
+            echo "⚠️  Process still running, force killing..."
+            kill -9 $PID
+        fi
+        
+        echo "✅ Process $PID stopped"
+        rm app.pid
+    else
+        echo "⚠️  Process $PID not found (already stopped?)"
+        rm app.pid
+    fi
+else
+    echo "📋 No PID file found, using pkill..."
+fi
+
+# Fallback: kill any remaining processes
+echo "🔄 Cleaning up any remaining processes..."
+pkill -f "npm start" || true
+pkill -f "next-server" || true
+
+echo "✅ Stop complete"
+
+# Check if anything is still running
+REMAINING=$(ps aux | grep -E "(npm start|next-server)" | grep -v grep | wc -l)
+if [ $REMAINING -eq 0 ]; then
+    echo "🎯 No remaining processes found"
+else
+    echo "⚠️  Warning: Some processes may still be running"
+    echo "   Check with: ps aux | grep next"
+fi

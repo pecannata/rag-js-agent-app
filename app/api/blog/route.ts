@@ -16,10 +16,8 @@ function escapeSqlString(str: string): string {
     .replace(/\0/g, '')           // Remove null bytes
     .replace(/\x1a/g, '')         // Remove substitute character
     .replace(/\r\n/g, '\n')       // Normalize line endings
-    .replace(/\r/g, '\n')         // Convert CR to LF
-    .replace(/\n/g, ' ')          // Replace newlines with spaces to avoid line break issues
-    .replace(/\t/g, ' ')          // Replace tabs with spaces
-    .trim();                      // Remove leading/trailing whitespace
+    .replace(/\r/g, '\n');        // Convert CR to LF
+    // Note: Preserving newlines for CLOB content - SQLclScript.sh can handle them
 }
 
 // Utility function to validate and sanitize numeric IDs
@@ -31,12 +29,7 @@ function validateId(id: any): number | null {
   return numId;
 }
 
-// Function to convert string to hex for safe Oracle storage
-function stringToHex(str: string): string {
-  return Buffer.from(str, 'utf8').toString('hex').toUpperCase();
-}
-
-// Function to handle large CLOB content safely using hex encoding
+// Function to handle CLOB content insertion
 async function insertBlogPostSafely(postData: {
   title: string;
   slug: string;
@@ -52,14 +45,14 @@ async function insertBlogPostSafely(postData: {
   try {
     console.log(`📝 Content Length: ${postData.content.length} characters`);
 
-    // Directly insert the content as CLOB
+    // Direct CLOB insertion - SQLclScript.sh handles up to 10MB
     const insertQuery = `
       INSERT INTO blog_posts (
         title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
       ) VALUES (
         '${escapeSqlString(postData.title)}',
         '${escapeSqlString(postData.slug)}',
-        EMPTY_CLOB(),
+        '${escapeSqlString(postData.content)}',
         '${escapeSqlString(postData.excerpt)}',
         '${escapeSqlString(postData.author)}',
         '${escapeSqlString(postData.status)}',
@@ -67,13 +60,10 @@ async function insertBlogPostSafely(postData: {
         ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
         ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
         ${postData.isScheduled ? 1 : 0}
-      ) RETURNING content INTO :content
+      )
     `;
 
-    const insertResult = await executeOracleQueryWithClob(insertQuery, postData.content, { 
-      title: postData.title, 
-      slug: postData.slug 
-    });
+    const insertResult = await executeOracleQuery(insertQuery);
     if (!insertResult.success) {
       return insertResult;
     }
@@ -86,7 +76,7 @@ async function insertBlogPostSafely(postData: {
   }
 }
 
-// Function to handle large CLOB content safely for updates using hex encoding
+// Function to handle CLOB content updates
 async function updateBlogPostSafely(postData: {
   id: number;
   title: string;
@@ -101,45 +91,11 @@ async function updateBlogPostSafely(postData: {
   try {
     console.log(`📝 Update: Content Length: ${postData.content.length} characters`);
     
-    // Convert content to hex to avoid all SQL escaping issues
-    const contentHex = stringToHex(postData.content);
-    console.log(`🔄 Update: Content converted to hex: ${contentHex.length} hex chars`);
-    
-    // Split hex into chunks that are safe for Oracle
-    const maxHexChunkSize = 2000;
-    const hexChunks = [];
-    
-    for (let i = 0; i < contentHex.length; i += maxHexChunkSize) {
-      const chunk = contentHex.substring(i, i + maxHexChunkSize);
-      hexChunks.push(chunk);
-    }
-    
-    console.log(`📝 Update: Content split into ${hexChunks.length} hex chunks`);
-    
-    // For small content, use direct update with hex conversion
-    if (hexChunks.length === 1) {
-      const updateQuery = `
-        UPDATE blog_posts SET
-          title = '${escapeSqlString(postData.title)}',
-          content = UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}')),
-          excerpt = '${escapeSqlString(postData.excerpt)}',
-          status = '${escapeSqlString(postData.status)}',
-          tags = '${escapeSqlString(postData.tags)}',
-          updated_at = CURRENT_TIMESTAMP,
-          published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
-          scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
-          is_scheduled = ${postData.isScheduled ? 1 : 0}
-        WHERE id = ${postData.id}
-      `;
-      
-      return await executeOracleQuery(updateQuery);
-    }
-    
-    // For large content, update with first hex chunk then append others
+    // Direct CLOB update - SQLclScript.sh handles up to 10MB
     const updateQuery = `
       UPDATE blog_posts SET
         title = '${escapeSqlString(postData.title)}',
-        content = UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}')),
+        content = '${escapeSqlString(postData.content)}',
         excerpt = '${escapeSqlString(postData.excerpt)}',
         status = '${escapeSqlString(postData.status)}',
         tags = '${escapeSqlString(postData.tags)}',
@@ -150,27 +106,7 @@ async function updateBlogPostSafely(postData: {
       WHERE id = ${postData.id}
     `;
     
-    const updateResult = await executeOracleQuery(updateQuery);
-    if (!updateResult.success) {
-      return updateResult;
-    }
-    
-    // Append remaining hex chunks
-    for (let i = 1; i < hexChunks.length; i++) {
-      const appendQuery = `
-        UPDATE blog_posts 
-        SET content = content || UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[i]}'))
-        WHERE id = ${postData.id}
-      `;
-      
-      const appendResult = await executeOracleQuery(appendQuery);
-      if (!appendResult.success) {
-        console.error(`❌ Failed to append hex chunk ${i + 1}:`, appendResult.error);
-        return appendResult;
-      }
-    }
-    
-    return { success: true };
+    return await executeOracleQuery(updateQuery);
     
   } catch (error) {
     console.error('❌ Error in updateBlogPostSafely:', error);
@@ -194,67 +130,6 @@ interface BlogPost {
   isScheduled?: boolean;
 }
 
-// Oracle database execution function with CLOB handling
-async function executeOracleQueryWithClob(sqlQuery: string, clobContent: string, postData?: { title: string; slug: string }): Promise<{ success: boolean; data?: any; error?: string }> {
-  try {
-    console.log('🔍 Blog Database CLOB Query Execution:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
-    console.log(`📝 CLOB Content Length: ${clobContent.length} characters`);
-
-    // Fall back to the original hex-based chunking approach for large content
-    console.log('🔄 Reverting to hex-chunking approach for reliable CLOB insertion');
-    
-    const contentHex = stringToHex(clobContent);
-    console.log(`🔄 Content converted to hex: ${contentHex.length} hex chars`);
-    
-    // Split hex into chunks that are safe for Oracle (2000 hex chars = 1000 actual chars)
-    const maxHexChunkSize = 2000;
-    const hexChunks = [];
-    
-    for (let i = 0; i < contentHex.length; i += maxHexChunkSize) {
-      const chunk = contentHex.substring(i, i + maxHexChunkSize);
-      hexChunks.push(chunk);
-    }
-    
-    console.log(`📝 Content split into ${hexChunks.length} hex chunks`);
-    
-    // For small content, use direct insert with hex conversion
-    if (hexChunks.length === 1) {
-      const insertQuery = sqlQuery.replace('EMPTY_CLOB()', `UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}'))`).replace(' RETURNING content INTO :content', '');
-      return await executeOracleQuery(insertQuery);
-    }
-    
-    // For large content, insert with first hex chunk then append others
-    const insertQuery = sqlQuery.replace('EMPTY_CLOB()', `UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[0]}'))`).replace(' RETURNING content INTO :content', '');
-    
-    const insertResult = await executeOracleQuery(insertQuery);
-    if (!insertResult.success) {
-      return insertResult;
-    }
-    
-    // Append remaining hex chunks using provided post data
-    if (postData) {
-      for (let i = 1; i < hexChunks.length; i++) {
-        const appendQuery = `
-          UPDATE blog_posts 
-          SET content = content || UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('${hexChunks[i]}'))
-          WHERE title = '${escapeSqlString(postData.title)}' AND slug = '${escapeSqlString(postData.slug)}'
-        `;
-        
-        const appendResult = await executeOracleQuery(appendQuery);
-        if (!appendResult.success) {
-          console.error(`❌ Failed to append hex chunk ${i + 1}:`, appendResult.error);
-          return appendResult;
-        }
-      }
-    }
-
-    return { success: true };
-
-  } catch (error) {
-    console.error('❌ Blog database CLOB execution error:', error);
-    return { success: false, error: (error as Error).message };
-  }
-}
 
 // Oracle database execution function
 async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -557,7 +432,7 @@ export async function POST(request: NextRequest) {
       excerpt = plainText.length > 200 ? plainText.substring(0, 200) + '...' : plainText;
     }
     
-    // Use safe CLOB insertion method
+    // Use simplified CLOB insertion method
     console.log('📝 Content Length:', postData.content.length);
     console.log('📝 Content Preview:', postData.content.substring(0, 100) + '...');
     
@@ -713,14 +588,24 @@ export async function PUT(request: NextRequest) {
     
     const existingPost = checkData[0];
     
-    // Handle published_at logic
+    // Handle published_at and scheduling logic
     let publishedAt = existingPost.published_at;
+    let scheduledDate = null;
+    let isScheduled = false;
+    
     if (postData.status === 'published' && existingPost.status !== 'published') {
       // Publishing for the first time
       publishedAt = new Date().toISOString();
-    } else if (postData.status !== 'published') {
-      // Unpublishing
+    } else if (postData.status === 'scheduled' && postData.scheduledDate) {
+      // Scheduling the post
+      scheduledDate = postData.scheduledDate;
+      isScheduled = true;
+      publishedAt = null; // Clear published_at when scheduling
+    } else if (postData.status !== 'published' && postData.status !== 'scheduled') {
+      // Unpublishing/drafting
       publishedAt = null;
+      scheduledDate = null;
+      isScheduled = false;
     }
     
     // Generate excerpt if not provided
@@ -749,7 +634,9 @@ export async function PUT(request: NextRequest) {
       excerpt: excerpt,
       status: postData.status,
       tags: postData.tags ? postData.tags.join(', ') : '',
-      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null
+      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null,
+      scheduledDate: scheduledDate ? scheduledDate.replace('T', ' ').replace('Z', '') : null,
+      isScheduled: isScheduled
     });
     
     if (!result.success) {
@@ -772,7 +659,9 @@ export async function PUT(request: NextRequest) {
         tags,
         TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
         TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
-        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at,
+        TO_CHAR(scheduled_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as scheduled_date,
+        is_scheduled
       FROM blog_posts 
       WHERE id = ${validId}
     `;
@@ -795,7 +684,9 @@ export async function PUT(request: NextRequest) {
         tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
         createdAt: post.created_at,
         updatedAt: post.updated_at,
-        publishedAt: post.published_at
+        publishedAt: post.published_at,
+        scheduledDate: post.scheduled_date,
+        isScheduled: post.is_scheduled === 1
       };
       
       // If this post was just published (status changed from non-published to published), create an email notification job

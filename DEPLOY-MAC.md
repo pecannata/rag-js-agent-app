@@ -1,6 +1,18 @@
 # Mac Local Deployment Instructions
 
-## Steps to Deploy Production Build Locally
+## Quick Start (Recommended)
+
+### Deploy with automatic script
+```bash
+./deploy.mac
+```
+
+### Stop the server
+```bash
+./stop.mac
+```
+
+## Manual Steps (if needed)
 
 ### 1. Stop any existing servers
 ```bash
@@ -31,20 +43,33 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
 ps aux | grep next
 ```
 
-## Management Commands
+## Process Management
 
 ### View logs
 ```bash
 tail -f production.log
 ```
 
-### Stop server
+### Stop server (preferred method)
 ```bash
+./stop.mac
+```
+
+### Stop server (manual method)
+```bash
+# If you have the PID file
+kill $(cat app.pid)
+
+# Or use pkill as fallback
 pkill -f "npm start"
 ```
 
 ### Check if running
 ```bash
+# Check specific process
+ps -p $(cat app.pid)
+
+# Or check all next processes
 ps aux | grep next
 ```
 
@@ -53,6 +78,13 @@ ps aux | grep next
 - HTTP status code 200
 - Logs written to production.log
 - Process runs in background (survives terminal closure)
+- Process ID saved to app.pid file
+
+## Key Features
+- **Background Process**: Uses `nohup` to run independently of terminal
+- **Process Tracking**: Saves PID to `app.pid` for easy management
+- **Clean Shutdown**: `stop.mac` script handles graceful termination
+- **Persistent Operation**: Server continues running after terminal closure
 
 ## To Ask AI Agent to Deploy
-Say: "Please follow the steps in DEPLOY-MAC.md to deploy the production build"
+Say: "Please run ./deploy.mac to deploy the production build"

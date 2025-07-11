@@ -1,17 +1,17 @@
 {
-  "version": "1.0.144",
+  "version": "1.0.152",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-10T23:39:48.032Z",
-  "buildDate": "Jul 10, 2025",
-  "sourceVersion": "v1.0.143.071025",
+  "buildTime": "2025-07-11T12:37:13.647Z",
+  "buildDate": "Jul 11, 2025",
+  "sourceVersion": "v1.0.151.071125",
   "git": {
     "branch": "main",
-    "commit": "5dbedf0d6d848821618af1a60dc3fec8fee17c69",
-    "shortCommit": "5dbedf0d",
-    "commitDate": "2025-07-10 18:09:28 -0500",
-    "commitMessage": "Added Text Formatting & Styling •  forecolor - Text color picker •  backcolor - Background/highlight color •  fontselect - Font family dropdown •  fontsizeselect - Font size dropdown •  subscript / superscript - Sub/superscript text"
+    "commit": "28ea5045334939340a02f178003ec37ed75de115",
+    "shortCommit": "28ea5045",
+    "commitDate": "2025-07-10 21:23:33 -0500",
+    "commitMessage": "Successfully Implemented and Tested:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.143-5dbedf0d-20250710-233948"
+  "buildSignature": "1.0.151-28ea5045-20250711-123713"
 }

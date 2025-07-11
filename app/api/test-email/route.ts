@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { testEmailConfig } from '../../lib/email';
 
 // Test endpoint to verify email configuration
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.log('🧪 Testing email configuration...');
     

@@ -187,6 +187,9 @@ export default function SchedulerDashboard() {
         clearInterval(interval);
       };
     }
+    
+    // Return empty cleanup function when autoRefresh is false
+    return () => {};
   }, [autoRefresh, refreshRate]);
 
   const getStatusColor = (status: string) => {
