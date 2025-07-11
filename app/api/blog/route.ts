@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { sendPostNotification } from '../../lib/email';
+import { queueEmailJob } from '../../lib/background-jobs';
 
 const execAsync = promisify(exec);
 
@@ -132,174 +132,7 @@ interface BlogPost {
 }
 
 
-// Function to send immediate email notifications to all active subscribers
-async function sendImmediateEmailNotifications(post: any): Promise<{ success: boolean; sent: number; failed: number; errors: string[] }> {
-  try {
-    console.log('📧 Sending immediate email notifications for post:', post.title);
-    
-    // Get email-enabled subscribers only
-    const getSubscribersQuery = `SELECT * FROM v_email_enabled_subscribers`;
-    const subscribersResult = await executeOracleQuery(getSubscribersQuery);
-    
-    let subscribers = subscribersResult.success ? subscribersResult.data : [];
-    if (!Array.isArray(subscribers)) {
-      subscribers = [];
-    }
-    
-    console.log(`👥 Found ${subscribers.length} email-enabled subscribers`);
-    
-    if (subscribers.length === 0) {
-      console.log('ℹ️ No email-enabled subscribers to notify');
-      return { success: true, sent: 0, failed: 0, errors: [] };
-    }
-    
-    // Create email campaign record
-    const createCampaignQuery = `
-      INSERT INTO email_campaigns (
-        post_id,
-        campaign_type,
-        subject,
-        recipient_count,
-        status
-      ) VALUES (
-        ${post.id},
-        'post_notification',
-        'New Post: ${escapeSqlString(post.title)}',
-        ${subscribers.length},
-        'pending'
-      )
-    `;
-    
-    const campaignResult = await executeOracleQuery(createCampaignQuery);
-    
-    if (!campaignResult.success) {
-      console.error('❌ Failed to create email campaign:', campaignResult.error);
-      return { success: false, sent: 0, failed: 0, errors: [campaignResult.error || 'Failed to create campaign'] };
-    }
-    
-    // Get the campaign ID
-    const getCampaignQuery = `
-      SELECT id FROM email_campaigns 
-      WHERE post_id = ${post.id} AND campaign_type = 'post_notification'
-      ORDER BY created_at DESC
-      FETCH FIRST 1 ROWS ONLY
-    `;
-    
-    const campaignIdResult = await executeOracleQuery(getCampaignQuery);
-    
-    if (!campaignIdResult.success || !campaignIdResult.data || campaignIdResult.data.length === 0) {
-      console.error('❌ Failed to get campaign ID');
-      return { success: false, sent: 0, failed: 0, errors: ['Failed to get campaign ID'] };
-    }
-    
-    const campaignId = campaignIdResult.data[0].id;
-    
-    // Send emails to all subscribers immediately
-    let successfulSends = 0;
-    let failedSends = 0;
-    const errors: string[] = [];
-    
-    for (const subscriber of subscribers) {
-      try {
-        // Create initial log entry as pending
-        const logQuery = `
-          INSERT INTO email_campaign_logs (
-            campaign_id,
-            subscriber_id,
-            status
-          ) VALUES (
-            ${campaignId},
-            ${subscriber.id},
-            'pending'
-          )
-        `;
-        
-        const logResult = await executeOracleQuery(logQuery);
-        
-        if (logResult.success) {
-          // Send the email immediately
-          console.log(`📧 Sending immediate email to ${subscriber.email} about post: ${post.title}`);
-          
-          const emailResult = await sendPostNotification(
-            subscriber.email,
-            {
-              title: post.title,
-              slug: post.slug,
-              excerpt: post.excerpt,
-              tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : []
-            },
-            subscriber.unsubscribe_token
-          );
-          
-          if (emailResult.success) {
-            // Update log to sent
-            await executeOracleQuery(`
-              UPDATE email_campaign_logs 
-              SET status = 'sent', sent_at = CURRENT_TIMESTAMP
-              WHERE campaign_id = ${campaignId} AND subscriber_id = ${subscriber.id}
-            `);
-            successfulSends++;
-            console.log(`✅ Email sent successfully to ${subscriber.email}`);
-          } else {
-            // Update log to failed
-            await executeOracleQuery(`
-              UPDATE email_campaign_logs 
-              SET status = 'failed', error_message = '${escapeSqlString(emailResult.error || 'Unknown error')}'
-              WHERE campaign_id = ${campaignId} AND subscriber_id = ${subscriber.id}
-            `);
-            failedSends++;
-            const errorMsg = `Failed to send email to ${subscriber.email}: ${emailResult.error}`;
-            errors.push(errorMsg);
-            console.error(`❌ ${errorMsg}`);
-          }
-        } else {
-          failedSends++;
-          const errorMsg = `Failed to log email for subscriber ${subscriber.id}`;
-          errors.push(errorMsg);
-          console.error(`❌ ${errorMsg}`);
-        }
-        
-      } catch (error) {
-        failedSends++;
-        const errorMsg = `Error processing subscriber ${subscriber.id}: ${(error as Error).message}`;
-        errors.push(errorMsg);
-        console.error(`❌ ${errorMsg}`);
-        
-        // Try to update log with error
-        try {
-          await executeOracleQuery(`
-            UPDATE email_campaign_logs 
-            SET status = 'failed', error_message = '${escapeSqlString((error as Error).message)}'
-            WHERE campaign_id = ${campaignId} AND subscriber_id = ${subscriber.id}
-          `);
-        } catch (logError) {
-          console.error('Failed to update error log:', logError);
-        }
-      }
-    }
-    
-    // Update campaign with results
-    const updateCampaignQuery = `
-      UPDATE email_campaigns 
-      SET 
-        successful_sends = ${successfulSends},
-        failed_sends = ${failedSends},
-        sent_date = CURRENT_TIMESTAMP,
-        status = 'completed'
-      WHERE id = ${campaignId}
-    `;
-    
-    await executeOracleQuery(updateCampaignQuery);
-    
-    console.log(`📧 Email campaign completed: ${successfulSends} sent, ${failedSends} failed`);
-    
-    return { success: true, sent: successfulSends, failed: failedSends, errors };
-    
-  } catch (error) {
-    console.error('❌ Error in sendImmediateEmailNotifications:', error);
-    return { success: false, sent: 0, failed: 0, errors: [(error as Error).message] };
-  }
-}
+// Note: Email notifications are now handled by the background job system
 
 // Oracle database execution function
 async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -669,24 +502,23 @@ export async function POST(request: NextRequest) {
         isScheduled: post.is_scheduled === 1
       };
       
-      // If this is a published post, send email notifications immediately
+      // If this is a published post, queue email notifications for background processing
       if (postData.status === 'published') {
         try {
-          console.log('📧 Sending immediate email notifications for published post:', post.title);
+          console.log('📧 Queuing email notifications for published post:', post.title);
           
-          const emailResult = await sendImmediateEmailNotifications(post);
+          const jobId = queueEmailJob({
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            excerpt: post.excerpt,
+            tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : []
+          });
           
-          if (emailResult.success) {
-            console.log(`✅ Email notifications sent successfully: ${emailResult.sent} sent, ${emailResult.failed} failed`);
-            if (emailResult.errors.length > 0) {
-              console.warn('⚠️ Some emails failed:', emailResult.errors);
-            }
-          } else {
-            console.error('❌ Failed to send email notifications:', emailResult.errors);
-          }
+          console.log(`✅ Email notifications queued with job ID: ${jobId}`);
         } catch (emailError) {
-          console.error('❌ Error sending email notifications:', emailError);
-          // Don't fail the post creation if email sending fails
+          console.error('❌ Error queuing email notifications:', emailError);
+          // Don't fail the post creation if email queuing fails
         }
       }
       
@@ -848,24 +680,23 @@ export async function PUT(request: NextRequest) {
         isScheduled: post.is_scheduled === 1
       };
       
-      // If this post was just published (status changed from non-published to published), send email notifications immediately
+      // If this post was just published (status changed from non-published to published), queue email notifications for background processing
       if (postData.status === 'published' && existingPost.status !== 'published') {
         try {
-          console.log('📧 Sending immediate email notifications for newly published post:', post.title);
+          console.log('📧 Queuing email notifications for newly published post:', post.title);
           
-          const emailResult = await sendImmediateEmailNotifications(post);
+          const jobId = queueEmailJob({
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            excerpt: post.excerpt,
+            tags: post.tags ? post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : []
+          });
           
-          if (emailResult.success) {
-            console.log(`✅ Email notifications sent successfully for updated post: ${emailResult.sent} sent, ${emailResult.failed} failed`);
-            if (emailResult.errors.length > 0) {
-              console.warn('⚠️ Some emails failed for updated post:', emailResult.errors);
-            }
-          } else {
-            console.error('❌ Failed to send email notifications for updated post:', emailResult.errors);
-          }
+          console.log(`✅ Email notifications queued for updated post with job ID: ${jobId}`);
         } catch (emailError) {
-          console.error('❌ Error sending email notifications for updated post:', emailError);
-          // Don't fail the post update if email sending fails
+          console.error('❌ Error queuing email notifications for updated post:', emailError);
+          // Don't fail the post update if email queuing fails
         }
       }
       
