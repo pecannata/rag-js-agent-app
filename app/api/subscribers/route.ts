@@ -130,6 +130,7 @@ export async function GET(request: NextRequest) {
         status,
         TO_CHAR(subscription_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as subscription_date,
         email_verified,
+        email_notifications_enabled,
         unsubscribe_token,
         TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
         TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at
@@ -177,6 +178,7 @@ export async function GET(request: NextRequest) {
       ...subscriber,
       subscriptionDate: subscriber.subscription_date,
       emailVerified: subscriber.email_verified === 1,
+      emailNotificationsEnabled: subscriber.email_notifications_enabled === 1,
       createdAt: subscriber.created_at,
       updatedAt: subscriber.updated_at
     }));

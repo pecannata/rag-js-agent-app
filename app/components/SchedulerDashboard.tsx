@@ -30,6 +30,7 @@ interface Subscriber {
   status: string;
   subscriptionDate: string;
   emailVerified: boolean;
+  emailNotificationsEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +47,7 @@ export default function SchedulerDashboard() {
   const [refreshRate, setRefreshRate] = useState(30); // seconds
   const [resendingEmail, setResendingEmail] = useState<number | null>(null);
   const [verifyingManually, setVerifyingManually] = useState<number | null>(null);
+  const [togglingNotifications, setTogglingNotifications] = useState<number | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -64,7 +66,10 @@ export default function SchedulerDashboard() {
       const subscribersResponse = await fetch('/api/subscribers');
       if (subscribersResponse.ok) {
         const subscribersData = await subscribersResponse.json();
+        console.log('📊 Loaded subscribers data:', subscribersData);
         setSubscribers(subscribersData.subscribers || []);
+      } else {
+        console.error('❌ Failed to load subscribers:', subscribersResponse.status, subscribersResponse.statusText);
       }
     } catch (error) {
       setError('Failed to load dashboard data');
@@ -165,6 +170,48 @@ export default function SchedulerDashboard() {
       console.error('Manual verify error:', error);
     } finally {
       setVerifyingManually(null);
+    }
+  };
+
+  const toggleEmailNotifications = async (subscriberId: number, currentStatus: boolean) => {
+    try {
+      console.log('🔄 Toggling notifications for subscriber:', subscriberId, 'Current status:', currentStatus, 'New status:', !currentStatus);
+      setTogglingNotifications(subscriberId);
+      setError(null);
+
+      const response = await fetch(`/api/subscribers/${subscriberId}/notifications`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailNotificationsEnabled: !currentStatus }),
+      });
+
+      const data = await response.json();
+      console.log('📡 API Response:', { status: response.status, ok: response.ok, data });
+
+      if (response.ok && data.success) {
+        console.log('✅ Email notifications toggled successfully');
+        // Update the local state immediately
+        setSubscribers(prev => prev.map(sub => 
+          sub.id === subscriberId 
+            ? { ...sub, emailNotificationsEnabled: !currentStatus }
+            : sub
+        ));
+        
+        setTimeout(() => {
+          setError(`✅ Email notifications ${!currentStatus ? 'enabled' : 'disabled'}`);
+          setTimeout(() => setError(null), 3000);
+        }, 100);
+      } else {
+        console.error('❌ API call failed:', data);
+        setError(`❌ Failed to toggle notifications: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Toggle notifications error:', error);
+      setError('❌ Failed to toggle email notifications');
+    } finally {
+      setTogglingNotifications(null);
     }
   };
 
@@ -511,6 +558,7 @@ export default function SchedulerDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notifications</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribed</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -535,6 +583,28 @@ export default function SchedulerDashboard() {
                       }`}>
                         {subscriber.emailVerified ? 'Verified' : 'Pending'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => toggleEmailNotifications(subscriber.id, subscriber.emailNotificationsEnabled)}
+                        disabled={togglingNotifications === subscriber.id}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          subscriber.emailNotificationsEnabled 
+                            ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white' 
+                            : 'bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white'
+                        }`}
+                      >
+                        {togglingNotifications === subscriber.id ? (
+                          <>
+                            <span className="animate-spin inline-block w-3 h-3 border border-white border-t-transparent rounded-full mr-1"></span>
+                            Updating...
+                          </>
+                        ) : (
+                          <>
+                            {subscriber.emailNotificationsEnabled ? '🔔 Enabled' : '🔕 Disabled'}
+                          </>
+                        )}
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(subscriber.subscriptionDate)}

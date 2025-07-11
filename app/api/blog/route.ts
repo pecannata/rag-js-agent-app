@@ -137,8 +137,8 @@ async function sendImmediateEmailNotifications(post: any): Promise<{ success: bo
   try {
     console.log('📧 Sending immediate email notifications for post:', post.title);
     
-    // Get active subscribers
-    const getSubscribersQuery = `SELECT * FROM v_active_subscribers`;
+    // Get email-enabled subscribers only
+    const getSubscribersQuery = `SELECT * FROM v_email_enabled_subscribers`;
     const subscribersResult = await executeOracleQuery(getSubscribersQuery);
     
     let subscribers = subscribersResult.success ? subscribersResult.data : [];
@@ -146,10 +146,10 @@ async function sendImmediateEmailNotifications(post: any): Promise<{ success: bo
       subscribers = [];
     }
     
-    console.log(`👥 Found ${subscribers.length} active subscribers`);
+    console.log(`👥 Found ${subscribers.length} email-enabled subscribers`);
     
     if (subscribers.length === 0) {
-      console.log('ℹ️ No active subscribers to notify');
+      console.log('ℹ️ No email-enabled subscribers to notify');
       return { success: true, sent: 0, failed: 0, errors: [] };
     }
     
