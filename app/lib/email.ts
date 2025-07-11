@@ -57,7 +57,7 @@ function initializeTransporter() {
 // Email templates
 const emailTemplates = {
   postNotification: (post: any, unsubscribeUrl: string) => ({
-    subject: `New Post: ${post.title}`,
+    subject: `🚀 New AlwaysCurious Post: ${post.title}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -67,12 +67,13 @@ const emailTemplates = {
         <title>New Blog Post</title>
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">📝 New Blog Post Published!</h1>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 35px; border-radius: 12px; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">🚀 New AlwaysCurious Blog Post Published!</h1>
+          <div style="background: rgba(255,255,255,0.2); height: 2px; width: 60px; margin: 15px auto; border-radius: 1px;"></div>
         </div>
         
-        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
-          <h2 style="color: #2c3e50; margin-top: 0; font-size: 20px;">${post.title}</h2>
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
+          <h2 style="color: #2c3e50; margin-top: 0; font-size: 22px; font-weight: 600; line-height: 1.3;">${post.title}</h2>
           
           ${post.excerpt ? `
             <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6; margin: 15px 0;">
@@ -80,9 +81,9 @@ const emailTemplates = {
             </p>
           ` : ''}
           
-          <div style="margin: 25px 0;">
+          <div style="margin: 25px 0; text-align: center;">
             <a href="${emailConfig.baseUrl}/blog/${post.slug}" 
-               style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+               style="display: inline-block; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); transition: all 0.3s ease;">
               📖 Read Full Post
             </a>
           </div>
@@ -116,7 +117,9 @@ const emailTemplates = {
       </html>
     `,
     text: `
-New Blog Post: ${post.title}
+🚀 New AlwaysCurious Blog Post Published!
+
+${post.title}
 
 ${post.excerpt || ''}
 

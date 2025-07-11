@@ -624,6 +624,38 @@ export async function POST(request: NextRequest) {
         isScheduled: post.is_scheduled === 1
       };
       
+      // If this is a published post, create an email notification job
+      if (postData.status === 'published') {
+        try {
+          console.log('📧 Creating email notification job for published post:', post.title);
+          
+          const emailJobQuery = `
+            INSERT INTO scheduled_jobs (
+              job_type,
+              reference_id,
+              status,
+              scheduled_for
+            ) VALUES (
+              'send_email',
+              ${post.id},
+              'pending',
+              CURRENT_TIMESTAMP
+            )
+          `;
+          
+          const jobResult = await executeOracleQuery(emailJobQuery);
+          
+          if (jobResult.success) {
+            console.log('✅ Email notification job created successfully');
+          } else {
+            console.error('❌ Failed to create email notification job:', jobResult.error);
+          }
+        } catch (emailError) {
+          console.error('❌ Error creating email notification job:', emailError);
+          // Don't fail the post creation if email job fails
+        }
+      }
+      
       return NextResponse.json({ success: true, post: formattedPost });
     }
     
@@ -716,7 +748,7 @@ export async function PUT(request: NextRequest) {
       content: postData.content,
       excerpt: excerpt,
       status: postData.status,
-      tags: postData.tags.join(', '),
+      tags: postData.tags ? postData.tags.join(', ') : '',
       publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null
     });
     
@@ -765,6 +797,38 @@ export async function PUT(request: NextRequest) {
         updatedAt: post.updated_at,
         publishedAt: post.published_at
       };
+      
+      // If this post was just published (status changed from non-published to published), create an email notification job
+      if (postData.status === 'published' && existingPost.status !== 'published') {
+        try {
+          console.log('📧 Creating email notification job for newly published post:', post.title);
+          
+          const emailJobQuery = `
+            INSERT INTO scheduled_jobs (
+              job_type,
+              reference_id,
+              status,
+              scheduled_for
+            ) VALUES (
+              'send_email',
+              ${post.id},
+              'pending',
+              CURRENT_TIMESTAMP
+            )
+          `;
+          
+          const jobResult = await executeOracleQuery(emailJobQuery);
+          
+          if (jobResult.success) {
+            console.log('✅ Email notification job created successfully for updated post');
+          } else {
+            console.error('❌ Failed to create email notification job for updated post:', jobResult.error);
+          }
+        } catch (emailError) {
+          console.error('❌ Error creating email notification job for updated post:', emailError);
+          // Don't fail the post update if email job fails
+        }
+      }
       
       return NextResponse.json({ success: true, post: formattedPost });
     }
