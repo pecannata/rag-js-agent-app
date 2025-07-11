@@ -3,7 +3,7 @@ import sgMail from '@sendgrid/mail';
 
 // Email service configuration
 const emailConfig = {
-  service: process.env.EMAIL_SERVICE || 'smtp', // 'smtp', 'sendgrid', 'ses'
+  service: process.env.EMAIL_SERVICE || 'smtp', // 'smtp', 'sendgrid', 'brevo', 'ses'
   smtp: {
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -15,6 +15,10 @@ const emailConfig = {
   },
   sendgrid: {
     apiKey: process.env.SENDGRID_API_KEY
+  },
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY,
+    apiUrl: 'https://api.brevo.com/v3/smtp/email'
   },
   from: process.env.EMAIL_FROM || 'noreply@localhost',
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -285,6 +289,44 @@ export async function sendEmail(to: string, template: keyof typeof emailTemplate
       console.log('✅ Email sent successfully via SendGrid:', { to, subject, messageId: result[0].headers['x-message-id'] });
       
       return { success: true, messageId: result[0].headers['x-message-id'] };
+    } else if (emailConfig.service === 'brevo') {
+      // Use Brevo (Sendinblue) API
+      if (!emailConfig.brevo.apiKey) {
+        throw new Error('Brevo API key not configured');
+      }
+
+      const brevoPayload = {
+        sender: {
+          email: emailConfig.from.includes('<') ? emailConfig.from.match(/<(.+)>/)?.[1] : emailConfig.from,
+          name: emailConfig.from.includes('<') ? emailConfig.from.split('<')[0].trim() : undefined
+        },
+        to: [{
+          email: to
+        }],
+        subject,
+        htmlContent: html,
+        textContent: text
+      };
+
+      const response = await fetch(emailConfig.brevo.apiUrl, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': emailConfig.brevo.apiKey,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(brevoPayload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+        throw new Error(`Brevo API error: ${errorData.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Email sent successfully via Brevo:', { to, subject, messageId: result.messageId });
+      
+      return { success: true, messageId: result.messageId };
     } else {
       // Use SMTP (nodemailer)
       const mailer = initializeTransporter();

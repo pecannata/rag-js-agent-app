@@ -70,7 +70,7 @@ export default function DemoPage() {
             <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl mb-2">📧</div>
               <h3 className="font-semibold mb-1">Email Notifications</h3>
-              <p className="text-sm opacity-90">Automatic email notifications via SendGrid with beautiful HTML templates</p>
+              <p className="text-sm opacity-90">Automatic email notifications via Brevo with beautiful HTML templates</p>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl mb-2">👥</div>
@@ -91,106 +91,128 @@ export default function DemoPage() {
             📧 Email Service Integration
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          {/* Brevo Information Accordion */}
+          <details className="border border-gray-200 rounded-lg">
+            <summary className="cursor-pointer bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition-colors">
+              <h3 className="font-semibold text-gray-900 inline flex items-center gap-2">
                 <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                 </svg>
-                SendGrid Integration
+                Brevo Email Service Integration
+                <span className="text-sm font-normal text-gray-600 ml-2">(Click to expand)</span>
               </h3>
+            </summary>
+            
+            <div className="p-6 border-t border-gray-200">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Service Provider</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h5 className="font-semibold text-blue-900 mb-2">Brevo (formerly Sendinblue)</h5>
+                      <p className="text-blue-800 text-sm mb-2">
+                        Professional email delivery service with excellent deliverability rates and intuitive API.
+                      </p>
+                      <a 
+                        href="https://www.brevo.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
+                      >
+                        → Visit Brevo.com
+                      </a>
+                    </div>
+                    
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h5 className="font-semibold text-green-900 mb-2">Key Features</h5>
+                      <ul className="text-green-800 text-sm space-y-1">
+                        <li>• <strong>99.9% Uptime</strong> - Reliable email delivery</li>
+                        <li>• <strong>Global Infrastructure</strong> - Worldwide delivery network</li>
+                        <li>• <strong>Advanced Analytics</strong> - Real-time delivery tracking</li>
+                        <li>• <strong>Spam Protection</strong> - High inbox placement rates</li>
+                        <li>• <strong>Template Support</strong> - Rich HTML email templates</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <h5 className="font-semibold text-purple-900 mb-2">Free Tier Benefits</h5>
+                      <p className="text-purple-800 text-sm">
+                        • <strong>300 emails/day</strong> forever free<br/>
+                        • No monthly commitment required<br/>
+                        • Full API access and analytics<br/>
+                        • Perfect for growing blogs and newsletters
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Implementation Details</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <h5 className="font-semibold text-orange-900 mb-2">Email Types Supported</h5>
+                      <ul className="text-orange-800 text-sm space-y-1">
+                        <li>• <strong>Verification Emails</strong> - Welcome new subscribers</li>
+                        <li>• <strong>Welcome Emails</strong> - Post-verification welcome</li>
+                        <li>• <strong>Post Notifications</strong> - New blog post alerts</li>
+                        <li>• <strong>Manual Verification</strong> - Admin override capability</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <h5 className="font-semibold text-yellow-900 mb-2">Technical Stack</h5>
+                      <ul className="text-yellow-800 text-sm space-y-1">
+                        <li>• <strong>HTTP API</strong> - RESTful integration</li>
+                        <li>• <strong>JSON Payload</strong> - Modern API structure</li>
+                        <li>• <strong>HTML Templates</strong> - Responsive email design</li>
+                        <li>• <strong>Fallback Support</strong> - SMTP backup option</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                      <h5 className="font-semibold text-red-900 mb-2">Security Features</h5>
+                      <ul className="text-red-800 text-sm space-y-1">
+                        <li>• <strong>Sender Authentication</strong> - Domain verification</li>
+                        <li>• <strong>API Key Security</strong> - Scoped permissions</li>
+                        <li>• <strong>GDPR Compliance</strong> - European data protection</li>
+                        <li>• <strong>Token-based Verification</strong> - Secure email links</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
-              <div className="space-y-3">
+              <div className="mt-6 grid md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-2">Service Provider</h4>
-                  <p className="text-blue-800 text-sm">
-                    <strong>SendGrid</strong> - Professional email delivery service by Twilio
-                  </p>
+                  <h5 className="font-semibold text-blue-900 mb-2">📊 Brevo Dashboard</h5>
+                  <p className="text-blue-800 text-sm mb-2">Access your account dashboard and settings</p>
                   <a 
-                    href="https://sendgrid.com" 
+                    href="https://app.brevo.com" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium underline mt-1 inline-block"
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
                   >
-                    → Visit SendGrid.com
+                    → Open Brevo Dashboard
                   </a>
                 </div>
                 
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-900 mb-2">Key Features</h4>
-                  <ul className="text-green-800 text-sm space-y-1">
-                    <li>• <strong>99.95% Uptime SLA</strong> - Enterprise-grade reliability</li>
-                    <li>• <strong>Global Infrastructure</strong> - Worldwide email delivery</li>
-                    <li>• <strong>Deliverability Optimization</strong> - Anti-spam compliance</li>
-                    <li>• <strong>Real-time Analytics</strong> - Detailed delivery reports</li>
-                    <li>• <strong>Template Engine</strong> - Dynamic email content</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Free Tier</h4>
-                  <p className="text-gray-700 text-sm">
-                    • <strong>100 emails/day</strong> forever free<br/>
-                    • No monthly commitment required<br/>
-                    • Full API access and analytics<br/>
-                    • Perfect for development and small blogs
-                  </p>
+                  <h5 className="font-semibold text-green-900 mb-2">📈 Email Logs</h5>
+                  <p className="text-green-800 text-sm mb-2">Track email delivery and debug issues</p>
+                  <a 
+                    href="https://app.brevo.com/transactional/email/logs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 text-sm font-medium underline"
+                  >
+                    → View Email Logs
+                  </a>
                 </div>
               </div>
             </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                🔧 Implementation Details
-              </h3>
-              
-              <div className="space-y-3">
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-2">Email Types Supported</h4>
-                  <ul className="text-purple-800 text-sm space-y-1">
-                    <li>• <strong>Verification Emails</strong> - Welcome new subscribers</li>
-                    <li>• <strong>Welcome Emails</strong> - Post-verification welcome</li>
-                    <li>• <strong>Post Notifications</strong> - New blog post alerts</li>
-                    <li>• <strong>Manual Verification</strong> - Admin override capability</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                  <h4 className="font-semibold text-orange-900 mb-2">Technical Stack</h4>
-                  <ul className="text-orange-800 text-sm space-y-1">
-                    <li>• <strong>@sendgrid/mail</strong> - Official Node.js SDK</li>
-                    <li>• <strong>API-based</strong> - RESTful integration</li>
-                    <li>• <strong>HTML Templates</strong> - Responsive email design</li>
-                    <li>• <strong>Fallback Support</strong> - SMTP backup option</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-900 mb-2">Security Features</h4>
-                  <ul className="text-yellow-800 text-sm space-y-1">
-                    <li>• <strong>Sender Authentication</strong> - Domain verification</li>
-                    <li>• <strong>API Key Security</strong> - Scoped permissions</li>
-                    <li>• <strong>Unsubscribe Compliance</strong> - CAN-SPAM compliant</li>
-                    <li>• <strong>Token-based Verification</strong> - Secure email links</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-              🚀 Why SendGrid for AlwaysCurious Blog?
-            </h4>
-            <p className="text-gray-700 text-sm leading-relaxed">
-              SendGrid was chosen for the AlwaysCurious blog system because of its excellent 
-              deliverability rates, comprehensive API, and reliable infrastructure. The free tier 
-              provides 100 emails per day, which is perfect for growing blogs, while the 
-              professional features ensure emails reach subscribers' inboxes rather than spam folders. 
-              The integration includes beautiful HTML email templates, automatic retry logic, 
-              and detailed delivery analytics.
-            </p>
-          </div>
+          </details>
         </div>
 
         {/* Demo Content */}
@@ -249,39 +271,74 @@ export default function DemoPage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">🚀 Quick Start Instructions</h2>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">1. Configure SendGrid Email Service</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2">Set up SendGrid configuration:</p>
-                <div className="space-y-2">
-                  <code className="bg-gray-800 text-green-400 px-2 py-1 rounded text-xs block">
-                    cp .env.example .env.local
-                  </code>
-                  <p className="text-sm text-gray-700">
-                    Configure in .env.local:
-                  </p>
-                  <code className="bg-gray-800 text-green-400 px-2 py-1 rounded text-xs block whitespace-pre">
-{`EMAIL_SERVICE=sendgrid
-SENDGRID_API_KEY=your_api_key_here
-EMAIL_FROM=your_verified_sender@domain.com`}
-                  </code>
-                  <div className="mt-2">
-                    <a 
-                      href="https://app.sendgrid.com/settings/api_keys" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-xs font-medium underline"
-                    >
-                      → Get SendGrid API Key
-                    </a>
+          {/* Brevo Configuration Accordion */}
+          <details className="mb-6 border border-gray-200 rounded-lg">
+            <summary className="cursor-pointer bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition-colors">
+              <h3 className="font-semibold text-gray-900 inline flex items-center gap-2">
+                📧 Configure Brevo Email Service
+                <span className="text-sm font-normal text-gray-600">(Click to expand)</span>
+              </h3>
+            </summary>
+            
+            <div className="p-4 border-t border-gray-200">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">1. Get Brevo API Key</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <ol className="text-sm text-gray-700 space-y-2">
+                      <li>1. Create account at <a href="https://www.brevo.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Brevo.com</a></li>
+                      <li>2. Go to your Brevo dashboard</li>
+                      <li>3. Navigate to Settings → API Keys</li>
+                      <li>4. Generate a new API key</li>
+                      <li>5. Copy the key (starts with "xkeysib-")</li>
+                    </ol>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">2. Configure Environment</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-700 mb-2">Add to your .env.local:</p>
+                    <code className="bg-gray-800 text-green-400 px-2 py-1 rounded text-xs block whitespace-pre">
+{`EMAIL_SERVICE=brevo
+BREVO_API_KEY=your_brevo_api_key_here
+EMAIL_FROM=Your Name <your@email.com>`}
+                    </code>
                   </div>
                 </div>
               </div>
+              
+              <div className="mt-6 grid md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-2">📊 Brevo Dashboard</h4>
+                  <a 
+                    href="https://app.brevo.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
+                  >
+                    → Open Brevo Dashboard
+                  </a>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h4 className="font-semibold text-green-900 mb-2">📈 Email Logs</h4>
+                  <a 
+                    href="https://app.brevo.com/transactional/email/logs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 text-sm font-medium underline"
+                  >
+                    → View Email Logs
+                  </a>
+                </div>
+              </div>
             </div>
-            
+          </details>
+          
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">2. Test the System</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">3. Test the System</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <ul className="text-sm text-gray-700 space-y-1">
                   <li>• Create a scheduled blog post in BlogManager</li>
@@ -292,15 +349,28 @@ EMAIL_FROM=your_verified_sender@domain.com`}
                 </ul>
               </div>
             </div>
+            
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-3">4. Monitor & Debug</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• Check terminal logs for email sending status</li>
+                  <li>• Use Brevo email logs to track delivery</li>
+                  <li>• Monitor dashboard for failed jobs</li>
+                  <li>• Test with different email addresses</li>
+                  <li>• Verify sender domain if needed</li>
+                </ul>
+              </div>
+            </div>
           </div>
           
           <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
             <h4 className="font-semibold text-green-900 mb-2">✅ Production Checklist:</h4>
             <div className="grid md:grid-cols-2 gap-4 text-sm text-green-800">
               <div>
-                <div>• Create SendGrid account (free tier available)</div>
-                <div>• Generate and configure SendGrid API key</div>
-                <div>• Verify sender identity in SendGrid dashboard</div>
+                <div>• Create Brevo account (free tier available)</div>
+                <div>• Generate and configure Brevo API key</div>
+                <div>• Verify sender identity in Brevo dashboard</div>
                 <div>• Set up cron job for scheduler</div>
                 <div>• Test email deliverability and spam scores</div>
               </div>
@@ -309,12 +379,12 @@ EMAIL_FROM=your_verified_sender@domain.com`}
                 <div>• Add subscription forms to your pages</div>
                 <div>• Set up monitoring dashboard</div>
                 <div>• Test scheduled post workflow end-to-end</div>
-                <div>• Monitor SendGrid analytics and error logs</div>
+                <div>• Monitor Brevo analytics and error logs</div>
               </div>
             </div>
             <div className="mt-3 p-3 bg-white rounded border border-green-300">
               <p className="text-green-700 text-xs">
-                <strong>SendGrid Free Tier:</strong> Perfect for getting started with 100 emails/day. 
+                <strong>Brevo Free Tier:</strong> Perfect for getting started with 300 emails/day. 
                 Upgrade to paid plans for higher volumes and advanced features like dedicated IPs.
               </p>
             </div>
