@@ -1,17 +1,17 @@
 {
-  "version": "1.0.152",
+  "version": "1.0.153",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-11T12:37:13.647Z",
+  "buildTime": "2025-07-11T12:43:50.233Z",
   "buildDate": "Jul 11, 2025",
-  "sourceVersion": "v1.0.151.071125",
+  "sourceVersion": "v1.0.152.071125",
   "git": {
     "branch": "main",
-    "commit": "28ea5045334939340a02f178003ec37ed75de115",
-    "shortCommit": "28ea5045",
-    "commitDate": "2025-07-10 21:23:33 -0500",
-    "commitMessage": "Successfully Implemented and Tested:"
+    "commit": "45c74332ebe54887372bae709169ae2a89ad2e34",
+    "shortCommit": "45c74332",
+    "commitDate": "2025-07-11 07:40:43 -0500",
+    "commitMessage": "🚀 Key Improvements:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.151-28ea5045-20250711-123713"
+  "buildSignature": "1.0.152-45c74332-20250711-124350"
 }
