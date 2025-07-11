@@ -200,7 +200,7 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
                 <button
                   onClick={() => window.open('/demo', '_blank')}
                   className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium hover:bg-purple-200 transition-colors cursor-pointer"
-                  title="Open Phase 2 Demo - Blog Scheduler & Email System"
+                  title="Open Phase 2 Demo - Blog Scheduler & Email System (powered by SendGrid)"
                 >
                   🎉 Phase 2 Demo
                 </button>

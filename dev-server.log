@@ -1,0 +1,89 @@
+
+> rag-js-agent-app@1.0.144 dev
+> next dev
+
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.149:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1540ms
+ ○ Compiling /api/test-email ...
+ ✓ Compiled /api/test-email in 871ms (412 modules)
+🧪 Testing email configuration...
+✅ Email configuration is valid
+ GET /api/test-email 200 in 2843ms
+📧 Sending test verification email to: test@example.com
+✅ Email sent successfully: {
+  to: 'test@example.com',
+  subject: 'Please verify your email subscription',
+  messageId: '<3e4dbd2e-165e-adcd-8cc5-d272490095dd@ethereal.email>'
+}
+ POST /api/test-email 200 in 2397ms
+   Reload env: .env.local
+ ✓ Compiled in 201ms (277 modules)
+   Reload env: .env.local
+ ✓ Compiled in 64ms (277 modules)
+ ✓ Compiled in 53ms (277 modules)
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 656ms (584 modules)
+ GET /api/auth/session 200 in 1224ms
+ GET /api/auth/session 200 in 38ms
+   Reload env: .env.local
+ ✓ Compiled in 179ms (277 modules)
+   Reload env: .env.local
+ ✓ Compiled in 61ms (277 modules)
+ ✓ Compiled in 42ms (277 modules)
+   Reload env: .env.local
+ ✓ Compiled in 150ms (277 modules)
+   Reload env: .env.local
+ ✓ Compiled in 71ms (277 modules)
+ ○ Compiling /api/subscribers ...
+ ✓ Compiled /api/subscribers in 610ms (508 modules)
+🔍 Subscribers Database Query: 
+      SELECT 
+        id,
+        email,
+        name,
+        status,
+        TO_CHAR(subscription_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as subscription_date,
+        email_verified,
+        unsubscri...
+✅ Subscribers database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "STATUS",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SUBSCRIPTION_DATE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "EMAIL_VERIFIED",
+      
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 2 rows
+ GET /api/subscribers?action=verify&token=test-token-12345 200 in 4749ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 592ms (841 modules)
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 998ms
+[?25h

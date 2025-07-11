@@ -42,6 +42,10 @@ export default function SchedulerDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'subscribers'>('overview');
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [refreshRate, setRefreshRate] = useState(30); // seconds
+  const [resendingEmail, setResendingEmail] = useState<number | null>(null);
+  const [verifyingManually, setVerifyingManually] = useState<number | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -97,20 +101,93 @@ export default function SchedulerDashboard() {
     }
   };
 
+  const resendVerificationEmail = async (subscriberId: number, email: string) => {
+    try {
+      setResendingEmail(subscriberId);
+      setError(null);
+
+      const response = await fetch('/api/subscribers/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subscriberId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log('✅ Verification email resent successfully');
+        // You could show a success toast here
+        setTimeout(() => {
+          setError(`✅ Verification email sent to ${email}`);
+          setTimeout(() => setError(null), 3000);
+        }, 100);
+      } else {
+        setError(`❌ Failed to resend email: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      setError('❌ Failed to resend verification email');
+      console.error('Resend email error:', error);
+    } finally {
+      setResendingEmail(null);
+    }
+  };
+
+  const manuallyVerifyEmail = async (subscriberId: number, email: string) => {
+    try {
+      setVerifyingManually(subscriberId);
+      setError(null);
+
+      const response = await fetch('/api/subscribers/manual-verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subscriberId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log('✅ Email manually verified successfully');
+        // Reload subscribers to show updated status
+        setTimeout(() => {
+          setError(`✅ ${email} manually verified`);
+          setTimeout(() => setError(null), 3000);
+          loadData(); // Refresh the data
+        }, 100);
+      } else {
+        setError(`❌ Failed to verify manually: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      setError('❌ Failed to manually verify email');
+      console.error('Manual verify error:', error);
+    } finally {
+      setVerifyingManually(null);
+    }
+  };
+
   useEffect(() => {
     loadData();
-    
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(loadData, 30000);
-    setRefreshInterval(interval);
-
-    return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-      clearInterval(interval);
-    };
   }, []);
+
+  // Separate effect for auto-refresh
+  useEffect(() => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      setRefreshInterval(null);
+    }
+
+    if (autoRefresh) {
+      const interval = setInterval(loadData, refreshRate * 1000);
+      setRefreshInterval(interval);
+      
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [autoRefresh, refreshRate]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -198,6 +275,32 @@ export default function SchedulerDashboard() {
           <p className="text-gray-600 mt-1">Monitor blog scheduler and email campaigns</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Auto-refresh controls */}
+          <div className="flex items-center gap-2 border border-gray-300 rounded-md p-1">
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`px-3 py-1 rounded text-sm font-medium transition ${
+                autoRefresh 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {autoRefresh ? '⏸️ Auto' : '▶️ Auto'}
+            </button>
+            {autoRefresh && (
+              <select
+                value={refreshRate}
+                onChange={(e) => setRefreshRate(Number(e.target.value))}
+                className="text-sm border-none bg-transparent focus:outline-none"
+              >
+                <option value={5}>5s</option>
+                <option value={10}>10s</option>
+                <option value={30}>30s</option>
+                <option value={60}>1m</option>
+              </select>
+            )}
+          </div>
+          
           <button
             onClick={loadData}
             disabled={loading}
@@ -406,6 +509,7 @@ export default function SchedulerDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribed</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -431,6 +535,42 @@ export default function SchedulerDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(subscriber.subscriptionDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {!subscriber.emailVerified ? (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => resendVerificationEmail(subscriber.id, subscriber.email)}
+                            disabled={resendingEmail === subscriber.id || verifyingManually === subscriber.id}
+                            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                          >
+                            {resendingEmail === subscriber.id ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border border-white border-t-transparent rounded-full mr-1"></span>
+                                Sending...
+                              </>
+                            ) : (
+                              '📧 Resend Email'
+                            )}
+                          </button>
+                          <button
+                            onClick={() => manuallyVerifyEmail(subscriber.id, subscriber.email)}
+                            disabled={resendingEmail === subscriber.id || verifyingManually === subscriber.id}
+                            className="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                          >
+                            {verifyingManually === subscriber.id ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border border-white border-t-transparent rounded-full mr-1"></span>
+                                Verifying...
+                              </>
+                            ) : (
+                              '✅ Manual Verify'
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-green-600 text-xs">✅ Verified</span>
+                      )}
                     </td>
                   </tr>
                 ))}

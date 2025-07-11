@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 // Email service configuration
 const emailConfig = {
@@ -12,9 +13,17 @@ const emailConfig = {
       pass: process.env.EMAIL_PASS
     }
   },
+  sendgrid: {
+    apiKey: process.env.SENDGRID_API_KEY
+  },
   from: process.env.EMAIL_FROM || 'noreply@localhost',
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 };
+
+// Initialize SendGrid if using that service
+if (emailConfig.service === 'sendgrid' && emailConfig.sendgrid.apiKey) {
+  sgMail.setApiKey(emailConfig.sendgrid.apiKey);
+}
 
 // Initialize email transporter based on service type
 let transporter: nodemailer.Transporter | null = null;
@@ -24,7 +33,7 @@ function initializeTransporter() {
   
   switch (emailConfig.service) {
     case 'smtp':
-      transporter = nodemailer.createTransporter({
+      transporter = nodemailer.createTransport({
         host: emailConfig.smtp.host,
         port: emailConfig.smtp.port,
         secure: emailConfig.smtp.secure,
@@ -34,7 +43,7 @@ function initializeTransporter() {
       
     default:
       console.warn('Unknown email service, falling back to SMTP');
-      transporter = nodemailer.createTransporter({
+      transporter = nodemailer.createTransport({
         host: emailConfig.smtp.host,
         port: emailConfig.smtp.port,
         secure: emailConfig.smtp.secure,
@@ -93,7 +102,7 @@ const emailTemplates = {
         </div>
         
         <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 14px;">
-          <p>You're receiving this because you subscribed to our blog updates.</p>
+          <p>You're receiving this because you subscribed to AlwaysCurious blog updates.</p>
           <p>
             <a href="${unsubscribeUrl}" style="color: #6c757d; text-decoration: underline;">
               Unsubscribe
@@ -116,7 +125,7 @@ Read the full post: ${emailConfig.baseUrl}/blog/${post.slug}
 ${post.tags && post.tags.length > 0 ? `Tags: ${post.tags.join(', ')}` : ''}
 
 ---
-You're receiving this because you subscribed to our blog updates.
+You're receiving this because you subscribed to AlwaysCurious blog updates.
 Unsubscribe: ${unsubscribeUrl}
 Visit Blog: ${emailConfig.baseUrl}
     `
@@ -141,7 +150,7 @@ Visit Blog: ${emailConfig.baseUrl}
           <h2 style="color: #2c3e50; margin-top: 0;">Welcome${subscriberName ? `, ${subscriberName}` : ''}!</h2>
           
           <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6;">
-            Thank you for subscribing to our blog! To complete your subscription and start receiving updates about new posts, please verify your email address.
+            Thank you for subscribing to our AlwaysCurious blog! To complete your subscription and start receiving updates about new posts, please verify your email address.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
@@ -167,7 +176,7 @@ Visit Blog: ${emailConfig.baseUrl}
     text: `
 Welcome${subscriberName ? `, ${subscriberName}` : ''}!
 
-Thank you for subscribing to our blog! To complete your subscription and start receiving updates about new posts, please verify your email address.
+Thank you for subscribing to our AlwaysCurious blog! To complete your subscription and start receiving updates about new posts, please verify your email address.
 
 Verify your email: ${verificationUrl}
 
@@ -177,7 +186,7 @@ This verification link will expire in 24 hours.
   }),
 
   welcomeEmail: (subscriberName?: string) => ({
-    subject: 'Welcome to our blog!',
+    subject: 'Welcome to the AlwaysCurious blog!',
     html: `
       <!DOCTYPE html>
       <html>
@@ -188,7 +197,7 @@ This verification link will expire in 24 hours.
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">🎉 Welcome to Our Blog!</h1>
+          <h1 style="color: white; margin: 0; font-size: 24px;">🎉 Welcome to AlwaysCurious!</h1>
         </div>
         
         <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
@@ -233,27 +242,78 @@ Thanks for joining our community!
 // Main email sending function
 export async function sendEmail(to: string, template: keyof typeof emailTemplates, data: any = {}) {
   try {
-    const mailer = initializeTransporter();
-    if (!mailer) {
-      throw new Error('Email transporter not initialized');
+    let subject: string, html: string, text: string;
+    
+    // Handle different template parameter structures
+    if (template === 'emailVerification') {
+      const templateResult = emailTemplates[template](data.verificationUrl, data.subscriberName);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else if (template === 'welcomeEmail') {
+      const templateResult = emailTemplates[template](data.subscriberName);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else if (template === 'postNotification') {
+      const templateResult = emailTemplates[template](data, data.unsubscribeUrl);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else {
+      throw new Error(`Unknown email template: ${template}`);
     }
 
-    const { subject, html, text } = emailTemplates[template](data, data.unsubscribeUrl);
+    if (emailConfig.service === 'sendgrid') {
+      // Use SendGrid API
+      if (!emailConfig.sendgrid.apiKey) {
+        throw new Error('SendGrid API key not configured');
+      }
 
-    const mailOptions = {
-      from: emailConfig.from,
-      to,
-      subject,
-      html,
-      text
-    };
+      const msg = {
+        to,
+        from: emailConfig.from,
+        subject,
+        text,
+        html,
+      };
 
-    const result = await mailer.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', { to, subject, messageId: result.messageId });
-    
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
+      const result = await sgMail.send(msg);
+      console.log('✅ Email sent successfully via SendGrid:', { to, subject, messageId: result[0].headers['x-message-id'] });
+      
+      return { success: true, messageId: result[0].headers['x-message-id'] };
+    } else {
+      // Use SMTP (nodemailer)
+      const mailer = initializeTransporter();
+      if (!mailer) {
+        throw new Error('Email transporter not initialized');
+      }
+
+      const mailOptions = {
+        from: emailConfig.from,
+        to,
+        subject,
+        html,
+        text
+      };
+
+      const result = await mailer.sendMail(mailOptions);
+      console.log('✅ Email sent successfully via SMTP:', { to, subject, messageId: result.messageId });
+      
+      return { success: true, messageId: result.messageId };
+    }
+  } catch (error: any) {
     console.error('❌ Email sending failed:', error);
+    
+    // Enhanced SendGrid error handling
+    if (error.response && error.response.body) {
+      console.error('❌ SendGrid detailed error:', JSON.stringify(error.response.body, null, 2));
+      const errorMessage = error.response.body.errors ? 
+        error.response.body.errors.map((e: any) => e.message).join('; ') : 
+        error.message;
+      return { success: false, error: errorMessage };
+    }
+    
     return { success: false, error: (error as Error).message };
   }
 }
@@ -288,14 +348,28 @@ export async function sendWelcomeEmail(subscriberEmail: string, subscriberName?:
 // Test email configuration
 export async function testEmailConfig() {
   try {
-    const mailer = initializeTransporter();
-    if (!mailer) {
-      throw new Error('Email transporter not initialized');
-    }
+    if (emailConfig.service === 'sendgrid') {
+      // Test SendGrid configuration
+      if (!emailConfig.sendgrid.apiKey) {
+        throw new Error('SendGrid API key not configured');
+      }
+      if (!emailConfig.from) {
+        throw new Error('Email FROM address not configured');
+      }
+      
+      console.log('✅ SendGrid configuration looks valid');
+      return { success: true };
+    } else {
+      // Test SMTP configuration
+      const mailer = initializeTransporter();
+      if (!mailer) {
+        throw new Error('Email transporter not initialized');
+      }
 
-    await mailer.verify();
-    console.log('✅ Email configuration is valid');
-    return { success: true };
+      await mailer.verify();
+      console.log('✅ SMTP configuration is valid');
+      return { success: true };
+    }
   } catch (error) {
     console.error('❌ Email configuration test failed:', error);
     return { success: false, error: (error as Error).message };
