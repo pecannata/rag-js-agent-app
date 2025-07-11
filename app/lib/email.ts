@@ -61,7 +61,7 @@ function initializeTransporter() {
 // Email templates
 const emailTemplates = {
   postNotification: (post: any, unsubscribeUrl: string) => ({
-    subject: `🚀 New AlwaysCurious Post: ${post.title}`,
+    subject: `📚 New AlwaysCurious Post: ${post.title}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -72,7 +72,7 @@ const emailTemplates = {
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 35px; border-radius: 12px; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
-          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">🚀 New AlwaysCurious Blog Post Published!</h1>
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">📚 New AlwaysCurious Blog Post Published!</h1>
           <div style="background: rgba(255,255,255,0.2); height: 2px; width: 60px; margin: 15px auto; border-radius: 1px;"></div>
         </div>
         
@@ -121,7 +121,7 @@ const emailTemplates = {
       </html>
     `,
     text: `
-🚀 New AlwaysCurious Blog Post Published!
+📚 New AlwaysCurious Blog Post Published!
 
 ${post.title}
 
