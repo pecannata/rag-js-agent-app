@@ -1566,3 +1566,480 @@
  
 ✅ Extracted Oracle items: 2 rows
 📊 Blog query result structure: object true 2
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 2 rows
+📊 Blog query result structure: object true 2
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 2 rows
+📊 Blog query result structure: object true 2
+🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE slug = 'test-for-chris'
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "COUNT",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "count" : 0
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "COUNT",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "count": 0
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+📝 Content Length: 21
+📝 Content Preview: <p>Test for Chris</p>...
+📝 Content Length: 21 characters
+🔍 Blog Database Query Execution: 
+      INSERT INTO blog_posts (
+        title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
+      ) VALUES (
+        'Test for Chris',
+        'test-for-chr...
+✅ Blog database query executed successfully
+📝 Modification query completed INSERT - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 1 rows
+📧 Queuing email notifications for published post: Test for Chris
+📧 Queued email job email-19-1752340820704 for post: Test for Chris
+🔄 Starting background job processing...
+🔄 Processing job email-19-1752340820704 (attempt 1/3)
+📧 Processing email notifications for post: Test for Chris
+🔍 Background Job Database Query: SELECT * FROM v_email_enabled_subscribers
+✅ Email notifications queued with job ID: email-19-1752340820704
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Background job database query executed successfully
+📤 Background job raw Oracle output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SUBSCRIPTION_DATE",
+          "type" : "TIMESTAMP"
+        },
+        {
+          "name" : "STATUS",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "UNSUBSCRIBE_TOKEN",
+  ...
+✅ Background job successfully parsed as JSON
+✅ Background job extracted Oracle items: 2 rows
+👥 Found 2 email-enabled subscribers for background job
+🔍 Background Job Database Query: 
+      INSERT INTO email_campaigns (
+        post_id,
+        campaign_type,
+        subject,
+        recipient_count,
+        status
+      ) VALUES (
+        19,
+        'post_notification',
+        ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 3 rows
+📊 Blog query result structure: object true 3
+✅ Background job database query executed successfully
+📝 Background job modification query completed INSERT - Output: (empty - success)
+🔍 Background Job Database Query: 
+      SELECT id FROM email_campaigns 
+      WHERE post_id = 19 AND campaign_type = 'post_notification'
+      ORDER BY created_at DESC
+      FETCH FIRST 1 ROWS ONLY
+    
+✅ Background job database query executed successfully
+📤 Background job raw Oracle output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 15
+        }
+      ]
+    }
+  ]
+}
+✅ Background job successfully parsed as JSON
+✅ Background job extracted Oracle items: 1 rows
+🔍 Background Job Database Query: 
+          INSERT INTO email_campaign_logs (
+            campaign_id,
+            subscriber_id,
+            status
+          ) VALUES (
+            15,
+            4,
+            'pending'
+          ...
+✅ Background job database query executed successfully
+📝 Background job modification query completed INSERT - Output: (empty - success)
+📧 Sending background email to cannata@utexas.edu about post: Test for Chris
+✅ Email sent successfully via Brevo: {
+  to: 'cannata@utexas.edu',
+  subject: '📚 New AlwaysCurious Post: Test for Chris',
+  messageId: '<202507121720.25743344267@smtp-relay.mailin.fr>'
+}
+🔍 Background Job Database Query: 
+              UPDATE email_campaign_logs 
+              SET status = 'sent', sent_at = CURRENT_TIMESTAMP
+              WHERE campaign_id = 15 AND subscriber_id = 4
+            
+✅ Background job database query executed successfully
+📝 Background job modification query completed UPDATE - Output: (empty - success)
+✅ Background email sent successfully to cannata@utexas.edu
+🔍 Background Job Database Query: 
+          INSERT INTO email_campaign_logs (
+            campaign_id,
+            subscriber_id,
+            status
+          ) VALUES (
+            15,
+            1,
+            'pending'
+          ...
+✅ Background job database query executed successfully
+📝 Background job modification query completed INSERT - Output: (empty - success)
+📧 Sending background email to phil.cannata@yahoo.com about post: Test for Chris
+✅ Email sent successfully via Brevo: {
+  to: 'phil.cannata@yahoo.com',
+  subject: '📚 New AlwaysCurious Post: Test for Chris',
+  messageId: '<202507121720.86772543362@smtp-relay.mailin.fr>'
+}
+🔍 Background Job Database Query: 
+              UPDATE email_campaign_logs 
+              SET status = 'sent', sent_at = CURRENT_TIMESTAMP
+              WHERE campaign_id = 15 AND subscriber_id = 1
+            
+✅ Background job database query executed successfully
+📝 Background job modification query completed UPDATE - Output: (empty - success)
+✅ Background email sent successfully to phil.cannata@yahoo.com
+🔍 Background Job Database Query: 
+      UPDATE email_campaigns 
+      SET 
+        successful_sends = 2,
+        failed_sends = 0,
+        sent_date = CURRENT_TIMESTAMP,
+        status = 'completed'
+      WHERE id = 15
+    
+✅ Background job database query executed successfully
+📝 Background job modification query completed UPDATE - Output: (empty - success)
+📧 Background email campaign completed: 2 sent, 0 failed
+✅ Job email-19-1752340820704 completed successfully
+✅ Background job processing completed

@@ -152,7 +152,7 @@ def save_to_csv(data, filename):
 
 # Run the analysis
 if __name__ == "__main__":
-    excel_file = 'Private_lesson_Calendar.xlsx'
+    excel_file = 'Private lesson Calendar.xlsx'
     sheet_name = '99-915'
     output_file = 'Private_lesson_Calendar_tab2_99-915_AI_COMPLETE.csv'
     

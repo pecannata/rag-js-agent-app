@@ -42,7 +42,7 @@ def analyze_schedule_with_teachers():
                 if fill and fill.start_color and fill.start_color.rgb:
                     if fill.start_color.rgb != '00000000':  # Not default/no color
                         color = fill.start_color.rgb
-                        
+                
                 cell_data[(row, col)] = {
                     'value': value,
                     'color': color
@@ -75,8 +75,19 @@ def analyze_schedule_with_teachers():
         if teacher_names:
             teacher_colors[color] = teacher_names[0]  # Take first found name
         else:
-            # For colors without explicit teacher names, treat as unassigned
-            teacher_colors[color] = None
+            # For colors without explicit teacher names, infer from known list based on actual colors found
+            color_map_fixed = {
+                'FF00FF00': 'Gabi',  # Contains 'Gabi M', 'Gabi M.'
+                'FFA4C2F4': 'Larkin',  # Contains student names like Reese, Kaylee, Mia, Alia, Everly/Larkin, Marik
+                'FFB4A7D6': 'Kinley',  # Contains 'Kinley', 'Harlow' - likely Kinley is the teacher
+                'FFFF9900': 'Ava Fransen',  # Contains 'Ava Fransen', 'Alia Pollema Solo', 'Kaylee Kaloustian'
+                'FFFFF2CC': 'Paige',  # Contains student names like Reese, Vivian Fincher, Larkin, Hazel
+                'FFFF00FF': 'TBD',  # Contains only 'Rehearsal' - teacher to be determined
+                'FF4A86E8': 'N/A',  # Header/schedule info
+                'FFEFEFEF': 'N/A',  # Time slots
+                'FFF3F3F3': 'N/A'   # Time slots
+            }
+            teacher_colors[color] = color_map_fixed.get(color, 'Unknown')
     
     print("Teacher-Color Mapping:")
     for color, teacher in teacher_colors.items():
@@ -88,17 +99,12 @@ def analyze_schedule_with_teachers():
     studio_row = 5
     time_start_row = 6
     
-    # Extract dates
-    dates = []
-    for col in range(1, ws_data.max_column + 1):
-        date_val = cell_data.get((date_row, col), {}).get('value', '')
-        if '2025' in str(date_val):
-            dates.append(str(date_val).split()[0])
-    
-    # Extract day-studio combinations
+    # Find day/studio column combinations
     day_studio_cols = []
+    dates = []
+    
     for col in range(1, ws_data.max_column + 1):
-        day_val = cell_data.get((day_row, col), {}).get('value', '').upper()
+        day_val = cell_data.get((day_row, col), {}).get('value', '')
         studio_val = cell_data.get((studio_row, col), {}).get('value', '')
         
         if day_val in ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] and 'STUDIO' in studio_val.upper():

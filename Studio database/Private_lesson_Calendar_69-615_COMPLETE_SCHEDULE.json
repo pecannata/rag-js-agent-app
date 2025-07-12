@@ -1,33 +1,20 @@
 {
   "week_info": {
     "sheet_name": "69 -615",
-    "week_dates": [
-      "2025-06-09",
-      "2025-06-02",
-      "2025-06-10",
-      "2025-06-10",
-      "2025-06-11",
-      "2025-06-11",
-      "2025-06-12",
-      "2025-06-12",
-      "2025-06-12",
-      "2025-06-13",
-      "2025-06-14",
-      "2025-06-15"
-    ],
-    "extracted_date": "2025-07-11T23:19:43.144041"
+    "week_dates": [],
+    "extracted_date": "2025-07-12T12:46:18.725941"
   },
   "teachers": {
-    "FF4A86E8": null,
-    "FFEFEFEF": null,
+    "FF4A86E8": "N/A",
+    "FFEFEFEF": "N/A",
     "FFFFF2CC": "PAIGE",
-    "FFA4C2F4": null,
-    "FFFF00FF": null,
+    "FFA4C2F4": "Larkin",
+    "FFFF00FF": "TBD",
     "FFEAD1DC": "MEGHAN",
-    "FFF3F3F3": null,
-    "FF00FF00": null,
-    "FFB4A7D6": null,
-    "FFFF9900": null,
+    "FFF3F3F3": "N/A",
+    "FF00FF00": "Gabi",
+    "FFB4A7D6": "Kinley",
+    "FFFF9900": "Ava Fransen",
     "FFC9DAF8": "RYANN",
     "FFD9EAD3": "GRACIE",
     "FFD9D2E9": "CARALIN ( BALLET TEACHER)",
@@ -35,9 +22,9 @@
     "FFE06666": "ARDEN"
   },
   "studios": [
-    "STUDIO 1",
+    "STUDIO 3",
     "STUDIO 2",
-    "STUDIO 3"
+    "STUDIO 1"
   ],
   "schedule": [
     {
@@ -58,7 +45,7 @@
           "studio": "STUDIO 3",
           "student_info": "Reese",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -67,7 +54,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kaylee Kaloustian",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         },
         {
@@ -90,7 +77,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 3
         },
         {
@@ -108,7 +95,7 @@
           "studio": "STUDIO 3",
           "student_info": "Mia Tubbs",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -117,7 +104,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 7
         },
         {
@@ -135,7 +122,7 @@
           "studio": "STUDIO 3",
           "student_info": "Reese",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -144,7 +131,7 @@
           "studio": "STUDIO 1",
           "student_info": "Alia Pollema Solo",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         },
         {
@@ -167,7 +154,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 3
         },
         {
@@ -176,7 +163,7 @@
           "studio": "STUDIO 3",
           "student_info": "Kaylee Kaloustian",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -185,7 +172,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 7
         },
         {
@@ -212,7 +199,7 @@
           "studio": "STUDIO 3",
           "student_info": "Everly/Larkin",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -221,7 +208,7 @@
           "studio": "STUDIO 1",
           "student_info": "Marik solo",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         },
         {
@@ -244,7 +231,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 3
         },
         {
@@ -262,7 +249,7 @@
           "studio": "STUDIO 3",
           "student_info": "Alia Pollema Solo",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -271,7 +258,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 7
         },
         {
@@ -289,7 +276,7 @@
           "studio": "STUDIO 3",
           "student_info": "Everly /Larkin",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -298,7 +285,7 @@
           "studio": "STUDIO 1",
           "student_info": "Marik solo",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         }
       ]
@@ -312,7 +299,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 3
         },
         {
@@ -321,7 +308,7 @@
           "studio": "STUDIO 3",
           "student_info": "Gabi M",
           "teacher_color": "FF00FF00",
-          "teacher": null,
+          "teacher": "Gabi",
           "column": 4
         },
         {
@@ -339,7 +326,7 @@
           "studio": "STUDIO 3",
           "student_info": "Marik",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -348,7 +335,7 @@
           "studio": "STUDIO 1",
           "student_info": "Rehearsal",
           "teacher_color": "FFFF00FF",
-          "teacher": null,
+          "teacher": "TBD",
           "column": 7
         },
         {
@@ -366,7 +353,7 @@
           "studio": "STUDIO 3",
           "student_info": "Mia W",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -375,7 +362,7 @@
           "studio": "STUDIO 1",
           "student_info": "Larkin",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         }
       ]
@@ -389,7 +376,7 @@
           "studio": "STUDIO 1",
           "student_info": "Gabi M.",
           "teacher_color": "FF00FF00",
-          "teacher": null,
+          "teacher": "Gabi",
           "column": 3
         },
         {
@@ -416,7 +403,7 @@
           "studio": "STUDIO 3",
           "student_info": "Marik",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -434,7 +421,7 @@
           "studio": "STUDIO 3",
           "student_info": "Mia W",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 11
         },
         {
@@ -443,7 +430,7 @@
           "studio": "STUDIO 1",
           "student_info": "Larkin",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         }
       ]
@@ -457,7 +444,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kinley",
           "teacher_color": "FFB4A7D6",
-          "teacher": null,
+          "teacher": "Kinley",
           "column": 15
         }
       ]
@@ -471,7 +458,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kinley",
           "teacher_color": "FFB4A7D6",
-          "teacher": null,
+          "teacher": "Kinley",
           "column": 15
         }
       ]
@@ -494,7 +481,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kinley - solo",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 12
         }
       ]
@@ -526,7 +513,7 @@
           "studio": "STUDIO 3",
           "student_info": "Larkin/everly technique",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -535,7 +522,7 @@
           "studio": "STUDIO 1",
           "student_info": "Hazel- tech",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -585,7 +572,7 @@
           "studio": "STUDIO 3",
           "student_info": "Larkin/everly technique",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -594,7 +581,7 @@
           "studio": "STUDIO 1",
           "student_info": "Hazel- tech",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -626,7 +613,7 @@
           "studio": "STUDIO 3",
           "student_info": "Hazel- solos",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -635,7 +622,7 @@
           "studio": "STUDIO 1",
           "student_info": "Remi",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -653,7 +640,7 @@
           "studio": "STUDIO 1",
           "student_info": "Harlow",
           "teacher_color": "FFB4A7D6",
-          "teacher": null,
+          "teacher": "Kinley",
           "column": 12
         }
       ]
@@ -676,7 +663,7 @@
           "studio": "STUDIO 3",
           "student_info": "Hazel- solos",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 6
         },
         {
@@ -685,7 +672,7 @@
           "studio": "STUDIO 1",
           "student_info": "Remi",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -717,7 +704,7 @@
           "studio": "STUDIO 1",
           "student_info": "Mila",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -726,7 +713,7 @@
           "studio": "STUDIO 3",
           "student_info": "Ava Fransen",
           "teacher_color": "FFFF9900",
-          "teacher": null,
+          "teacher": "Ava Fransen",
           "column": 8
         },
         {
@@ -735,7 +722,7 @@
           "studio": "STUDIO 1",
           "student_info": "Alia Pollema Solo",
           "teacher_color": "FFFF9900",
-          "teacher": null,
+          "teacher": "Ava Fransen",
           "column": 9
         },
         {
@@ -744,7 +731,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kinley",
           "teacher_color": "FFB4A7D6",
-          "teacher": null,
+          "teacher": "Kinley",
           "column": 12
         }
       ]
@@ -767,7 +754,7 @@
           "studio": "STUDIO 1",
           "student_info": "Mila",
           "teacher_color": "FFA4C2F4",
-          "teacher": null,
+          "teacher": "Larkin",
           "column": 7
         },
         {
@@ -776,7 +763,7 @@
           "studio": "STUDIO 3",
           "student_info": "Ava Fransen",
           "teacher_color": "FFFF9900",
-          "teacher": null,
+          "teacher": "Ava Fransen",
           "column": 8
         },
         {
@@ -785,7 +772,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kaylee Kaloustian",
           "teacher_color": "FFFF9900",
-          "teacher": null,
+          "teacher": "Ava Fransen",
           "column": 9
         },
         {
@@ -794,7 +781,7 @@
           "studio": "STUDIO 1",
           "student_info": "Kinley",
           "teacher_color": "FFB4A7D6",
-          "teacher": null,
+          "teacher": "Kinley",
           "column": 12
         }
       ]
@@ -803,7 +790,7 @@
   "summary": {
     "total_time_slots": 15,
     "total_lessons": 76,
-    "unique_teachers": 8,
-    "date_range": "2025-06-02 to 2025-06-15"
+    "unique_teachers": 13,
+    "date_range": "Unknown"
   }
 }

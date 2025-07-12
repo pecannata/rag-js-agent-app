@@ -5,7 +5,7 @@ import re
 def extract_teachers_by_color_fixed():
     """Extract cell colors from the 69-615 sheet to identify teachers - FIXED VERSION"""
     
-    file_path = 'Studio database/Private lesson Calendar.xlsx'
+    file_path = 'Private lesson Calendar.xlsx'
     sheet_name = '69 -615'
     
     # Load workbook with data_only=True to get calculated values
@@ -136,12 +136,12 @@ def extract_teachers_by_color_fixed():
     
     # Save teacher colors CSV
     teacher_df = pd.DataFrame(teacher_data, columns=headers)
-    teacher_output = 'Studio database/Private_lesson_Calendar_69-615_TEACHERS_BY_COLOR.csv'
+    teacher_output = 'Private_lesson_Calendar_69-615_TEACHERS_BY_COLOR.csv'
     teacher_df.to_csv(teacher_output, index=False)
     
     # Save lesson data CSV  
     lesson_df = pd.DataFrame(lesson_data, columns=headers)
-    lesson_output = 'Studio database/Private_lesson_Calendar_69-615_LESSONS_WITH_COLORS.csv'
+    lesson_output = 'Private_lesson_Calendar_69-615_LESSONS_WITH_COLORS.csv'
     lesson_df.to_csv(lesson_output, index=False)
     
     print(f"\\n=== RESULTS ===")
