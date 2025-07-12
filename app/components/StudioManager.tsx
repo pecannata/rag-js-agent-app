@@ -36,101 +36,118 @@ interface WeekSchedule {
   slots: ScheduleSlot[];
 }
 
+interface Teacher {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  specialties: string;
+  status: string;
+  notes: string;
+}
+
 interface StudioManagerProps {
   apiKey: string;
 }
 
 export default function StudioManager({ apiKey }: StudioManagerProps) {
-  const [activeView, setActiveView] = useState<'students' | 'schedule' | 'analytics'>('students');
+  const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'schedule' | 'analytics'>('students');
   const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [currentWeek, setCurrentWeek] = useState<WeekSchedule>({
     weekOf: new Date().toISOString().split('T')[0],
     slots: []
   });
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Time slots for scheduling
   const timeSlots = [
-    '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
+    '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+    '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM',
+    '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM',
+    '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'
   ];
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  // Initialize with sample data
+  // Load data from database
   useEffect(() => {
-    const sampleStudents: Student[] = [
-      {
-        id: '1',
-        name: 'Everly Hazard',
-        parentFirstName: 'Jennifer',
-        parentLastName: 'Hazard',
-        email: 'jenhaz23@gmail.com',
-        phone: '',
-        birthDate: '2016-10-25',
-        age: 8,
-        auditionStatus: 'Both',
-        classes: {
-          auditionPrep: false,
-          techniqueIntensive: false,
-          balletIntensive: false,
-          masterIntensive: false
-        },
-        notes: ''
-      },
-      {
-        id: '2',
-        name: 'Gemma Smith',
-        parentFirstName: 'Tia',
-        parentLastName: 'Smith',
-        email: 'TiaFSmith@gmail.com',
-        phone: '',
-        birthDate: '2017-05-15',
-        age: 8,
-        auditionStatus: 'Both',
-        classes: {
-          auditionPrep: false,
-          techniqueIntensive: true,
-          balletIntensive: false,
-          masterIntensive: false
-        },
-        notes: ''
-      }
-    ];
-    
-    setStudents(sampleStudents);
-    
-    // Initialize current week schedule
-    const sampleSlots: ScheduleSlot[] = [
-      {
-        id: '1',
-        day: 'Friday',
-        time: '15:45',
-        studentName: 'Hazel',
-        lessonType: 'Solo',
-        notes: ''
-      },
-      {
-        id: '2',
-        day: 'Friday',
-        time: '16:15',
-        studentName: 'Larkin',
-        lessonType: 'Solo',
-        notes: ''
-      },
-      {
-        id: '3',
-        day: 'Sunday',
-        time: '15:30',
-        studentName: 'Larkin',
-        lessonType: 'Solo',
-        notes: ''
-      }
-    ];
-    
-    setCurrentWeek(prev => ({ ...prev, slots: sampleSlots }));
+    loadStudents();
+    loadSchedule();
+    loadTeachers();
+    loadAnalytics();
   }, []);
+
+  const loadStudents = async () => {
+    try {
+      const url = new URL('/api/studio/students', window.location.origin);
+      if (searchTerm) {
+        url.searchParams.set('search', searchTerm);
+      }
+      const response = await fetch(url.toString());
+      if (response.ok) {
+        const studentsData = await response.json();
+        setStudents(studentsData);
+      }
+    } catch (error) {
+      console.error('Error loading students:', error);
+    }
+  };
+
+  const loadTeachers = async () => {
+    try {
+      const url = new URL('/api/studio/teachers', window.location.origin);
+      const response = await fetch(url.toString());
+      if (response.ok) {
+        const teachersData = await response.json();
+        setTeachers(teachersData);
+      }
+    } catch (error) {
+      console.error('Error loading teachers:', error);
+    }
+  };
+
+  const loadSchedule = async () => {
+    try {
+      const url = new URL('/api/studio/schedule', window.location.origin);
+      url.searchParams.set('weekStart', currentWeek.weekOf);
+      const response = await fetch(url.toString());
+      if (response.ok) {
+        const scheduleData = await response.json();
+        setCurrentWeek(scheduleData);
+      }
+    } catch (error) {
+      console.error('Error loading schedule:', error);
+    }
+  };
+
+  const loadAnalytics = async () => {
+    try {
+      const response = await fetch('/api/studio/analytics');
+      if (response.ok) {
+        const analyticsData = await response.json();
+        // Store analytics data in state if needed
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    }
+  };
+
+  // Reload students when search term changes
+  useEffect(() => {
+    loadStudents();
+  }, [searchTerm]);
+
+  // Reload schedule when week changes
+  useEffect(() => {
+    loadSchedule();
+  }, [currentWeek.weekOf]);
 
   const handleAddStudent = () => {
     const newStudent: Student = {
@@ -155,33 +172,147 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     setIsAddingStudent(true);
   };
 
-  const handleSaveStudent = (student: Student) => {
-    if (isAddingStudent) {
-      setStudents(prev => [...prev, student]);
-      setIsAddingStudent(false);
-    } else {
-      setStudents(prev => prev.map(s => s.id === student.id ? student : s));
+  const handleSaveStudent = async (student: Student) => {
+    try {
+      const method = isAddingStudent ? 'POST' : 'PUT';
+      const url = isAddingStudent 
+        ? '/api/studio/students' 
+        : `/api/studio/students/${student.id}`;
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(student),
+      });
+
+      if (response.ok) {
+        await loadStudents(); // Reload students from database
+        setSelectedStudent(null);
+        setIsAddingStudent(false);
+      } else {
+        console.error('Failed to save student');
+      }
+    } catch (error) {
+      console.error('Error saving student:', error);
     }
-    setSelectedStudent(null);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
-    setStudents(prev => prev.filter(s => s.id !== studentId));
-  };
-
-  const handleAddScheduleSlot = (day: string, time: string) => {
-    const newSlot: ScheduleSlot = {
+  const handleAddTeacher = () => {
+    const newTeacher: Teacher = {
       id: Date.now().toString(),
-      day,
-      time,
-      studentName: '',
-      lessonType: 'Solo',
+      name: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      specialties: '',
+      status: 'Active',
       notes: ''
     };
-    setCurrentWeek(prev => ({
-      ...prev,
-      slots: [...prev.slots, newSlot]
-    }));
+    setSelectedTeacher(newTeacher);
+    setIsAddingTeacher(true);
+  };
+
+  const handleSaveTeacher = async (teacher: Teacher) => {
+    try {
+      const method = isAddingTeacher ? 'POST' : 'PUT';
+      const url = isAddingTeacher 
+        ? '/api/studio/teachers' 
+        : `/api/studio/teachers/${teacher.id}`;
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(teacher),
+      });
+
+      if (response.ok) {
+        await loadTeachers(); // Reload teachers from database
+        setSelectedTeacher(null);
+        setIsAddingTeacher(false);
+      } else {
+        console.error('Failed to save teacher');
+      }
+    } catch (error) {
+      console.error('Error saving teacher:', error);
+    }
+  };
+
+  const handleDeleteTeacher = async (teacherId: string) => {
+    if (!confirm('Are you sure you want to delete this teacher? This will also remove all their assigned lessons.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/studio/teachers/${teacherId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await loadTeachers(); // Reload teachers from database
+        await loadSchedule(); // Reload schedule in case teacher had lessons
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to delete teacher');
+      }
+    } catch (error) {
+      console.error('Error deleting teacher:', error);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string) => {
+    if (!confirm('Are you sure you want to delete this student? This will also remove all their schedule slots and attendance records.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/studio/students/${studentId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await loadStudents(); // Reload students from database
+        await loadSchedule(); // Reload schedule in case student had lessons
+      } else {
+        console.error('Failed to delete student');
+      }
+    } catch (error) {
+      console.error('Error deleting student:', error);
+    }
+  };
+
+  const handleAddScheduleSlot = async (day: string, time: string) => {
+    const studentName = prompt('Student name (optional):') || '';
+    const lessonType = prompt('Lesson type (Solo/Choreography):') || 'Solo';
+    
+    try {
+      const response = await fetch('/api/studio/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          weekOf: currentWeek.weekOf,
+          day,
+          time,
+          studentName,
+          lessonType,
+          notes: ''
+        }),
+      });
+
+      if (response.ok) {
+        await loadSchedule(); // Reload schedule from database
+      } else {
+        console.error('Failed to add schedule slot');
+      }
+    } catch (error) {
+      console.error('Error adding schedule slot:', error);
+    }
   };
 
   const handleUpdateScheduleSlot = (slotId: string, updates: Partial<ScheduleSlot>) => {
@@ -232,26 +363,41 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     student.parentLastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getAnalytics = () => {
-    const totalStudents = students.length;
-    const classEnrollment = {
-      auditionPrep: students.filter(s => s.classes.auditionPrep).length,
-      techniqueIntensive: students.filter(s => s.classes.techniqueIntensive).length,
-      balletIntensive: students.filter(s => s.classes.balletIntensive).length,
-      masterIntensive: students.filter(s => s.classes.masterIntensive).length
-    };
-    const ageGroups = {
-      minis: students.filter(s => s.age >= 4 && s.age <= 7).length,
-      juniors: students.filter(s => s.age >= 8 && s.age <= 11).length,
-      teens: students.filter(s => s.age >= 12 && s.age <= 15).length,
-      seniors: students.filter(s => s.age >= 16).length
-    };
-    const totalLessons = currentWeek.slots.length;
-    
-    return { totalStudents, classEnrollment, ageGroups, totalLessons };
+  const [analytics, setAnalytics] = useState({
+    totalStudents: 0,
+    classEnrollment: {
+      auditionPrep: 0,
+      techniqueIntensive: 0,
+      balletIntensive: 0,
+      masterIntensive: 0
+    },
+    ageGroups: {
+      minis: 0,
+      juniors: 0,
+      teens: 0,
+      seniors: 0
+    },
+    totalLessons: 0
+  });
+
+  const getAnalytics = async () => {
+    try {
+      const response = await fetch('/api/studio/analytics');
+      if (response.ok) {
+        const analyticsData = await response.json();
+        setAnalytics(analyticsData);
+        return analyticsData;
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+    return analytics;
   };
 
-  const analytics = getAnalytics();
+  // Update analytics when students or schedule changes
+  useEffect(() => {
+    getAnalytics();
+  }, [students, currentWeek.slots]);
 
   return (
     <div className="flex h-full bg-gray-50">
@@ -273,6 +419,30 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           >
             <span className="mr-3">👥</span>
             Students
+          </button>
+          
+          <button
+            onClick={() => setActiveView('teachers')}
+            className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeView === 'teachers'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span className="mr-3">👨‍🏫</span>
+            Teachers
+          </button>
+          
+          <button
+            onClick={() => setActiveView('staff')}
+            className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeView === 'staff'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span className="mr-3">👔</span>
+            Staff
           </button>
           
           <button
@@ -317,6 +487,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">
               {activeView === 'students' && 'Student Management'}
+              {activeView === 'teachers' && 'Teacher Management'}
+              {activeView === 'staff' && 'Staff Management'}
               {activeView === 'schedule' && 'Weekly Schedule'}
               {activeView === 'analytics' && 'Studio Analytics'}
             </h1>
@@ -327,6 +499,24 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Add Student
+              </button>
+            )}
+            
+            {activeView === 'teachers' && (
+              <button
+                onClick={handleAddTeacher}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                Add Teacher
+              </button>
+            )}
+            
+            {activeView === 'staff' && (
+              <button
+                onClick={() => alert('Add Staff functionality coming soon!')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              >
+                Add Staff
               </button>
             )}
           </div>
@@ -438,6 +628,119 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Teachers View */}
+          {activeView === 'teachers' && (
+            <div className="space-y-6">
+              {/* Teacher List */}
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Teacher
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Contact
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Specialties
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {teachers.map((teacher) => (
+                        <tr key={teacher.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="font-medium text-gray-900">{teacher.name}</div>
+                            <div className="text-sm text-gray-500">{teacher.firstName} {teacher.lastName}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{teacher.email}</div>
+                            <div className="text-sm text-gray-500">{teacher.phone}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{teacher.specialties}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              teacher.status === 'Active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {teacher.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => setSelectedTeacher(teacher)}
+                              className="text-blue-600 hover:text-blue-900 mr-3"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTeacher(teacher.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Empty State */}
+              {teachers.length === 0 && (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">👨‍🏫</div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">No Teachers Yet</h3>
+                    <p className="text-gray-600 mb-6">Start by adding your first teacher to manage your studio staff</p>
+                    <button
+                      onClick={handleAddTeacher}
+                      className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      Add Your First Teacher
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Staff View */}
+          {activeView === 'staff' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">👔</div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">Staff Management</h3>
+                  <p className="text-gray-600 mb-6">Manage your studio administrative staff</p>
+                  <div className="space-y-2 text-sm text-gray-500">
+                    <p>• Track staff roles and responsibilities</p>
+                    <p>• Manage work schedules and shifts</p>
+                    <p>• Monitor attendance and performance</p>
+                    <p>• Handle payroll and benefits</p>
+                  </div>
+                  <div className="mt-6">
+                    <button className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                      Coming Soon - Staff Features
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -764,6 +1067,154 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                 <button
                   onClick={() => handleSaveStudent(selectedStudent)}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Teacher Modal */}
+      {selectedTeacher && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {isAddingTeacher ? 'Add Teacher' : 'Edit Teacher'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setSelectedTeacher(null);
+                    setIsAddingTeacher(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedTeacher.name}
+                    onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, name: e.target.value } : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="How the teacher should be displayed"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTeacher.firstName}
+                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, firstName: e.target.value } : null)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTeacher.lastName}
+                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, lastName: e.target.value } : null)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={selectedTeacher.email}
+                    onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, email: e.target.value } : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={selectedTeacher.phone}
+                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={selectedTeacher.status}
+                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, status: e.target.value } : null)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="On Leave">On Leave</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Specialties
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedTeacher.specialties}
+                    onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, specialties: e.target.value } : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g. Ballet, Jazz, Contemporary, Hip Hop"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    value={selectedTeacher.notes}
+                    onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Additional notes about the teacher..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setSelectedTeacher(null);
+                    setIsAddingTeacher(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleSaveTeacher(selectedTeacher)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
                 >
                   Save
                 </button>
