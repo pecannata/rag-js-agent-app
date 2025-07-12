@@ -2,7 +2,7 @@
   "week_info": {
     "sheet_name": "69 -615",
     "week_dates": [],
-    "extracted_date": "2025-07-12T12:46:18.725941"
+    "extracted_date": "2025-07-12T12:53:10.738446"
   },
   "teachers": {
     "FF4A86E8": "N/A",
@@ -22,9 +22,9 @@
     "FFE06666": "ARDEN"
   },
   "studios": [
-    "STUDIO 3",
     "STUDIO 2",
-    "STUDIO 1"
+    "STUDIO 1",
+    "STUDIO 3"
   ],
   "schedule": [
     {
