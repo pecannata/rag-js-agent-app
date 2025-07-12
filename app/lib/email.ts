@@ -298,7 +298,7 @@ export async function sendEmail(to: string, template: keyof typeof emailTemplate
       const brevoPayload = {
         sender: {
           email: emailConfig.from.includes('<') ? emailConfig.from.match(/<(.+)>/)?.[1] : emailConfig.from,
-          name: emailConfig.from.includes('<') ? emailConfig.from.split('<')[0].trim() : undefined
+          name: emailConfig.from.includes('<') ? emailConfig.from.split('<')[0]?.trim() : undefined
         },
         to: [{
           email: to

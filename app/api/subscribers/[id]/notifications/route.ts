@@ -4,20 +4,6 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-// Utility function to escape strings for SQL
-function escapeSqlString(str: string): string {
-  if (typeof str !== 'string') {
-    return String(str);
-  }
-  return str
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "''")
-    .replace(/\0/g, '')
-    .replace(/\x1a/g, '')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    .trim();
-}
 
 // Utility function to validate numeric IDs
 function validateId(id: any): number | null {
@@ -98,11 +84,12 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
 
 // GET /api/subscribers/[id]/notifications - Get subscriber notification preferences
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
-    const subscriberId = validateId(params.id);
+    const subscriberId = validateId(resolvedParams.id);
     if (!subscriberId) {
       return NextResponse.json(
         { error: 'Valid subscriber ID is required' },
@@ -166,10 +153,11 @@ export async function GET(
 // PUT /api/subscribers/[id]/notifications - Update subscriber notification preferences
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
-    const subscriberId = validateId(params.id);
+    const subscriberId = validateId(resolvedParams.id);
     if (!subscriberId) {
       return NextResponse.json(
         { error: 'Valid subscriber ID is required' },

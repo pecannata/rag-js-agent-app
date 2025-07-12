@@ -178,6 +178,11 @@ export async function processJobs(): Promise<void> {
       
       const job = jobQueue[jobIndex];
       
+      if (!job) {
+        console.log('⚠️ Job not found at index, skipping...');
+        continue;
+      }
+      
       try {
         console.log(`🔄 Processing job ${job.id} (attempt ${job.attempts + 1}/${job.maxAttempts})`);
         

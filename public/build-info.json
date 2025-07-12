@@ -1,17 +1,17 @@
 {
-  "version": "1.0.153",
+  "version": "1.0.160",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-11T12:43:50.233Z",
+  "buildTime": "2025-07-11T23:37:30.271Z",
   "buildDate": "Jul 11, 2025",
-  "sourceVersion": "v1.0.152.071125",
+  "sourceVersion": "v1.0.159.071125",
   "git": {
     "branch": "main",
-    "commit": "45c74332ebe54887372bae709169ae2a89ad2e34",
-    "shortCommit": "45c74332",
-    "commitDate": "2025-07-11 07:40:43 -0500",
-    "commitMessage": "🚀 Key Improvements:"
+    "commit": "fa629d2460c81ffa97efec2ee4cdf8ac2d8f6c1b",
+    "shortCommit": "fa629d24",
+    "commitDate": "2025-07-11 18:25:41 -0500",
+    "commitMessage": "When publishing, can sending emails run in the background so the publish button returns quicker."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.152-45c74332-20250711-124350"
+  "buildSignature": "1.0.159-fa629d24-20250711-233730"
 }

@@ -1,40 +1,43 @@
 #!/bin/bash
 
 # Mac Stop Script for RAG-JS-Agent-App
-# Run this script to stop the production server
+# Run this script to stop the production server running in tmux
 
 echo "🛑 Stopping production server..."
 
-# Try to stop using saved PID first
-if [ -f "app.pid" ]; then
-    PID=$(cat app.pid)
-    echo "📋 Found saved PID: $PID"
-    
-    if ps -p $PID > /dev/null 2>&1; then
-        echo "🔄 Stopping process $PID..."
-        kill $PID
-        
-        # Wait a moment and check if it's stopped
-        sleep 2
-        if ps -p $PID > /dev/null 2>&1; then
-            echo "⚠️  Process still running, force killing..."
-            kill -9 $PID
-        fi
-        
-        echo "✅ Process $PID stopped"
-        rm app.pid
-    else
-        echo "⚠️  Process $PID not found (already stopped?)"
-        rm app.pid
-    fi
+SESSION_NAME="rag-js-agent-app"
+
+# Check if tmux is installed
+if ! command -v tmux &> /dev/null; then
+    echo "⚠️  tmux is not installed, falling back to pkill..."
+    # Fallback to old method if tmux is not available
+    echo "🔄 Cleaning up any remaining processes..."
+    pkill -f "npm start" || true
+    pkill -f "next-server" || true
+    echo "✅ Stop complete (using pkill)"
+    exit 0
+fi
+
+# Check if tmux session exists
+if tmux has-session -t $SESSION_NAME 2>/dev/null; then
+    echo "📋 Found tmux session: $SESSION_NAME"
+    echo "🔄 Stopping tmux session..."
+    tmux kill-session -t $SESSION_NAME
+    echo "✅ tmux session stopped"
 else
-    echo "📋 No PID file found, using pkill..."
+    echo "📋 No tmux session found with name: $SESSION_NAME"
 fi
 
 # Fallback: kill any remaining processes
 echo "🔄 Cleaning up any remaining processes..."
 pkill -f "npm start" || true
 pkill -f "next-server" || true
+
+# Clean up old PID file if it exists
+if [ -f "app.pid" ]; then
+    echo "🧹 Removing old PID file..."
+    rm app.pid
+fi
 
 echo "✅ Stop complete"
 
@@ -45,4 +48,5 @@ if [ $REMAINING -eq 0 ]; then
 else
     echo "⚠️  Warning: Some processes may still be running"
     echo "   Check with: ps aux | grep next"
+    echo "   Or check tmux sessions: tmux ls"
 fi

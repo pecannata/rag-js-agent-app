@@ -14,33 +14,36 @@
 
 ## Manual Steps (if needed)
 
-### 1. Stop any existing servers
+### 1. Install tmux (if not already installed)
 ```bash
-pkill -f "npm start"
-pkill -f "next-server"
-pkill -f "next dev"
+brew install tmux
 ```
 
-### 2. Build the production version
+### 2. Stop any existing servers
+```bash
+./stop.mac
+```
+
+### 3. Build the production version
 ```bash
 npm run build -- --no-lint
 ```
 
-### 3. Start production server in background
+### 4. Start production server in tmux session
 ```bash
-nohup npm start > production.log 2>&1 &
+tmux new-session -d -s rag-js-agent-app 'npm start 2>&1 | tee production.log'
 ```
 
-### 4. Verify deployment
+### 5. Verify deployment
 ```bash
 # Wait 3-5 seconds, then check
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
 ```
 
-### 5. Check server status
+### 6. Check server status
 ```bash
 # Should return "200" if successful
-ps aux | grep next
+tmux ls
 ```
 
 ## Process Management
@@ -50,6 +53,16 @@ ps aux | grep next
 tail -f production.log
 ```
 
+### Monitor the server (attach to tmux session)
+```bash
+tmux attach -t rag-js-agent-app
+```
+
+### Detach from tmux session
+```
+Ctrl+B, then D
+```
+
 ### Stop server (preferred method)
 ```bash
 ./stop.mac
@@ -57,8 +70,8 @@ tail -f production.log
 
 ### Stop server (manual method)
 ```bash
-# If you have the PID file
-kill $(cat app.pid)
+# Kill the tmux session
+tmux kill-session -t rag-js-agent-app
 
 # Or use pkill as fallback
 pkill -f "npm start"
@@ -66,8 +79,8 @@ pkill -f "npm start"
 
 ### Check if running
 ```bash
-# Check specific process
-ps -p $(cat app.pid)
+# Check tmux sessions
+tmux ls
 
 # Or check all next processes
 ps aux | grep next
@@ -77,14 +90,38 @@ ps aux | grep next
 - Server runs on http://localhost:3000
 - HTTP status code 200
 - Logs written to production.log
-- Process runs in background (survives terminal closure)
-- Process ID saved to app.pid file
+- Process runs in tmux session (survives terminal closure)
+- Session name: `rag-js-agent-app`
 
 ## Key Features
-- **Background Process**: Uses `nohup` to run independently of terminal
-- **Process Tracking**: Saves PID to `app.pid` for easy management
+- **Background Process**: Uses `tmux` to run independently of terminal
+- **Interactive Monitoring**: Can attach to session to see live output
+- **Session Management**: Easy to find and manage with `tmux ls`
 - **Clean Shutdown**: `stop.mac` script handles graceful termination
 - **Persistent Operation**: Server continues running after terminal closure
+- **Live Logs**: Both file logging and interactive session viewing
+
+## tmux Quick Reference
+
+### Basic Commands
+```bash
+# List all sessions
+tmux ls
+
+# Attach to session
+tmux attach -t rag-js-agent-app
+
+# Kill session
+tmux kill-session -t rag-js-agent-app
+
+# Create new session
+tmux new-session -d -s session-name 'command'
+```
+
+### Inside tmux Session
+- **Detach**: `Ctrl+B`, then `D`
+- **Scroll up**: `Ctrl+B`, then `[`, then use arrow keys
+- **Exit scroll mode**: `Q`
 
 ## To Ask AI Agent to Deploy
 Say: "Please run ./deploy.mac to deploy the production build"

@@ -1,5 +1,5 @@
 
-> rag-js-agent-app@1.0.139 start
+> rag-js-agent-app@1.0.160 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -7,8 +7,9 @@
    - Network:      http://192.168.1.149:3000
 
  ✓ Starting...
- ✓ Ready in 333ms
-(node:68550) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+ ✓ Ready in 339ms
+📧 Background job processor initialized
+(node:39531) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE ROWNUM <= 1
 ✅ Blog database query executed successfully
@@ -118,9 +119,9 @@
           "type": "VARCHAR2"
         },
  
-✅ Extracted Oracle items: 1 rows
-📊 Blog query result structure: object true 1
-🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE slug = 'test-blog-post'
+✅ Extracted Oracle items: 13 rows
+📊 Blog query result structure: object true 13
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 18
 ✅ Blog database query executed successfully
 📤 Raw Oracle Output (first 500 chars): 
 {
@@ -128,13 +129,13 @@
     {
       "columns" : [
         {
-          "name" : "COUNT",
+          "name" : "ID",
           "type" : "NUMBER"
         }
       ],
       "items" : [
         {
-          "count" : 0
+          "id" : 18
         }
       ]
     }
@@ -145,33 +146,298 @@
     {
       "columns": [
         {
-          "name": "COUNT",
+          "name": "ID",
           "type": "NUMBER"
         }
       ],
       "items": [
         {
-          "count": 0
+          "id": 18
         }
       ]
     }
   ]
 }
 ✅ Extracted Oracle items: 1 rows
-📝 Content Length: 53
-📝 Content Preview: This is a test blog post to verify the functionality....
-📝 Content Length: 53 characters
-🔄 Content converted to hex: 106 hex chars
-📝 Content split into 1 hex chunks
-🔍 Blog Database Query Execution: 
-        INSERT INTO blog_posts (
-          title, slug, content, excerpt, author, status, tags, published_at
-        ) VALUES (
-          'Test Blog Post',
-          'test-blog-post',
-          UTL_R...
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 18
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 17
 ✅ Blog database query executed successfully
-📝 Modification query completed INSERT - Output: (empty - success)
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 17
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 17
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 17
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 12 rows
+📊 Blog query result structure: object true 12
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 16
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 16
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 16
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 16
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 11 rows
+📊 Blog query result structure: object true 11
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 14
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 14
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 14
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 14
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
 🔍 Blog Database Query Execution: 
       SELECT 
         id,
@@ -241,8 +507,9 @@
           "type": "VARCHAR2"
         },
  
-✅ Extracted Oracle items: 1 rows
-🔍 Blog Database Query Execution: SELECT id, status, published_at FROM blog_posts WHERE id = 3
+✅ Extracted Oracle items: 9 rows
+📊 Blog query result structure: object true 9
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 11
 ✅ Blog database query executed successfully
 📤 Raw Oracle Output (first 500 chars): 
 {
@@ -254,19 +521,70 @@
           "type" : "NUMBER"
         },
         {
-          "name" : "STATUS",
+          "name" : "TITLE",
           "type" : "VARCHAR2"
         },
         {
-          "name" : "PUBLISHED_AT",
-          "type" : "TIMESTAMP"
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 9 rows
+📊 Blog query result structure: object true 9
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 12
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
         }
       ],
       "items" : [
         {
-          "id" : 3,
-          "status" : "draft",
-          "published_at" : ""
+          "id" : 11
         }
       ]
     }
@@ -279,37 +597,131 @@
         {
           "name": "ID",
           "type": "NUMBER"
-        },
-        {
-          "name": "STATUS",
-          "type": "VARCHAR2"
-        },
-        {
-          "name": "PUBLISHED_AT",
-          "type": "TIMESTAMP"
         }
       ],
       "items": [
         {
-          "id": 3,
-          "status": "draft",
-          "published_at": ""
+          "id": 11
         }
       ]
     }
   ]
 }
 ✅ Extracted Oracle items: 1 rows
-📝 Update: Content Length: 53
-📝 Update: Content Length: 53 characters
-🔄 Update: Content converted to hex: 106 hex chars
-📝 Update: Content split into 1 hex chunks
-🔍 Blog Database Query Execution: 
-        UPDATE blog_posts SET
-          title = 'Test Blog Post',
-          content = UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('546869732069732061207465737420626C6F6720706F737420746F207665726966792074686520...
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 11
 ✅ Blog database query executed successfully
-📝 Modification query completed UPDATE - Output: (empty - success)
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 12
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 12
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 12
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 7 rows
+📊 Blog query result structure: object true 7
 🔍 Blog Database Query Execution: 
       SELECT 
         id,
@@ -379,7 +791,639 @@
           "type": "VARCHAR2"
         },
  
+✅ Extracted Oracle items: 7 rows
+📊 Blog query result structure: object true 7
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 15
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 15
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 15
+        }
+      ]
+    }
+  ]
+}
 ✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 15
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 13
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 13
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 13
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 13
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 13
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 13
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 13
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 13
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 6 rows
+📊 Blog query result structure: object true 6
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 10
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 15
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 10
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 10
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 10
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [ ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": []
+    }
+  ]
+}
+✅ Extracted Oracle items: 0 rows
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 4 rows
+📊 Blog query result structure: object true 4
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 4 rows
+📊 Blog query result structure: object true 4
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 4 rows
+📊 Blog query result structure: object true 4
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 8
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 8
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 8
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 8
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CLOB"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 3 rows
+📊 Blog query result structure: object true 3
+🔍 Blog Database Query Execution: SELECT id FROM blog_posts WHERE id = 9
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 9
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "id": 9
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+🔍 Blog Database Query Execution: DELETE FROM blog_posts WHERE id = 9
+✅ Blog database query executed successfully
+📝 Modification query completed DELETE - Output: (empty - success)
 🔍 Blog Database Query Execution: 
       SELECT 
         id,
@@ -451,57 +1495,6 @@
  
 ✅ Extracted Oracle items: 2 rows
 📊 Blog query result structure: object true 2
-🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE slug = 'new-test-post-for-onboarding-fix'
-✅ Blog database query executed successfully
-📤 Raw Oracle Output (first 500 chars): 
-{
-  "results" : [
-    {
-      "columns" : [
-        {
-          "name" : "COUNT",
-          "type" : "NUMBER"
-        }
-      ],
-      "items" : [
-        {
-          "count" : 0
-        }
-      ]
-    }
-  ]
-}
-✅ Successfully parsed as JSON. Structure: {
-  "results": [
-    {
-      "columns": [
-        {
-          "name": "COUNT",
-          "type": "NUMBER"
-        }
-      ],
-      "items": [
-        {
-          "count": 0
-        }
-      ]
-    }
-  ]
-}
-✅ Extracted Oracle items: 1 rows
-📝 Content Length: 124
-📝 Content Preview: This is a test post to verify that the onboarding plugin error has been resolved and the publish but...
-📝 Content Length: 124 characters
-🔄 Content converted to hex: 248 hex chars
-📝 Content split into 1 hex chunks
-🔍 Blog Database Query Execution: 
-        INSERT INTO blog_posts (
-          title, slug, content, excerpt, author, status, tags, published_at
-        ) VALUES (
-          'New Test Post for Onboarding Fix',
-          'new-test-post-...
-✅ Blog database query executed successfully
-📝 Modification query completed INSERT - Output: (empty - success)
 🔍 Blog Database Query Execution: 
       SELECT 
         id,
@@ -571,142 +1564,5 @@
           "type": "VARCHAR2"
         },
  
-✅ Extracted Oracle items: 1 rows
-🔍 Blog Database Query Execution: SELECT id, status, published_at FROM blog_posts WHERE id = 4
-✅ Blog database query executed successfully
-📤 Raw Oracle Output (first 500 chars): 
-{
-  "results" : [
-    {
-      "columns" : [
-        {
-          "name" : "ID",
-          "type" : "NUMBER"
-        },
-        {
-          "name" : "STATUS",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "PUBLISHED_AT",
-          "type" : "TIMESTAMP"
-        }
-      ],
-      "items" : [
-        {
-          "id" : 4,
-          "status" : "draft",
-          "published_at" : ""
-        }
-      ]
-    }
-  ]
-}
-✅ Successfully parsed as JSON. Structure: {
-  "results": [
-    {
-      "columns": [
-        {
-          "name": "ID",
-          "type": "NUMBER"
-        },
-        {
-          "name": "STATUS",
-          "type": "VARCHAR2"
-        },
-        {
-          "name": "PUBLISHED_AT",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "items": [
-        {
-          "id": 4,
-          "status": "draft",
-          "published_at": ""
-        }
-      ]
-    }
-  ]
-}
-✅ Extracted Oracle items: 1 rows
-📝 Update: Content Length: 124
-📝 Update: Content Length: 124 characters
-🔄 Update: Content converted to hex: 248 hex chars
-📝 Update: Content split into 1 hex chunks
-🔍 Blog Database Query Execution: 
-        UPDATE blog_posts SET
-          title = 'New Test Post for Onboarding Fix',
-          content = UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('546869732069732061207465737420706F737420746F2076657269667920...
-✅ Blog database query executed successfully
-📝 Modification query completed UPDATE - Output: (empty - success)
-🔍 Blog Database Query Execution: 
-      SELECT 
-        id,
-        title,
-        slug,
-        content,
-        excerpt,
-        author,
-        status,
-        tags,
-        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cre...
-✅ Blog database query executed successfully
-📤 Raw Oracle Output (first 500 chars): 
-{
-  "results" : [
-    {
-      "columns" : [
-        {
-          "name" : "ID",
-          "type" : "NUMBER"
-        },
-        {
-          "name" : "TITLE",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "SLUG",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "CONTENT",
-          "type" : "CLOB"
-        },
-        {
-          "name" : "EXCERPT",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "AUTHOR",
-          "type" : "VARCHAR...
-✅ Successfully parsed as JSON. Structure: {
-  "results": [
-    {
-      "columns": [
-        {
-          "name": "ID",
-          "type": "NUMBER"
-        },
-        {
-          "name": "TITLE",
-          "type": "VARCHAR2"
-        },
-        {
-          "name": "SLUG",
-          "type": "VARCHAR2"
-        },
-        {
-          "name": "CONTENT",
-          "type": "CLOB"
-        },
-        {
-          "name": "EXCERPT",
-          "type": "VARCHAR2"
-        },
-        {
-          "name": "AUTHOR",
-          "type": "VARCHAR2"
-        },
- 
-✅ Extracted Oracle items: 1 rows
+✅ Extracted Oracle items: 2 rows
+📊 Blog query result structure: object true 2
