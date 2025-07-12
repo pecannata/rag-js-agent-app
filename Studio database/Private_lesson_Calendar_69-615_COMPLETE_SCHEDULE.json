@@ -1,0 +1,809 @@
+{
+  "week_info": {
+    "sheet_name": "69 -615",
+    "week_dates": [
+      "2025-06-09",
+      "2025-06-02",
+      "2025-06-10",
+      "2025-06-10",
+      "2025-06-11",
+      "2025-06-11",
+      "2025-06-12",
+      "2025-06-12",
+      "2025-06-12",
+      "2025-06-13",
+      "2025-06-14",
+      "2025-06-15"
+    ],
+    "extracted_date": "2025-07-11T23:19:43.144041"
+  },
+  "teachers": {
+    "FF4A86E8": null,
+    "FFEFEFEF": null,
+    "FFFFF2CC": "PAIGE",
+    "FFA4C2F4": null,
+    "FFFF00FF": null,
+    "FFEAD1DC": "MEGHAN",
+    "FFF3F3F3": null,
+    "FF00FF00": null,
+    "FFB4A7D6": null,
+    "FFFF9900": null,
+    "FFC9DAF8": "RYANN",
+    "FFD9EAD3": "GRACIE",
+    "FFD9D2E9": "CARALIN ( BALLET TEACHER)",
+    "FFF6B26B": "HUNTER",
+    "FFE06666": "ARDEN"
+  },
+  "studios": [
+    "STUDIO 1",
+    "STUDIO 2",
+    "STUDIO 3"
+  ],
+  "schedule": [
+    {
+      "time": "10:00:00",
+      "lessons": [
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Reese",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Reese",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Kaylee Kaloustian",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 2",
+          "student_info": "Kelly jazz",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 13
+        }
+      ]
+    },
+    {
+      "time": "10:30:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 3
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Reese",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Mia Tubbs",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 3",
+          "student_info": "Vivian Fincher",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 8
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Reese",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Alia Pollema Solo",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 2",
+          "student_info": "Kelly tap",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 13
+        }
+      ]
+    },
+    {
+      "time": "11:00:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 3
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Kaylee Kaloustian",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 3",
+          "student_info": "Vivian Fincher",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 8
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Mila & Reese duo",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 9
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Everly/Larkin",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Marik solo",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 2",
+          "student_info": "Teagan tap",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 13
+        }
+      ]
+    },
+    {
+      "time": "11:30:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 3
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Everly solo",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Alia Pollema Solo",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Mila",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 9
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Everly /Larkin",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Marik solo",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "12:00:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 3
+        },
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 3",
+          "student_info": "Gabi M",
+          "teacher_color": "FF00FF00",
+          "teacher": null,
+          "column": 4
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Everly solo",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Marik",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Rehearsal",
+          "teacher_color": "FFFF00FF",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Larkin",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 9
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Mia W",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Larkin",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "12:30:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Gabi M.",
+          "teacher_color": "FF00FF00",
+          "teacher": null,
+          "column": 3
+        },
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 3",
+          "student_info": "Larkin",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 4
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Larkin",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Marik",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Everly",
+          "teacher_color": "FFEAD1DC",
+          "teacher": "MEGHAN",
+          "column": 9
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Mia W",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Larkin",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "13:00:00",
+      "lessons": [
+        {
+          "day": "SATURDAY",
+          "date": "2025-06-14",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley",
+          "teacher_color": "FFB4A7D6",
+          "teacher": null,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "time": "13:30:00",
+      "lessons": [
+        {
+          "day": "SATURDAY",
+          "date": "2025-06-14",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley",
+          "teacher_color": "FFB4A7D6",
+          "teacher": null,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "time": "16:00:00",
+      "lessons": [
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Kinley - technique / solo",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 11
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley - solo",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "16:30:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Hazel",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 3
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley - technique / solo",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Larkin/everly technique",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Hazel- tech",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 2",
+          "student_info": "Vivienne solo",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 10
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 3",
+          "student_info": "Kinley - technique / solo",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 11
+        }
+      ]
+    },
+    {
+      "time": "17:00:00",
+      "lessons": [
+        {
+          "day": "MONDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Hazel",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 3
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley - technique / solo",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Larkin/everly technique",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Hazel- tech",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 2",
+          "student_info": "Vivienne solo",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 10
+        }
+      ]
+    },
+    {
+      "time": "17:30:00",
+      "lessons": [
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Vivi Fincher",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Hazel- solos",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Remi",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 2",
+          "student_info": "Elin/Elena",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 10
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Harlow",
+          "teacher_color": "FFB4A7D6",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "18:00:00",
+      "lessons": [
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Vivi Fincher",
+          "teacher_color": "FFFFF2CC",
+          "teacher": "PAIGE",
+          "column": 5
+        },
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-02",
+          "studio": "STUDIO 3",
+          "student_info": "Hazel- solos",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 6
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Remi",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 2",
+          "student_info": "Elin/Elena",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 10
+        }
+      ]
+    },
+    {
+      "time": "18:30:00",
+      "lessons": [
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Elin/Elena",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 5
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Mila",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 3",
+          "student_info": "Ava Fransen",
+          "teacher_color": "FFFF9900",
+          "teacher": null,
+          "column": 8
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Alia Pollema Solo",
+          "teacher_color": "FFFF9900",
+          "teacher": null,
+          "column": 9
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley",
+          "teacher_color": "FFB4A7D6",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "time": "19:00:00",
+      "lessons": [
+        {
+          "day": "TUESDAY",
+          "date": "2025-06-09",
+          "studio": "STUDIO 1",
+          "student_info": "Elin/Elena",
+          "teacher_color": null,
+          "teacher": "Unknown",
+          "column": 5
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 1",
+          "student_info": "Mila",
+          "teacher_color": "FFA4C2F4",
+          "teacher": null,
+          "column": 7
+        },
+        {
+          "day": "WEDNESDAY",
+          "date": "2025-06-10",
+          "studio": "STUDIO 3",
+          "student_info": "Ava Fransen",
+          "teacher_color": "FFFF9900",
+          "teacher": null,
+          "column": 8
+        },
+        {
+          "day": "THURSDAY",
+          "date": "2025-06-11",
+          "studio": "STUDIO 1",
+          "student_info": "Kaylee Kaloustian",
+          "teacher_color": "FFFF9900",
+          "teacher": null,
+          "column": 9
+        },
+        {
+          "day": "FRIDAY",
+          "date": "2025-06-12",
+          "studio": "STUDIO 1",
+          "student_info": "Kinley",
+          "teacher_color": "FFB4A7D6",
+          "teacher": null,
+          "column": 12
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_time_slots": 15,
+    "total_lessons": 76,
+    "unique_teachers": 8,
+    "date_range": "2025-06-02 to 2025-06-15"
+  }
+}
