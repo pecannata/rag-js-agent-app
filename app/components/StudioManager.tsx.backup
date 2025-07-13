@@ -66,7 +66,7 @@ interface StudioManagerProps {
 }
 
 export default function StudioManager({ apiKey }: StudioManagerProps) {
-  const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'private-lessons' | 'analytics'>('students');
+  const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'schedule' | 'analytics'>('students');
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [currentWeek, setCurrentWeek] = useState<WeekSchedule>({
@@ -1286,15 +1286,15 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           </button>
           
           <button
-            onClick={() => setActiveView('private-lessons')}
+            onClick={() => setActiveView('schedule')}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              activeView === 'private-lessons'
+              activeView === 'schedule'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
                 : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
             <span className="mr-3">📅</span>
-            Private lessons
+            Schedule
           </button>
           
           <button
@@ -1365,7 +1365,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
               {activeView === 'students' && 'Student Management'}
               {activeView === 'teachers' && 'Teacher Management'}
               {activeView === 'staff' && 'Staff Management'}
-              {activeView === 'private-lessons' && 'Private Lessons'}
+              {activeView === 'schedule' && 'Weekly Schedule'}
               {activeView === 'analytics' && 'Studio Analytics'}
             </h1>
             
@@ -1622,8 +1622,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
             </div>
           )}
 
-          {/* Private Lessons View */}
-          {activeView === 'private-lessons' && (
+          {/* Schedule View */}
+          {activeView === 'schedule' && (
             <div className="space-y-6">
               {/* Month and Week Selector */}
               <div className="bg-white rounded-lg shadow p-4">
@@ -1639,7 +1639,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                         value={selectedMonth}
                         onChange={(e) => handleMonthChange(e.target.value)}
                         className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
-                      >
+>
                         <option value="">Select Month</option>
                         {Object.keys(getWeeksByMonth()).map(month => (
                           <option key={month} value={month}>
@@ -1729,14 +1729,20 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
 
               {/* Schedule Grid using Table with Sticky */}
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="overflow-auto max-h-[600px] relative">
+                <div className="overflow-x-auto overflow-y-auto max-h-[600px] relative">
                   <table className="border-collapse" style={{ width: `${Math.max(1400, 120 + (days.length * (currentWeek.studios?.length || 3) * 144))}px`, minWidth: `${Math.max(1400, 120 + (days.length * (currentWeek.studios?.length || 3) * 144))}px` }}>
+                    <colgroup>
+                      <col style={{ width: '6rem', position: 'sticky', left: 0, zIndex: 10, backgroundColor: '#F9FAFB' }} />
+                      {(days.length * (currentWeek.studios?.length || 3)).toFixed(0) % 10 === '0' ? null : Array(days.length * (currentWeek.studios?.length || 3)).fill(0).map((_, i) => (
+                        <col key={i} />
+                      ))}
+                    </colgroup>
                     <thead>
                       {/* Day Header Row */}
                       <tr className="sticky top-0 z-20 bg-gray-50">
-                        <th className="w-24 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 sticky left-0 z-30 bg-gray-50">
+                        <th className="w-24 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 bg-gray-50">
                           Time
-                        </th>
+                        </th
                         {days.map(day => (
                           <th key={day} colSpan={currentWeek.studios?.length || 3} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 bg-gray-50">
                             {day}
@@ -1745,7 +1751,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                       </tr>
                       {/* Studio Sub-Header Row */}
                       <tr className="sticky top-[49px] z-20 bg-gray-50">
-                        <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 sticky left-0 z-30 bg-gray-50">
+                        <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 sticky left-0 z-40 bg-gray-50 shadow-sm">
                           {/* Empty */}
                         </th>
                         {days.map(day =>
@@ -1760,7 +1766,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                     <tbody className="bg-white">
                       {timeSlots.map(time => (
                         <tr key={time}>
-                          <td className="w-24 px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-300 bg-gray-50 sticky left-0 z-10">
+                          <td className="w-24 px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-300 bg-gray-50 sticky left-0 z-30 shadow-sm">
                             {time}
                           </td>
                           {days.map(day =>
