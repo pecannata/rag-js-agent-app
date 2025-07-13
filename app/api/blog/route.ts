@@ -30,7 +30,7 @@ function validateId(id: any): number | null {
   return numId;
 }
 
-// Function to handle CLOB content insertion
+// Function to handle CLOB content insertion with chunking for large content
 async function insertBlogPostSafely(postData: {
   title: string;
   slug: string;
@@ -46,27 +46,81 @@ async function insertBlogPostSafely(postData: {
   try {
     console.log(`📝 Content Length: ${postData.content.length} characters`);
 
-    // Direct CLOB insertion - SQLclScript.sh handles up to 10MB
-    const insertQuery = `
-      INSERT INTO blog_posts (
-        title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
-      ) VALUES (
-        '${escapeSqlString(postData.title)}',
-        '${escapeSqlString(postData.slug)}',
-        '${escapeSqlString(postData.content)}',
-        '${escapeSqlString(postData.excerpt)}',
-        '${escapeSqlString(postData.author)}',
-        '${escapeSqlString(postData.status)}',
-        '${escapeSqlString(postData.tags)}',
-        ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
-        ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
-        ${postData.isScheduled ? 1 : 0}
-      )
-    `;
+    // Check if content is large and needs TO_CLOB() chunking
+    if (postData.content.length > 4000) {
+      console.log('⚠️ Content is large, using TO_CLOB() chunking strategy...');
+      
+      // Split content into manageable chunks for Oracle (less than 4000 chars each)
+      const chunkSize = 3900; // Safe size under 4000 char limit
+      const chunks: string[] = [];
+      
+      for (let i = 0; i < postData.content.length; i += chunkSize) {
+        chunks.push(postData.content.substring(i, i + chunkSize));
+      }
+      
+      console.log(`📊 Split content into ${chunks.length} chunks for TO_CLOB() concatenation`);
+      
+      // Build INSERT statement with TO_CLOB() concatenation for content
+      let insertQuery = `
+        INSERT INTO blog_posts (
+          title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
+        ) VALUES (
+          '${escapeSqlString(postData.title)}',
+          '${escapeSqlString(postData.slug)}',
+          `;
+      
+      // Add each chunk as TO_CLOB('chunk') concatenated with ||
+      const clobParts = chunks.map(chunk => {
+        // Escape single quotes in the chunk for SQL
+        const escapedChunk = chunk.replace(/'/g, "''");
+        return `TO_CLOB('${escapedChunk}')`;
+      });
+      
+      insertQuery += clobParts.join(' || ');
+      
+      insertQuery += `,
+          '${escapeSqlString(postData.excerpt)}',
+          '${escapeSqlString(postData.author)}',
+          '${escapeSqlString(postData.status)}',
+          '${escapeSqlString(postData.tags)}',
+          ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+          ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+          ${postData.isScheduled ? 1 : 0}
+        )`;
+      
+      console.log('📊 Executing TO_CLOB concatenation insert for blog post');
+      console.log('📊 Total content length:', postData.content.length);
+      console.log('📊 Query length:', insertQuery.length);
+      
+      const insertResult = await executeOracleQuery(insertQuery);
+      console.log('✅ TO_CLOB Insert result (ALL content stored):', insertResult);
+      
+      if (!insertResult.success) {
+        return insertResult;
+      }
+    } else {
+      // Direct CLOB insertion for smaller content
+      const insertQuery = `
+        INSERT INTO blog_posts (
+          title, slug, content, excerpt, author, status, tags, published_at, scheduled_date, is_scheduled
+        ) VALUES (
+          '${escapeSqlString(postData.title)}',
+          '${escapeSqlString(postData.slug)}',
+          '${escapeSqlString(postData.content)}',
+          '${escapeSqlString(postData.excerpt)}',
+          '${escapeSqlString(postData.author)}',
+          '${escapeSqlString(postData.status)}',
+          '${escapeSqlString(postData.tags)}',
+          ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+          ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+          ${postData.isScheduled ? 1 : 0}
+        )
+      `;
 
-    const insertResult = await executeOracleQuery(insertQuery);
-    if (!insertResult.success) {
-      return insertResult;
+      const insertResult = await executeOracleQuery(insertQuery);
+      if (!insertResult.success) {
+        return insertResult;
+      }
     }
 
     return { success: true };
@@ -77,7 +131,7 @@ async function insertBlogPostSafely(postData: {
   }
 }
 
-// Function to handle CLOB content updates
+// Function to handle CLOB content updates with chunking for large content
 async function updateBlogPostSafely(postData: {
   id: number;
   title: string;
@@ -92,22 +146,71 @@ async function updateBlogPostSafely(postData: {
   try {
     console.log(`📝 Update: Content Length: ${postData.content.length} characters`);
     
-    // Direct CLOB update - SQLclScript.sh handles up to 10MB
-    const updateQuery = `
-      UPDATE blog_posts SET
-        title = '${escapeSqlString(postData.title)}',
-        content = '${escapeSqlString(postData.content)}',
-        excerpt = '${escapeSqlString(postData.excerpt)}',
-        status = '${escapeSqlString(postData.status)}',
-        tags = '${escapeSqlString(postData.tags)}',
-        updated_at = CURRENT_TIMESTAMP,
-        published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
-        scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
-        is_scheduled = ${postData.isScheduled ? 1 : 0}
-      WHERE id = ${postData.id}
-    `;
-    
-    return await executeOracleQuery(updateQuery);
+    // Check if content is large and needs TO_CLOB() chunking
+    if (postData.content.length > 4000) {
+      console.log('⚠️ Update content is large, using TO_CLOB() chunking strategy...');
+      
+      // Split content into manageable chunks for Oracle (less than 4000 chars each)
+      const chunkSize = 3900; // Safe size under 4000 char limit
+      const chunks: string[] = [];
+      
+      for (let i = 0; i < postData.content.length; i += chunkSize) {
+        chunks.push(postData.content.substring(i, i + chunkSize));
+      }
+      
+      console.log(`📊 Split update content into ${chunks.length} chunks for TO_CLOB() concatenation`);
+      
+      // Build UPDATE statement with TO_CLOB() concatenation for content
+      let updateQuery = `
+        UPDATE blog_posts SET
+          title = '${escapeSqlString(postData.title)}',
+          content = `;
+      
+      // Add each chunk as TO_CLOB('chunk') concatenated with ||
+      const clobParts = chunks.map(chunk => {
+        // Escape single quotes in the chunk for SQL
+        const escapedChunk = chunk.replace(/'/g, "''");
+        return `TO_CLOB('${escapedChunk}')`;
+      });
+      
+      updateQuery += clobParts.join(' || ');
+      
+      updateQuery += `,
+          excerpt = '${escapeSqlString(postData.excerpt)}',
+          status = '${escapeSqlString(postData.status)}',
+          tags = '${escapeSqlString(postData.tags)}',
+          updated_at = CURRENT_TIMESTAMP,
+          published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+          scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+          is_scheduled = ${postData.isScheduled ? 1 : 0}
+        WHERE id = ${postData.id}`;
+      
+      console.log('📊 Executing TO_CLOB concatenation update for blog post');
+      console.log('📊 Total update content length:', postData.content.length);
+      console.log('📊 Update query length:', updateQuery.length);
+      
+      const updateResult = await executeOracleQuery(updateQuery);
+      console.log('✅ TO_CLOB Update result (ALL content stored):', updateResult);
+      
+      return updateResult;
+    } else {
+      // Direct CLOB update for smaller content
+      const updateQuery = `
+        UPDATE blog_posts SET
+          title = '${escapeSqlString(postData.title)}',
+          content = '${escapeSqlString(postData.content)}',
+          excerpt = '${escapeSqlString(postData.excerpt)}',
+          status = '${escapeSqlString(postData.status)}',
+          tags = '${escapeSqlString(postData.tags)}',
+          updated_at = CURRENT_TIMESTAMP,
+          published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
+          scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
+          is_scheduled = ${postData.isScheduled ? 1 : 0}
+        WHERE id = ${postData.id}
+      `;
+      
+      return await executeOracleQuery(updateQuery);
+    }
     
   } catch (error) {
     console.error('❌ Error in updateBlogPostSafely:', error);
