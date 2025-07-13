@@ -83,6 +83,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [selectedRole, setSelectedRole] = useState('student');
   
   // File input ref for Excel upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -405,37 +406,10 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     }
   };
 
+  // Legacy function - replaced by handleCellClick
   const handleAddScheduleSlot = async (day: string, time: string, studio?: string) => {
-    const studentName = prompt('Student name (optional):') || '';
-    const lessonType = prompt('Lesson type (Solo/Choreography):') || 'Solo';
-    const teacher = prompt('Teacher name (optional):') || '';
-    
-    try {
-      const response = await fetch('/api/studio/schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          weekOf: currentWeek.weekOf,
-          day,
-          time,
-          studentName,
-          lessonType,
-          teacher,
-          studio: studio || 'Studio 1',
-          notes: ''
-        }),
-      });
-
-      if (response.ok) {
-        await loadSchedule(); // Reload schedule from database
-      } else {
-        console.error('Failed to add schedule slot');
-      }
-    } catch (error) {
-      console.error('Error adding schedule slot:', error);
-    }
+    // This function is no longer used - all cell interactions go through handleCellClick
+    console.log('Legacy handleAddScheduleSlot called - use handleCellClick instead');
   };
 
   // Helper function to get fallback color for slots without Excel colors
@@ -466,6 +440,110 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       ...prev,
       slots: prev.slots.filter(slot => slot.id !== slotId)
     }));
+  };
+
+  // Handle cell click based on selected role
+  const handleCellClick = (day: string, time: string, studio: string) => {
+    if (selectedRole === 'student') {
+      // For students, show a popup to input student name and lesson type
+      const studentName = prompt('Enter your name:');
+      if (!studentName) return; // User cancelled
+      
+      const lessonType = prompt('Enter lesson type (Solo/Choreography/Private/Group):') || 'Solo';
+      
+      // Create or update the schedule slot in memory
+      const time24 = formatTime24(time);
+      const slotId = `${day}-${time24}-${studio}`;
+      
+      // Check if slot already exists
+      const existingSlotIndex = currentWeek.slots.findIndex(s => {
+        const dayMatch = s.day.toUpperCase() === day.toUpperCase();
+        const timeMatch = s.time === time24;
+        const studioMatch = s.studio === studio;
+        return dayMatch && timeMatch && studioMatch;
+      });
+      
+      const newSlot: ScheduleSlot = {
+        id: slotId,
+        day: day,
+        time: time24,
+        studentName: studentName,
+        lessonType: lessonType,
+        studio: studio,
+        notes: '',
+        teacher: '', // Will be determined by teacher click later
+        color: '#6B7280' // Default gray color
+      };
+      
+      setCurrentWeek(prev => {
+        if (existingSlotIndex >= 0) {
+          // Update existing slot - preserve existing color and teacher if they exist
+          const updatedSlots = [...prev.slots];
+          const existingSlot = updatedSlots[existingSlotIndex];
+          updatedSlots[existingSlotIndex] = { 
+            ...existingSlot, 
+            studentName, 
+            lessonType,
+            // Keep existing teacher and color if they exist
+            teacher: existingSlot.teacher || '',
+            color: existingSlot.color || 'transparent' // Default white/transparent for student-only slots
+          };
+          return { ...prev, slots: updatedSlots };
+        } else {
+          // Add new slot with neutral student color
+          const studentSlot = { ...newSlot, color: 'transparent' }; // Default white/transparent for student-only slots
+          return { ...prev, slots: [...prev.slots, studentSlot] };
+        }
+      });
+    } else {
+      // For teachers, color the cell with the teacher's color from legend
+      const teacherName = teachers.find(t => t.name.toLowerCase() === selectedRole)?.name;
+      if (!teacherName) return;
+      
+      // Find teacher color from legend
+      const teacherColor = currentWeek.teachers?.[teacherName] || 
+                          Object.entries(currentWeek.teachers || {}).find(([name]) => 
+                            name.toLowerCase() === teacherName.toLowerCase()
+                          )?.[1] || '#9CA3AF'; // Default color if not found
+      
+      const time24 = formatTime24(time);
+      const slotId = `${day}-${time24}-${studio}`;
+      
+      // Check if slot already exists
+      const existingSlotIndex = currentWeek.slots.findIndex(s => {
+        const dayMatch = s.day.toUpperCase() === day.toUpperCase();
+        const timeMatch = s.time === time24;
+        const studioMatch = s.studio === studio;
+        return dayMatch && timeMatch && studioMatch;
+      });
+      
+      setCurrentWeek(prev => {
+        if (existingSlotIndex >= 0) {
+          // Update existing slot with teacher info
+          const updatedSlots = [...prev.slots];
+          updatedSlots[existingSlotIndex] = { 
+            ...updatedSlots[existingSlotIndex], 
+            teacher: teacherName,
+            color: teacherColor
+          };
+          return { ...prev, slots: updatedSlots };
+        } else {
+          // Create new slot with teacher color (no student info yet)
+          const newSlot: ScheduleSlot = {
+            id: slotId,
+            day: day,
+            time: time24,
+            studentName: '', // Empty until student fills it
+            lessonType: '', // No default lesson type
+            studio: studio,
+            notes: '',
+            teacher: teacherName,
+            color: teacherColor
+          };
+          return { ...prev, slots: [...prev.slots, newSlot] };
+        }
+      });
+    }
   };
 
   const exportToExcel = () => {
@@ -1008,7 +1086,10 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     if (dayHeaderRowIndex === -1) {
       console.warn('⚠️ Could not find day header row in sheet');
-      return schedule;
+      return {
+        schedule,
+        teacherColorMap
+      };
     }
     
     // Build column mapping for days and studios
@@ -1629,6 +1710,28 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
+                    {/* Dropdown Selector for Role */}
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="role-selector" className="text-sm font-medium text-gray-700">
+                        I am:
+                      </label>
+                      <select
+                        id="role-selector"
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+                      >
+                        {/* Default 'Student' option */}
+                        <option value="student">Student</option>
+                        {/* Teacher options, sorted alphabetically */}
+                        {teachers.sort((a, b) => a.name.localeCompare(b.name)).map(teacher => (
+                          <option key={teacher.id} value={teacher.name.toLowerCase()}>
+                            {teacher.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Month Selector */}
                     <div className="flex items-center gap-2">
                       <label htmlFor="month-selector" className="text-sm font-medium text-gray-700">
@@ -1783,14 +1886,14 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                                         backgroundColor: slot.color || getFallbackColor(slot.teacher),
                                         borderLeft: `4px solid ${slot.color || getFallbackColor(slot.teacher)}`
                                       }}
-                                      onClick={() => alert(`Student: ${slot.studentName}\nTeacher: ${slot.teacher}\nStudio: ${slot.studio}\nType: ${slot.lessonType}\nStatus: ${slot.status}${slot.color ? `\nColor: ${slot.color}` : ''}`)}
+                                      onClick={() => handleCellClick(day, time, studio)}
                                     >
                                       <div className="font-medium truncate">{slot.studentName}</div>
                                       <div className="opacity-75 truncate">{slot.lessonType}</div>
                                     </div>
                                   ) : (
                                     <button
-                                      onClick={() => handleAddScheduleSlot(day, time, studio)}
+                                      onClick={() => handleCellClick(day, time, studio)}
                                       className="w-full h-full border-2 border-dashed border-gray-300 rounded hover:border-blue-400 hover:bg-blue-50 transition-colors text-xs text-gray-500 hover:text-blue-600"
                                     >
                                       +

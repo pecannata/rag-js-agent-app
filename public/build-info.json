@@ -1,17 +1,17 @@
 {
-  "version": "1.0.160",
+  "version": "1.0.161",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-11T23:37:30.271Z",
-  "buildDate": "Jul 11, 2025",
-  "sourceVersion": "v1.0.159.071125",
+  "buildTime": "2025-07-13T20:21:09.331Z",
+  "buildDate": "Jul 13, 2025",
+  "sourceVersion": "v1.0.160.071325",
   "git": {
     "branch": "main",
-    "commit": "fa629d2460c81ffa97efec2ee4cdf8ac2d8f6c1b",
-    "shortCommit": "fa629d24",
-    "commitDate": "2025-07-11 18:25:41 -0500",
-    "commitMessage": "When publishing, can sending emails run in the background so the publish button returns quicker."
+    "commit": "7379088886e6953c81cfb9b35a3c2862627f0926",
+    "shortCommit": "73790888",
+    "commitDate": "2025-07-13 13:42:27 -0500",
+    "commitMessage": "please change the name \"schedule\" to \"Private lessons\"."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.159-fa629d24-20250711-233730"
+  "buildSignature": "1.0.160-73790888-20250713-202109"
 }
