@@ -22,6 +22,7 @@ interface LessonData {
   lesson_type: string;
   studio: string;
   notes: string;
+  color?: string | null; // Excel cell color
 }
 
 interface ScheduleSlot {
@@ -39,6 +40,7 @@ interface WeekInfo {
 interface UploadData {
   week_info: WeekInfo;
   schedule: ScheduleSlot[];
+  teacher_colors?: { [key: string]: string };
 }
 
 export async function POST(request: NextRequest) {
@@ -62,7 +64,14 @@ export async function POST(request: NextRequest) {
       weekInfo: data.week_info
     });
     
-    const { week_info, schedule } = data;
+    const { week_info, schedule, teacher_colors } = data;
+    
+    // Log the teacher colors received from frontend
+    if (teacher_colors) {
+      debugLog('🎨 Teacher colors received from frontend:', teacher_colors);
+    } else {
+      debugLog('❌ No teacher colors received from frontend');
+    }
     
     if (!week_info || !schedule) {
       debugLog('❌ Missing required data:', { week_info, schedule });
@@ -99,7 +108,7 @@ export async function POST(request: NextRequest) {
     const fullWeekData = {
       week_info,
       schedule,
-      teachers: extractTeachers(schedule),
+      teachers: extractTeachers(schedule, teacher_colors),
       studios: extractStudios(schedule)
     };
 
@@ -310,17 +319,56 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to extract teachers from schedule data
-function extractTeachers(schedule: ScheduleSlot[]): Record<string, string> {
+function extractTeachers(schedule: ScheduleSlot[], teacherColors?: { [key: string]: string }): Record<string, string> {
   const teachers: Record<string, string> = {};
   
+  debugLog('🎨 Processing teacher extraction with colors:', teacherColors);
+  
+  // First, add all teacher colors from the frontend legend extraction
+  if (teacherColors) {
+    Object.entries(teacherColors).forEach(([teacherName, color]) => {
+      teachers[teacherName] = color;
+      debugLog(`✅ Added teacher from legend: ${teacherName} -> ${color}`);
+    });
+  }
+  
+  // Then, add any teachers found in the schedule lessons that aren't already mapped
   schedule.forEach(slot => {
     slot.lessons?.forEach(lesson => {
       if (lesson.teacher && lesson.teacher.trim()) {
-        teachers[lesson.teacher] = '#3B82F6'; // Default blue color
+        const teacherName = lesson.teacher.trim();
+        if (!teachers[teacherName]) {
+          teachers[teacherName] = '#3B82F6'; // Default blue color for unmapped teachers
+          debugLog(`✅ Added teacher from lessons: ${teacherName} -> #3B82F6`);
+        }
       }
     });
   });
   
+  // Also process any instructor names that appear in the student_info field
+  // This handles cases where the legend area is included in the schedule
+  const knownInstructors = ['MEGHAN', 'RYANN', 'PAIGE', 'GRACIE', 'CARALIN', 'HUNTER', 'EMERY', 'ARDEN'];
+  
+  schedule.forEach(slot => {
+    slot.lessons?.forEach(lesson => {
+      if (lesson.student_info && typeof lesson.student_info === 'string') {
+        const studentInfo = lesson.student_info.toUpperCase();
+        
+        // Check if this lesson contains a known instructor name (legend entry)
+        knownInstructors.forEach(instructor => {
+          if (studentInfo.includes(instructor)) {
+            const instructorName = instructor;
+            if (!teachers[instructorName] && lesson.color) {
+              teachers[instructorName] = lesson.color;
+              debugLog(`✅ Added instructor from legend area: ${instructorName} -> ${lesson.color}`);
+            }
+          }
+        });
+      }
+    });
+  });
+  
+  debugLog('📊 Final teacher mappings:', teachers);
   return teachers;
 }
 

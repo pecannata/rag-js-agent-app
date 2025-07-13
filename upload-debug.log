@@ -599,3 +599,342 @@
     "count": 1
   }
 ]
+2025-07-13T15:32:38.358Z: 🚀 POST /api/studio/upload-schedule - Starting request processing
+2025-07-13T15:32:38.359Z: 🔑 Checking session...
+2025-07-13T15:32:38.365Z: ✅ Session validated
+2025-07-13T15:32:38.365Z: 📥 Reading request body...
+2025-07-13T15:32:38.367Z: 📋 Request data received: {
+  "hasWeekInfo": true,
+  "hasSchedule": true,
+  "scheduleLength": 73,
+  "weekInfo": {
+    "sheet_name": "69 -615",
+    "week_identifier": "2025-07-13-69 -615",
+    "source_file": "Private lesson Calendar 1 tab.xlsx"
+  }
+}
+2025-07-13T15:32:38.368Z: ✅ Data validation passed, processing upload...
+2025-07-13T15:32:38.369Z: 🚀 Executing insert query...
+2025-07-13T15:32:38.369Z: 📊 JSON string length: 12283
+2025-07-13T15:32:38.369Z: 🔍 JSON contains $ signs:
+2025-07-13T15:32:38.369Z: 🔍 JSON first 200 chars: "{\"week_info\":{\"sheet_name\":\"69 -615\",\"week_identifier\":\"2025-07-13-69 -615\",\"source_file\":\"Private lesson Calendar 1 tab.xlsx\"},\"schedule\":[{\"time\":\"10:00:00\",\"day\":\"Tuesday\",\"lessons\":[{\"student_info"
+2025-07-13T15:32:38.369Z: ⚠️ JSON string is too long, using TO_CLOB() concatenation approach...
+2025-07-13T15:32:38.369Z: 📊 Split into 4 chunks for TO_CLOB() concatenation
+2025-07-13T15:32:38.369Z: 📊 Executing TO_CLOB concatenation insert
+2025-07-13T15:32:38.369Z: 📊 Total JSON length: 12283
+2025-07-13T15:32:38.369Z: 📊 Query length: 12454
+2025-07-13T15:32:41.884Z: ✅ TO_CLOB Insert result (ALL data stored): [
+  {
+    "success": true,
+    "operation": "modify",
+    "output": ""
+  }
+]
+2025-07-13T15:32:41.884Z: 💾 Executing COMMIT...
+2025-07-13T15:32:45.205Z: ✅ Successfully inserted and committed lesson data
+2025-07-13T15:32:45.205Z: 🔍 Verifying insert...
+2025-07-13T15:32:49.272Z: 🔍 Verification count: [
+  {
+    "count": 1
+  }
+]
+2025-07-13T16:25:02.452Z: 🚀 POST /api/studio/upload-schedule - Starting request processing
+2025-07-13T16:25:02.454Z: 🔑 Checking session...
+2025-07-13T16:25:02.461Z: ✅ Session validated
+2025-07-13T16:25:02.462Z: 📥 Reading request body...
+2025-07-13T16:25:02.464Z: 📋 Request data received: {
+  "hasWeekInfo": true,
+  "hasSchedule": true,
+  "scheduleLength": 73,
+  "weekInfo": {
+    "sheet_name": "69 -615",
+    "week_identifier": "2025-07-13-69 -615",
+    "source_file": "Private lesson Calendar 1 tab.xlsx"
+  }
+}
+2025-07-13T16:25:02.465Z: ✅ Data validation passed, processing upload...
+2025-07-13T16:25:02.467Z: 🚀 Executing insert query...
+2025-07-13T16:25:02.467Z: 📊 JSON string length: 12092
+2025-07-13T16:25:02.467Z: 🔍 JSON contains $ signs:
+2025-07-13T16:25:02.467Z: 🔍 JSON first 200 chars: "{\"week_info\":{\"sheet_name\":\"69 -615\",\"week_identifier\":\"2025-07-13-69 -615\",\"source_file\":\"Private lesson Calendar 1 tab.xlsx\"},\"schedule\":[{\"time\":\"10:00:00\",\"day\":\"Tuesday\",\"lessons\":[{\"student_info"
+2025-07-13T16:25:02.467Z: ⚠️ JSON string is too long, using TO_CLOB() concatenation approach...
+2025-07-13T16:25:02.467Z: 📊 Split into 4 chunks for TO_CLOB() concatenation
+2025-07-13T16:25:02.467Z: 📊 Executing TO_CLOB concatenation insert
+2025-07-13T16:25:02.467Z: 📊 Total JSON length: 12092
+2025-07-13T16:25:02.467Z: 📊 Query length: 12263
+2025-07-13T16:25:06.163Z: ✅ TO_CLOB Insert result (ALL data stored): [
+  {
+    "success": true,
+    "operation": "modify",
+    "output": ""
+  }
+]
+2025-07-13T16:25:06.164Z: 💾 Executing COMMIT...
+2025-07-13T16:25:09.581Z: ✅ Successfully inserted and committed lesson data
+2025-07-13T16:25:09.581Z: 🔍 Verifying insert...
+2025-07-13T16:25:13.864Z: 🔍 Verification count: [
+  {
+    "count": 1
+  }
+]
+2025-07-13T16:34:21.127Z: 🚀 POST /api/studio/upload-schedule - Starting request processing
+2025-07-13T16:34:21.128Z: 🔑 Checking session...
+2025-07-13T16:34:21.135Z: ✅ Session validated
+2025-07-13T16:34:21.135Z: 📥 Reading request body...
+2025-07-13T16:34:21.136Z: 📋 Request data received: {
+  "hasWeekInfo": true,
+  "hasSchedule": true,
+  "scheduleLength": 73,
+  "weekInfo": {
+    "sheet_name": "69 -615",
+    "week_identifier": "2025-07-13-69 -615",
+    "source_file": "Private lesson Calendar 1 tab.xlsx"
+  }
+}
+2025-07-13T16:34:21.138Z: ✅ Data validation passed, processing upload...
+2025-07-13T16:34:21.139Z: 🚀 Executing insert query...
+2025-07-13T16:34:21.139Z: 📊 JSON string length: 12092
+2025-07-13T16:34:21.139Z: 🔍 JSON contains $ signs:
+2025-07-13T16:34:21.139Z: 🔍 JSON first 200 chars: "{\"week_info\":{\"sheet_name\":\"69 -615\",\"week_identifier\":\"2025-07-13-69 -615\",\"source_file\":\"Private lesson Calendar 1 tab.xlsx\"},\"schedule\":[{\"time\":\"10:00:00\",\"day\":\"Tuesday\",\"lessons\":[{\"student_info"
+2025-07-13T16:34:21.139Z: ⚠️ JSON string is too long, using TO_CLOB() concatenation approach...
+2025-07-13T16:34:21.139Z: 📊 Split into 4 chunks for TO_CLOB() concatenation
+2025-07-13T16:34:21.139Z: 📊 Executing TO_CLOB concatenation insert
+2025-07-13T16:34:21.139Z: 📊 Total JSON length: 12092
+2025-07-13T16:34:21.139Z: 📊 Query length: 12263
+2025-07-13T16:34:24.833Z: ✅ TO_CLOB Insert result (ALL data stored): [
+  {
+    "success": true,
+    "operation": "modify",
+    "output": ""
+  }
+]
+2025-07-13T16:34:24.834Z: 💾 Executing COMMIT...
+2025-07-13T16:34:28.383Z: ✅ Successfully inserted and committed lesson data
+2025-07-13T16:34:28.384Z: 🔍 Verifying insert...
+2025-07-13T16:34:32.583Z: 🔍 Verification count: [
+  {
+    "count": 1
+  }
+]
+2025-07-13T16:44:21.108Z: 🚀 POST /api/studio/upload-schedule - Starting request processing
+2025-07-13T16:44:21.108Z: 🔑 Checking session...
+2025-07-13T16:44:21.116Z: ✅ Session validated
+2025-07-13T16:44:21.116Z: 📥 Reading request body...
+2025-07-13T16:44:21.118Z: 📋 Request data received: {
+  "hasWeekInfo": true,
+  "hasSchedule": true,
+  "scheduleLength": 73,
+  "weekInfo": {
+    "sheet_name": "69 -615",
+    "week_identifier": "2025-07-13-69 -615",
+    "source_file": "Private lesson Calendar 1 tab.xlsx"
+  }
+}
+2025-07-13T16:44:21.119Z: ✅ Data validation passed, processing upload...
+2025-07-13T16:44:21.120Z: 🚀 Executing insert query...
+2025-07-13T16:44:21.120Z: 📊 JSON string length: 12092
+2025-07-13T16:44:21.120Z: 🔍 JSON contains $ signs:
+2025-07-13T16:44:21.120Z: 🔍 JSON first 200 chars: "{\"week_info\":{\"sheet_name\":\"69 -615\",\"week_identifier\":\"2025-07-13-69 -615\",\"source_file\":\"Private lesson Calendar 1 tab.xlsx\"},\"schedule\":[{\"time\":\"10:00:00\",\"day\":\"Tuesday\",\"lessons\":[{\"student_info"
+2025-07-13T16:44:21.120Z: ⚠️ JSON string is too long, using TO_CLOB() concatenation approach...
+2025-07-13T16:44:21.120Z: 📊 Split into 4 chunks for TO_CLOB() concatenation
+2025-07-13T16:44:21.121Z: 📊 Executing TO_CLOB concatenation insert
+2025-07-13T16:44:21.121Z: 📊 Total JSON length: 12092
+2025-07-13T16:44:21.121Z: 📊 Query length: 12263
+2025-07-13T16:44:24.650Z: ✅ TO_CLOB Insert result (ALL data stored): [
+  {
+    "success": true,
+    "operation": "modify",
+    "output": ""
+  }
+]
+2025-07-13T16:44:24.650Z: 💾 Executing COMMIT...
+2025-07-13T16:44:27.983Z: ✅ Successfully inserted and committed lesson data
+2025-07-13T16:44:27.983Z: 🔍 Verifying insert...
+2025-07-13T16:44:32.087Z: 🔍 Verification count: [
+  {
+    "count": 1
+  }
+]
+2025-07-13T16:58:19.585Z: 🚀 POST /api/studio/upload-schedule - Starting request processing
+2025-07-13T16:58:19.587Z: 🔑 Checking session...
+2025-07-13T16:58:19.593Z: ✅ Session validated
+2025-07-13T16:58:19.593Z: 📥 Reading request body...
+2025-07-13T16:58:19.595Z: 📋 Request data received: {
+  "hasWeekInfo": true,
+  "hasSchedule": true,
+  "scheduleLength": 73,
+  "weekInfo": {
+    "sheet_name": "69 -615",
+    "week_identifier": "2025-07-13-69 -615",
+    "source_file": "Private lesson Calendar 1 tab.xlsx"
+  }
+}
+2025-07-13T16:58:19.596Z: 🎨 Teacher colors received from frontend: {
+  "MEGHAN": "#EAD1DC",
+  "RYANN": "#C9DAF8",
+  "PAIGE": "#FFF2CC",
+  "GRACIE": "#D9EAD3",
+  "CARALIN ( BALLET TEACHER)": "#D9D2E9",
+  "HUNTER": "#F6B26B",
+  "Reese": "#FFF2CC",
+  "Kaylee Kaloustian": "#A4C2F4",
+  "Mia Tubbs": "#A4C2F4",
+  "Vivian Fincher": "#FFF2CC",
+  "Alia Pollema Solo": "#A4C2F4",
+  "Everly/Larkin": "#A4C2F4",
+  "Marik solo": "#A4C2F4",
+  "Everly solo": "#EAD1DC",
+  "Mila": "#EAD1DC",
+  "Everly /Larkin": "#A4C2F4",
+  "Gabi M": "#00FF00",
+  "Marik": "#A4C2F4",
+  "Larkin": "#EAD1DC",
+  "Mia W": "#A4C2F4",
+  "Everly": "#EAD1DC",
+  "Kinley": "#B4A7D6",
+  "Kinley - technique / solo": "#FFF2CC",
+  "Kinley - solo": "#A4C2F4",
+  "Hazel": "#FFF2CC",
+  "Larkin/everly technique": "#A4C2F4",
+  "Hazel- tech": "#A4C2F4",
+  "Vivi Fincher": "#FFF2CC",
+  "Hazel- solos": "#A4C2F4",
+  "Remi": "#A4C2F4",
+  "Harlow": "#B4A7D6",
+  "Ava Fransen": "#FF9900"
+}
+2025-07-13T16:58:19.597Z: ✅ Data validation passed, processing upload...
+2025-07-13T16:58:19.598Z: 🎨 Processing teacher extraction with colors: {
+  "MEGHAN": "#EAD1DC",
+  "RYANN": "#C9DAF8",
+  "PAIGE": "#FFF2CC",
+  "GRACIE": "#D9EAD3",
+  "CARALIN ( BALLET TEACHER)": "#D9D2E9",
+  "HUNTER": "#F6B26B",
+  "Reese": "#FFF2CC",
+  "Kaylee Kaloustian": "#A4C2F4",
+  "Mia Tubbs": "#A4C2F4",
+  "Vivian Fincher": "#FFF2CC",
+  "Alia Pollema Solo": "#A4C2F4",
+  "Everly/Larkin": "#A4C2F4",
+  "Marik solo": "#A4C2F4",
+  "Everly solo": "#EAD1DC",
+  "Mila": "#EAD1DC",
+  "Everly /Larkin": "#A4C2F4",
+  "Gabi M": "#00FF00",
+  "Marik": "#A4C2F4",
+  "Larkin": "#EAD1DC",
+  "Mia W": "#A4C2F4",
+  "Everly": "#EAD1DC",
+  "Kinley": "#B4A7D6",
+  "Kinley - technique / solo": "#FFF2CC",
+  "Kinley - solo": "#A4C2F4",
+  "Hazel": "#FFF2CC",
+  "Larkin/everly technique": "#A4C2F4",
+  "Hazel- tech": "#A4C2F4",
+  "Vivi Fincher": "#FFF2CC",
+  "Hazel- solos": "#A4C2F4",
+  "Remi": "#A4C2F4",
+  "Harlow": "#B4A7D6",
+  "Ava Fransen": "#FF9900"
+}
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: MEGHAN -> #EAD1DC
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: RYANN -> #C9DAF8
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: PAIGE -> #FFF2CC
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: GRACIE -> #D9EAD3
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: CARALIN ( BALLET TEACHER) -> #D9D2E9
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: HUNTER -> #F6B26B
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: Reese -> #FFF2CC
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: Kaylee Kaloustian -> #A4C2F4
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: Mia Tubbs -> #A4C2F4
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: Vivian Fincher -> #FFF2CC
+2025-07-13T16:58:19.598Z: ✅ Added teacher from legend: Alia Pollema Solo -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Everly/Larkin -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Marik solo -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Everly solo -> #EAD1DC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Mila -> #EAD1DC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Everly /Larkin -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Gabi M -> #00FF00
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Marik -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Larkin -> #EAD1DC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Mia W -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Everly -> #EAD1DC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Kinley -> #B4A7D6
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Kinley - technique / solo -> #FFF2CC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Kinley - solo -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Hazel -> #FFF2CC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Larkin/everly technique -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Hazel- tech -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Vivi Fincher -> #FFF2CC
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Hazel- solos -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Remi -> #A4C2F4
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Harlow -> #B4A7D6
+2025-07-13T16:58:19.599Z: ✅ Added teacher from legend: Ava Fransen -> #FF9900
+2025-07-13T16:58:19.599Z: ✅ Added teacher from lessons: technique -> #3B82F6
+2025-07-13T16:58:19.599Z: ✅ Added teacher from lessons: solo -> #3B82F6
+2025-07-13T16:58:19.599Z: ✅ Added teacher from lessons: tech -> #3B82F6
+2025-07-13T16:58:19.599Z: ✅ Added teacher from lessons: solos -> #3B82F6
+2025-07-13T16:58:19.600Z: ✅ Added instructor from legend area: CARALIN -> #D9D2E9
+2025-07-13T16:58:19.600Z: 📊 Final teacher mappings: {
+  "MEGHAN": "#EAD1DC",
+  "RYANN": "#C9DAF8",
+  "PAIGE": "#FFF2CC",
+  "GRACIE": "#D9EAD3",
+  "CARALIN ( BALLET TEACHER)": "#D9D2E9",
+  "HUNTER": "#F6B26B",
+  "Reese": "#FFF2CC",
+  "Kaylee Kaloustian": "#A4C2F4",
+  "Mia Tubbs": "#A4C2F4",
+  "Vivian Fincher": "#FFF2CC",
+  "Alia Pollema Solo": "#A4C2F4",
+  "Everly/Larkin": "#A4C2F4",
+  "Marik solo": "#A4C2F4",
+  "Everly solo": "#EAD1DC",
+  "Mila": "#EAD1DC",
+  "Everly /Larkin": "#A4C2F4",
+  "Gabi M": "#00FF00",
+  "Marik": "#A4C2F4",
+  "Larkin": "#EAD1DC",
+  "Mia W": "#A4C2F4",
+  "Everly": "#EAD1DC",
+  "Kinley": "#B4A7D6",
+  "Kinley - technique / solo": "#FFF2CC",
+  "Kinley - solo": "#A4C2F4",
+  "Hazel": "#FFF2CC",
+  "Larkin/everly technique": "#A4C2F4",
+  "Hazel- tech": "#A4C2F4",
+  "Vivi Fincher": "#FFF2CC",
+  "Hazel- solos": "#A4C2F4",
+  "Remi": "#A4C2F4",
+  "Harlow": "#B4A7D6",
+  "Ava Fransen": "#FF9900",
+  "technique": "#3B82F6",
+  "solo": "#3B82F6",
+  "tech": "#3B82F6",
+  "solos": "#3B82F6",
+  "CARALIN": "#D9D2E9"
+}
+2025-07-13T16:58:19.600Z: 🚀 Executing insert query...
+2025-07-13T16:58:19.600Z: 📊 JSON string length: 12851
+2025-07-13T16:58:19.600Z: 🔍 JSON contains $ signs:
+2025-07-13T16:58:19.600Z: 🔍 JSON first 200 chars: "{\"week_info\":{\"sheet_name\":\"69 -615\",\"week_identifier\":\"2025-07-13-69 -615\",\"source_file\":\"Private lesson Calendar 1 tab.xlsx\"},\"schedule\":[{\"time\":\"10:00:00\",\"day\":\"Tuesday\",\"lessons\":[{\"student_info"
+2025-07-13T16:58:19.600Z: ⚠️ JSON string is too long, using TO_CLOB() concatenation approach...
+2025-07-13T16:58:19.601Z: 📊 Split into 4 chunks for TO_CLOB() concatenation
+2025-07-13T16:58:19.601Z: 📊 Executing TO_CLOB concatenation insert
+2025-07-13T16:58:19.601Z: 📊 Total JSON length: 12851
+2025-07-13T16:58:19.601Z: 📊 Query length: 13022
+2025-07-13T16:58:23.358Z: ✅ TO_CLOB Insert result (ALL data stored): [
+  {
+    "success": true,
+    "operation": "modify",
+    "output": ""
+  }
+]
+2025-07-13T16:58:23.359Z: 💾 Executing COMMIT...
+2025-07-13T16:58:26.901Z: ✅ Successfully inserted and committed lesson data
+2025-07-13T16:58:26.902Z: 🔍 Verifying insert...
+2025-07-13T16:58:31.211Z: 🔍 Verification count: [
+  {
+    "count": 1
+  }
+]

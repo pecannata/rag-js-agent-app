@@ -34,6 +34,7 @@ interface ScheduleSlot {
   studio?: string;
   status?: string;
   notes: string;
+  color?: string; // Excel cell color
 }
 
 interface WeekSchedule {
@@ -404,9 +405,10 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     }
   };
 
-  const handleAddScheduleSlot = async (day: string, time: string) => {
+  const handleAddScheduleSlot = async (day: string, time: string, studio?: string) => {
     const studentName = prompt('Student name (optional):') || '';
     const lessonType = prompt('Lesson type (Solo/Choreography):') || 'Solo';
+    const teacher = prompt('Teacher name (optional):') || '';
     
     try {
       const response = await fetch('/api/studio/schedule', {
@@ -420,6 +422,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           time,
           studentName,
           lessonType,
+          teacher,
+          studio: studio || 'Studio 1',
           notes: ''
         }),
       });
@@ -432,6 +436,22 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     } catch (error) {
       console.error('Error adding schedule slot:', error);
     }
+  };
+
+  // Helper function to get fallback color for slots without Excel colors
+  const getFallbackColor = (teacherName: string): string => {
+    if (!teacherName || teacherName.trim() === '') {
+      return '#6B7280'; // Light gray for empty/null teacher
+    }
+    
+    // Check for blocked slots (common blocked slot indicators)
+    const blockedIndicators = ['blocked', 'block', 'unavailable', 'closed', 'x', 'xxx'];
+    if (blockedIndicators.some(indicator => teacherName.toLowerCase().includes(indicator))) {
+      return '#374151'; // Dark gray for blocked slots
+    }
+    
+    // Return a neutral color for slots without Excel colors
+    return '#9CA3AF'; // Default gray color
   };
 
   const handleUpdateScheduleSlot = (slotId: string, updates: Partial<ScheduleSlot>) => {
@@ -514,7 +534,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const processExcelFile = async (data: ArrayBuffer, fileName: string) => {
     setUploadStatus('Parsing Excel sheets...');
     
-    const workbook = XLSX.read(data, { type: 'array' });
+    const workbook = XLSX.read(data, { type: 'array', cellStyles: true });
     const sheetNames = workbook.SheetNames;
     
     setUploadStatus(`Found ${sheetNames.length} sheets. Processing...`);
@@ -529,8 +549,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       // Skip empty sheets
       if (jsonData.length === 0) continue;
       
-      // Process the sheet data
-      await processSheetData(sheetName, jsonData, fileName);
+      // Process the sheet data with color information
+      await processSheetData(sheetName, jsonData, fileName, worksheet);
     }
     
     setUploadStatus('Upload completed! Refreshing data...');
@@ -551,21 +571,24 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     }, 3000);
   };
 
-  const processSheetData = async (sheetName: string, jsonData: any[][], fileName: string) => {
+  const processSheetData = async (sheetName: string, jsonData: any[][], fileName: string, worksheet: any) => {
     try {
       console.log(`📊 Processing sheet "${sheetName}" with ${jsonData.length} rows`);
       
-      // Create the schedule data structure
+      // Create the schedule data structure with color information
+      const extractedData = extractScheduleFromSheet(jsonData, worksheet);
       const scheduleData = {
         week_info: {
           sheet_name: sheetName,
           week_identifier: `${new Date().toISOString().split('T')[0]}-${sheetName}`,
           source_file: fileName
         },
-        schedule: extractScheduleFromSheet(jsonData)
+        schedule: extractedData.schedule,
+        teacher_colors: extractedData.teacherColorMap
       };
       
       console.log(`📤 Sending ${scheduleData.schedule.length} schedule slots to server for sheet "${sheetName}"`);
+      console.log(`🎨 Teacher color mappings to send:`, extractedData.teacherColorMap);
       
       // Send to backend API to process and store
       const response = await fetch('/api/studio/upload-schedule', {
@@ -597,15 +620,365 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       throw error;
     }
   };
+  const extractTeacherColorMapping = (jsonData: any[][], worksheet: any, teacherColorMap: { [key: string]: string }) => {
+    console.log('🔍 Extracting teacher-color mappings from notes...');
+    
+    // Strategy 1: Look for legend area (typically bottom-right section)
+    console.log('🔍 Looking for legend area in bottom-right section...');
+    const legendArea = findLegendArea(jsonData, worksheet);
+    if (legendArea) {
+      extractFromLegendArea(jsonData, worksheet, teacherColorMap, legendArea);
+    }
+    
+    // Strategy 2: Access the notes/comments from the worksheet object
+    const notes = worksheet['!comments'] || [];
+    
+    notes.forEach(comment => {
+      const text = comment.t;
+      if (text && typeof text === 'string') {
+        // Extract teacher-color pairs from the comment text
+        const pattern = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*[:-]\s*#([0-9A-Fa-f]{6})/g;
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          const teacherName = match[1].trim();
+          const colorCode = `#${match[2].trim()}`;
+          teacherColorMap[teacherName] = colorCode;
+          console.log(`🎨 Mapped from notes: ${teacherName} -> ${colorCode}`);
+        }
+      }
+    });
+    
+    // Strategy 3: Look for cells with colors that contain teacher names
+    for (let row = 0; row < jsonData.length; row++) {
+      const rowData = jsonData[row];
+      if (!rowData) continue;
+      
+      for (let col = 0; col < rowData.length; col++) {
+        const cellValue = rowData[col];
+        if (!cellValue || typeof cellValue !== 'string') continue;
+        
+        // Get cell color
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        const cellStyle = worksheet[cellAddress]?.s;
+        let cellColor = null;
+        
+        if (cellStyle) {
+          console.log(`🔍 Cell ${cellAddress} style:`, cellStyle);
+          if (cellStyle.fgColor?.rgb) {
+            cellColor = `#${cellStyle.fgColor.rgb}`;
+            console.log(`🎨 Found foreground color: ${cellColor}`);
+          } else if (cellStyle.bgColor?.rgb) {
+            cellColor = `#${cellStyle.bgColor.rgb}`;
+            console.log(`🎨 Found background color: ${cellColor}`);
+          } else {
+            console.log(`❌ No RGB color found in style for ${cellAddress}`);
+          }
+        } else {
+          console.log(`❌ No style found for cell ${cellAddress}`);
+        }
+        
+        // If cell has color and looks like a teacher name
+        if (cellColor && isLikelyTeacherName(cellValue)) {
+          const teacherName = cellValue.trim();
+          if (teacherName && !teacherColorMap[teacherName]) {
+            teacherColorMap[teacherName] = cellColor;
+            console.log(`🎨 Found teacher-color mapping from colored cell: ${teacherName} -> ${cellColor}`);
+          }
+        }
+      }
+    }
+    
+    // Strategy 4: Look for patterns like "Teacher Name: #HEXCODE" or "Teacher Name = Color"
+    for (let row = 0; row < jsonData.length; row++) {
+      const rowData = jsonData[row];
+      if (!rowData) continue;
+      
+      for (let col = 0; col < rowData.length; col++) {
+        const cellValue = rowData[col];
+        if (!cellValue || typeof cellValue !== 'string') continue;
+        
+        // Look for patterns with color codes
+        const colorPatterns = [
+          /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*[:-]\s*#([0-9A-Fa-f]{6})/i,
+          /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*=\s*([a-zA-Z]+)/i,
+          /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*\(([^)]+)\)/i
+        ];
+        
+        for (const pattern of colorPatterns) {
+          const match = cellValue.match(pattern);
+          if (match) {
+            const teacherName = match[1].trim();
+            const colorInfo = match[2].trim();
+            
+            let finalColor = null;
+            if (colorInfo.startsWith('#')) {
+              finalColor = colorInfo;
+            } else {
+              // Try to convert color name to hex
+              finalColor = convertColorNameToHex(colorInfo);
+            }
+            
+            if (finalColor && teacherName && !teacherColorMap[teacherName]) {
+              teacherColorMap[teacherName] = finalColor;
+              console.log(`🎨 Found teacher-color mapping from pattern: ${teacherName} -> ${finalColor}`);
+            }
+          }
+        }
+      }
+    }
+    
+    console.log('📊 Teacher color mappings found:', teacherColorMap);
+  };
+  
+  const findLegendArea = (jsonData: any[][], worksheet: any) => {
+    console.log('🔍 Searching for legend area...');
+    
+    // Look for common legend indicators in the bottom portion of the sheet
+    const startRow = Math.max(0, jsonData.length - 20); // Start from bottom 20 rows
+    const endRow = jsonData.length;
+    
+    for (let row = startRow; row < endRow; row++) {
+      const rowData = jsonData[row];
+      if (!rowData) continue;
+      
+      for (let col = 0; col < rowData.length; col++) {
+        const cellValue = rowData[col];
+        if (cellValue && typeof cellValue === 'string') {
+          const cellText = cellValue.toString().toUpperCase();
+          
+          // Look for legend indicators
+          if (cellText.includes('MEGHAN') || cellText.includes('RYANN') || 
+              cellText.includes('PAIGE') || cellText.includes('GRACIE') ||
+              cellText.includes('CARALIN') || cellText.includes('HUNTER') ||
+              cellText.includes('EMERY')) {
+            console.log(`🎯 Found potential legend area at row ${row}, col ${col}:`, cellValue);
+            return {
+              startRow: Math.max(0, row - 2),
+              endRow: Math.min(jsonData.length, row + 10),
+              startCol: Math.max(0, col - 2),
+              endCol: Math.min(rowData.length, col + 5)
+            };
+          }
+        }
+      }
+    }
+    
+    // If no specific legend found, search the entire right portion
+    console.log('🔍 No specific legend found, searching right portion of sheet...');
+    return {
+      startRow: Math.max(0, jsonData.length - 30),
+      endRow: jsonData.length,
+      startCol: Math.max(0, (jsonData[0]?.length || 0) - 10),
+      endCol: jsonData[0]?.length || 0
+    };
+  };
+  
+  const extractFromLegendArea = (jsonData: any[][], worksheet: any, teacherColorMap: { [key: string]: string }, legendArea: any) => {
+    console.log('🎨 Extracting from legend area:', legendArea);
+    
+    for (let row = legendArea.startRow; row < legendArea.endRow; row++) {
+      const rowData = jsonData[row];
+      if (!rowData) continue;
+      
+      for (let col = legendArea.startCol; col < legendArea.endCol; col++) {
+        const cellValue = rowData[col];
+        if (!cellValue || typeof cellValue !== 'string') continue;
+        
+        const cellText = cellValue.toString().trim();
+        
+        // Check if this looks like a teacher name OR if it contains known instructor names
+        const knownInstructors = ['MEGHAN', 'RYANN', 'PAIGE', 'GRACIE', 'CARALIN', 'HUNTER', 'EMERY'];
+        const isInstructorName = knownInstructors.some(name => cellText.toUpperCase().includes(name));
+        
+        if (isLikelyTeacherName(cellText) || isInstructorName) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          const cellStyle = worksheet[cellAddress]?.s;
+          let cellColor = null;
+          
+          if (cellStyle) {
+            console.log(`🔍 Legend cell ${cellAddress} (${cellText}) style:`, cellStyle);
+            
+            // Try different color properties
+            if (cellStyle.fgColor?.rgb) {
+              cellColor = `#${cellStyle.fgColor.rgb}`;
+              console.log(`🎨 Found foreground color in legend: ${cellText} -> ${cellColor}`);
+            } else if (cellStyle.bgColor?.rgb) {
+              cellColor = `#${cellStyle.bgColor.rgb}`;
+              console.log(`🎨 Found background color in legend: ${cellText} -> ${cellColor}`);
+            } else if (cellStyle.fgColor?.indexed !== undefined) {
+              // Handle indexed colors - convert to RGB if possible
+              const indexedColor = convertIndexedColorToRgb(cellStyle.fgColor.indexed);
+              if (indexedColor) {
+                cellColor = indexedColor;
+                console.log(`🎨 Found indexed foreground color in legend: ${cellText} -> ${cellColor}`);
+              }
+            } else if (cellStyle.bgColor?.indexed !== undefined) {
+              // Handle indexed colors - convert to RGB if possible
+              const indexedColor = convertIndexedColorToRgb(cellStyle.bgColor.indexed);
+              if (indexedColor) {
+                cellColor = indexedColor;
+                console.log(`🎨 Found indexed background color in legend: ${cellText} -> ${cellColor}`);
+              }
+            } else {
+              console.log(`❌ No color found in legend cell ${cellAddress} for ${cellText}`);
+            }
+          } else {
+            console.log(`❌ No style found for legend cell ${cellAddress} (${cellText})`);
+          }
+          
+          // Store the mapping if we found a color
+          if (cellColor && !teacherColorMap[cellText]) {
+            teacherColorMap[cellText] = cellColor;
+            console.log(`✅ Added teacher-color mapping from legend: ${cellText} -> ${cellColor}`);
+          }
+        }
+      }
+    }
+  };
+  
+  const convertIndexedColorToRgb = (colorIndex: number): string | null => {
+    // Basic Excel color palette mapping (simplified)
+    const colorPalette: { [key: number]: string } = {
+      0: '#000000', // Black
+      1: '#FFFFFF', // White
+      2: '#FF0000', // Red
+      3: '#00FF00', // Green
+      4: '#0000FF', // Blue
+      5: '#FFFF00', // Yellow
+      6: '#FF00FF', // Magenta
+      7: '#00FFFF', // Cyan
+      8: '#800000', // Dark Red
+      9: '#008000', // Dark Green
+      10: '#000080', // Dark Blue
+      11: '#808000', // Dark Yellow
+      12: '#800080', // Dark Magenta
+      13: '#008080', // Dark Cyan
+      14: '#C0C0C0', // Light Gray
+      15: '#808080', // Gray
+      16: '#9999FF', // Light Blue
+      17: '#993366', // Dark Pink
+      18: '#FFFFCC', // Light Yellow
+      19: '#CCFFFF', // Light Cyan
+      20: '#660066', // Dark Purple
+      21: '#FF8080', // Light Red
+      22: '#0066CC', // Medium Blue
+      23: '#CCCCFF', // Very Light Blue
+      // Add more colors as needed
+    };
+    
+    const color = colorPalette[colorIndex];
+    if (color) {
+      console.log(`🎨 Converted indexed color ${colorIndex} to ${color}`);
+      return color;
+    }
+    
+    console.log(`❌ Unknown indexed color: ${colorIndex}`);
+    return null;
+  };
+  
+  const extractTeacherNamesFromLegendArea = (jsonData: any[][], worksheet: any, startRow: number, startCol: number, teacherColorMap: { [key: string]: string }) => {
+    // Look in a small area around the legend cell for teacher names with colors
+    const searchRadius = 10;
+    
+    for (let row = Math.max(0, startRow - searchRadius); row < Math.min(jsonData.length, startRow + searchRadius); row++) {
+      const rowData = jsonData[row];
+      if (!rowData) continue;
+      
+      for (let col = Math.max(0, startCol - searchRadius); col < Math.min(rowData.length, startCol + searchRadius); col++) {
+        const cellValue = rowData[col];
+        if (!cellValue || typeof cellValue !== 'string') continue;
+        
+        // Check if this looks like a teacher name
+        if (isLikelyTeacherName(cellValue)) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          const cellStyle = worksheet[cellAddress]?.s;
+          let cellColor = null;
+          
+          if (cellStyle) {
+            if (cellStyle.fgColor?.rgb) {
+              cellColor = `#${cellStyle.fgColor.rgb}`;
+            } else if (cellStyle.bgColor?.rgb) {
+              cellColor = `#${cellStyle.bgColor.rgb}`;
+            }
+          }
+          
+          if (cellColor) {
+            const teacherName = cellValue.trim();
+            if (!teacherColorMap[teacherName]) {
+              teacherColorMap[teacherName] = cellColor;
+              console.log(`🎨 Found teacher-color mapping from legend area: ${teacherName} -> ${cellColor}`);
+            }
+          }
+        }
+      }
+    }
+  };
+  
+  const isLikelyTeacherName = (text: string): boolean => {
+    // Check if text looks like a teacher name
+    const trimmed = text.trim();
+    
+    // Must be 2-50 characters
+    if (trimmed.length < 2 || trimmed.length > 50) return false;
+    
+    // Should contain letters
+    if (!/[a-zA-Z]/.test(trimmed)) return false;
+    
+    // Should not contain numbers or special characters (except spaces, hyphens, apostrophes)
+    if (/[0-9!@#$%^&*()+=\[\]{};:"\\|,.<>?]/.test(trimmed)) return false;
+    
+    // Should not be common non-name words
+    const nonNameWords = ['studio', 'time', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'lesson', 'solo', 'group', 'private', 'rehearsal', 'blocked', 'closed', 'available'];
+    if (nonNameWords.includes(trimmed.toLowerCase())) return false;
+    
+    // Should look like a name (Title Case or similar)
+    const words = trimmed.split(/\s+/);
+    const hasProperCase = words.some(word => /^[A-Z][a-z]/.test(word));
+    
+    return hasProperCase;
+  };
+  
+  const convertColorNameToHex = (colorName: string): string | null => {
+    // Basic color name to hex conversion
+    const colorMap: { [key: string]: string } = {
+      'red': '#FF0000',
+      'green': '#00FF00',
+      'blue': '#0000FF',
+      'yellow': '#FFFF00',
+      'orange': '#FFA500',
+      'purple': '#800080',
+      'pink': '#FFC0CB',
+      'cyan': '#00FFFF',
+      'magenta': '#FF00FF',
+      'lime': '#00FF00',
+      'navy': '#000080',
+      'teal': '#008080',
+      'silver': '#C0C0C0',
+      'gray': '#808080',
+      'grey': '#808080',
+      'black': '#000000',
+      'white': '#FFFFFF'
+    };
+    
+    return colorMap[colorName.toLowerCase()] || null;
+  };
 
-  const extractScheduleFromSheet = (jsonData: any[][]) => {
+  const extractScheduleFromSheet = (jsonData: any[][], worksheet: any) => {
     const schedule: any[] = [];
+    const teacherColorMap: { [key: string]: string } = {};
     
     console.log('🔍 Extracting schedule from sheet with', jsonData.length, 'rows');
+    
+    // First pass: Look for teacher-color mappings in the sheet
+    // This might be in a legend, notes section, or separate area
+    extractTeacherColorMapping(jsonData, worksheet, teacherColorMap);
     
     // Find the day header row (typically row 3 based on the analysis)
     let dayHeaderRowIndex = -1;
     let studioHeaderRowIndex = -1;
+    
+    // Known instructors to filter out from regular schedule
+    const knownInstructors = ['MEGHAN', 'RYANN', 'PAIGE', 'GRACIE', 'CARALIN', 'HUNTER', 'EMERY', 'ARDEN'];
     
     for (let i = 0; i < Math.min(10, jsonData.length); i++) {
       const row = jsonData[i];
@@ -685,7 +1058,29 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       columnMapping.forEach(({ day, studio, colIndex }) => {
         const cellValue = row[colIndex];
         if (cellValue && cellValue.toString().trim() !== '') {
-          const lessons = parseCellValue(cellValue.toString(), studio);
+          // Extract cell color information
+          const cellAddress = XLSX.utils.encode_cell({ r: i, c: colIndex });
+          const cellStyle = worksheet[cellAddress]?.s;
+          let cellColor = null;
+          
+          // Try to extract background color
+          if (cellStyle) {
+            // Check for background color in various formats
+            if (cellStyle.fgColor?.rgb) {
+              cellColor = `#${cellStyle.fgColor.rgb}`;
+            } else if (cellStyle.bgColor?.rgb) {
+              cellColor = `#${cellStyle.bgColor.rgb}`;
+            } else if (cellStyle.fgColor?.indexed) {
+              // Handle indexed colors - this is a simplified approach
+              // You might need to implement a proper color palette lookup
+              const colorIndex = cellStyle.fgColor.indexed;
+              if (colorIndex !== undefined) {
+                console.log(`🎨 Found indexed color: ${colorIndex} for cell ${cellAddress}`);
+              }
+            }
+          }
+          
+          const lessons = parseCellValue(cellValue.toString(), studio, cellColor);
           
           if (lessons.length > 0) {
             schedule.push({
@@ -693,17 +1088,20 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
               day: day,
               lessons: lessons
             });
-            console.log(`✅ Added ${lessons.length} lessons for ${day} ${timeString}`);
+            console.log(`✅ Added ${lessons.length} lessons for ${day} ${timeString}${cellColor ? ` (color: ${cellColor})` : ''}`);
           }
         }
       });
     }
     
     console.log(`📊 Extracted ${schedule.length} total schedule slots`);
-    return schedule;
+    return {
+      schedule,
+      teacherColorMap
+    };
   };
 
-  const parseCellValue = (cellValue: string, studioName?: string): any[] => {
+  const parseCellValue = (cellValue: string, studioName?: string, cellColor?: string | null): any[] => {
     // Split by common delimiters to handle multiple lessons in one cell
     const parts = cellValue.split(/[\n\r]+/).filter(part => part.trim() !== '');
     const lessons: any[] = [];
@@ -718,7 +1116,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
         teacher: extractTeacher(trimmed),
         lesson_type: extractLessonType(trimmed),
         studio: studioName || extractStudio(trimmed),
-        notes: ''
+        notes: '',
+        color: cellColor || null // Add the extracted color to the lesson
       };
       
       lessons.push(lesson);
@@ -756,9 +1155,40 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   };
 
   const extractTeacher = (text: string): string => {
-    // Look for common teacher name patterns
-    const teacherMatch = text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\b/);
-    return teacherMatch ? teacherMatch[1] : '';
+    // The teacher info should be extracted from the cell content
+    // Common patterns:
+    // 1. "StudentName - TeacherName" 
+    // 2. "StudentName (TeacherName)"
+    // 3. "TeacherName: StudentName"
+    // 4. If no pattern found, return empty string (teacher should be determined by color/location)
+    
+    // Pattern 1: Student - Teacher
+    let teacherMatch = text.match(/-.+?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+    if (teacherMatch) {
+      return teacherMatch[1].trim();
+    }
+    
+    // Pattern 2: Student (Teacher)
+    teacherMatch = text.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\)/i);
+    if (teacherMatch) {
+      return teacherMatch[1].trim();
+    }
+    
+    // Pattern 3: Teacher: Student
+    teacherMatch = text.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*:/i);
+    if (teacherMatch) {
+      return teacherMatch[1].trim();
+    }
+    
+    // Pattern 4: Look for "with [Teacher]" or "w/ [Teacher]"
+    teacherMatch = text.match(/(?:with|w\/|w\s)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+    if (teacherMatch) {
+      return teacherMatch[1].trim();
+    }
+    
+    // If no explicit teacher pattern found, return empty string
+    // The teacher should be determined by the cell color or studio mapping
+    return '';
   };
 
   const extractLessonType = (text: string): string => {
@@ -1255,71 +1685,121 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                 </div>
               </div>
               
-              {/* Schedule Grid */}
+              {/* Instructor Color Legend */}
+              <div className="bg-white rounded-lg shadow p-4 mb-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Instructor Colors</h3>
+                <div className="flex flex-wrap gap-3">
+                  {/* Only show teachers that exist in studio_teachers table AND have colors from JSON */}
+                  {currentWeek.teachers && Object.keys(currentWeek.teachers).length > 0 ? (
+                    Object.entries(currentWeek.teachers)
+                      .filter(([teacherName, color]) => {
+                        // Check if this teacher exists in the studio_teachers table with exact or very close matches
+                        const cleanTeacherName = teacherName.toLowerCase().trim();
+                        return teachers.some(teacher => {
+                          const teacherFullName = `${teacher.firstName} ${teacher.lastName}`.toLowerCase().trim();
+                          const teacherDisplayName = teacher.name.toLowerCase().trim();
+                          const teacherFirstName = teacher.firstName.toLowerCase().trim();
+                          const teacherLastName = teacher.lastName.toLowerCase().trim();
+                          
+                          // Exact matches only
+                          return cleanTeacherName === teacherFullName ||
+                                 cleanTeacherName === teacherDisplayName ||
+                                 cleanTeacherName === teacherFirstName ||
+                                 cleanTeacherName === teacherLastName;
+                        });
+                      })
+                      .sort(([a], [b]) => a.localeCompare(b))
+                      .map(([teacher, color]) => (
+                        <div key={teacher} className="flex items-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded border"
+                            style={{ backgroundColor: color }}
+                            title={`${teacher}: ${color}`}
+                          ></div>
+                          <span className="text-sm text-gray-700">{teacher}</span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-sm text-gray-500 italic">
+                      No instructor colors available. Upload an Excel schedule to see color legend.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Schedule Grid using Table with Sticky */}
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="overflow-auto max-h-[600px] relative">
+                  <table className="border-collapse" style={{ width: `${Math.max(1400, 120 + (days.length * (currentWeek.studios?.length || 3) * 144))}px`, minWidth: `${Math.max(1400, 120 + (days.length * (currentWeek.studios?.length || 3) * 144))}px` }}>
+                    <thead>
+                      {/* Day Header Row */}
+                      <tr className="sticky top-0 z-20 bg-gray-50">
+                        <th className="w-24 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 sticky left-0 z-30 bg-gray-50">
                           Time
                         </th>
                         {days.map(day => (
-                          <th key={day} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th key={day} colSpan={currentWeek.studios?.length || 3} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 bg-gray-50">
                             {day}
                           </th>
                         ))}
                       </tr>
+                      {/* Studio Sub-Header Row */}
+                      <tr className="sticky top-[49px] z-20 bg-gray-50">
+                        <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 sticky left-0 z-30 bg-gray-50">
+                          {/* Empty */}
+                        </th>
+                        {days.map(day =>
+                          (currentWeek.studios || ['Studio 1', 'Studio 2', 'Studio 3']).map(studio => (
+                            <th key={`${day}-${studio}`} className="w-36 px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300 bg-gray-50">
+                              {studio}
+                            </th>
+                          ))
+                        )}
+                      </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white">
                       {timeSlots.map(time => (
                         <tr key={time}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="w-24 px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-300 bg-gray-50 sticky left-0 z-10">
                             {time}
                           </td>
-                          {days.map(day => {
-                            // Convert time to 24-hour format for comparison
-                            const time24 = formatTime24(time);
-                            const slot = currentWeek.slots.find(s => {
-                              const dayMatch = s.day.toUpperCase() === day.toUpperCase();
-                              const timeMatch = s.time === time24 || formatTime(s.time) === time;
-                              return dayMatch && timeMatch;
-                            });
-                            
-                            return (
-                              <td key={`${day}-${time}`} className="px-6 py-4 whitespace-nowrap">
-                                {slot ? (
-                                  <div 
-                                    className="border rounded-lg p-2 text-white" 
-                                    style={{
-                                      backgroundColor: slot.teacherColor ? `#${slot.teacherColor}` : '#3B82F6',
-                                      borderColor: slot.teacherColor ? `#${slot.teacherColor}` : '#2563EB'
-                                    }}
-                                  >
-                                    <div className="text-sm font-medium">{slot.studentName}</div>
-                                    <div className="text-xs opacity-90">{slot.teacher}</div>
-                                    <div className="text-xs opacity-75">{slot.studio}</div>
-                                    <div className="text-xs opacity-75">{slot.lessonType}</div>
-                                    <div className="flex gap-1 mt-1">
-                                      <button
-                                        onClick={() => alert(`Student: ${slot.studentName}\nTeacher: ${slot.teacher}\nStudio: ${slot.studio}\nType: ${slot.lessonType}\nStatus: ${slot.status}`)}
-                                        className="text-xs text-white hover:opacity-80"
-                                      >
-                                        Details
-                                      </button>
+                          {days.map(day =>
+                            (currentWeek.studios || ['Studio 1', 'Studio 2', 'Studio 3']).map(studio => {
+                              const time24 = formatTime24(time);
+                              const slot = currentWeek.slots.find(s => {
+                                if (!s || !s.day || !s.time) return false;
+                                const dayMatch = s.day.toUpperCase() === day.toUpperCase();
+                                const timeMatch = s.time === time24 || formatTime(s.time) === time;
+                                const studioMatch = s.studio === studio;
+                                return dayMatch && timeMatch && studioMatch;
+                              });
+                              
+                              return (
+                                <td key={`${day}-${studio}-${time}`} className="w-36 px-2 py-2 border border-gray-300 relative h-16">
+                                  {slot ? (
+                                    <div
+                                      className="rounded p-1 text-black text-xs h-full flex flex-col justify-center cursor-pointer hover:opacity-90 transition-opacity"
+                                      style={{
+                                        backgroundColor: slot.color || getFallbackColor(slot.teacher),
+                                        borderLeft: `4px solid ${slot.color || getFallbackColor(slot.teacher)}`
+                                      }}
+                                      onClick={() => alert(`Student: ${slot.studentName}\nTeacher: ${slot.teacher}\nStudio: ${slot.studio}\nType: ${slot.lessonType}\nStatus: ${slot.status}${slot.color ? `\nColor: ${slot.color}` : ''}`)}
+                                    >
+                                      <div className="font-medium truncate">{slot.studentName}</div>
+                                      <div className="opacity-75 truncate">{slot.lessonType}</div>
                                     </div>
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => handleAddScheduleSlot(day, time)}
-                                    className="w-full h-12 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-sm text-gray-500 hover:text-blue-600"
-                                  >
-                                    + Add Lesson
-                                  </button>
-                                )}
-                              </td>
-                            );
-                          })}
+                                  ) : (
+                                    <button
+                                      onClick={() => handleAddScheduleSlot(day, time, studio)}
+                                      className="w-full h-full border-2 border-dashed border-gray-300 rounded hover:border-blue-400 hover:bg-blue-50 transition-colors text-xs text-gray-500 hover:text-blue-600"
+                                    >
+                                      +
+                                    </button>
+                                  )}
+                                </td>
+                              );
+                            })
+                          )}
                         </tr>
                       ))}
                     </tbody>

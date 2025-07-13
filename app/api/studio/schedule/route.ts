@@ -76,19 +76,20 @@ export async function GET(request: NextRequest) {
     // Transform the JSON data to the expected schedule format
     const slots: any[] = [];
     
-    weekData.schedule?.forEach((timeSlot: TimeSlot) => {
-      timeSlot.lessons?.forEach((lesson: Lesson, index: number) => {
+    weekData.schedule?.forEach((timeSlot: any) => {
+      timeSlot.lessons?.forEach((lesson: any, index: number) => {
         slots.push({
-          id: `${row.lessonid}_${timeSlot.time_slot}_${index}`,
-          day: lesson.day,
-          time: timeSlot.time_slot,
-          studentName: lesson.student_name,
-          lessonType: lesson.lesson_type || 'Private',
-          teacher: lesson.teacher,
-          teacherColor: lesson.teacher_color,
-          studio: lesson.studio,
-          status: lesson.status,
-          notes: ''
+          id: `${row.lessonid}_${timeSlot.time}_${lesson.student_info}_${index}`,
+          day: timeSlot.day,
+          time: timeSlot.time,
+          studentName: lesson.student_info,
+          lessonType: lesson.lesson_type || 'Solo',
+          teacher: lesson.teacher || '',
+          teacherColor: lesson.teacher_color || '#6B7280',
+          studio: lesson.studio || 'Studio 1',
+          status: lesson.status || 'Scheduled',
+          notes: lesson.notes || '',
+          color: lesson.color || ''
         });
       });
     });
