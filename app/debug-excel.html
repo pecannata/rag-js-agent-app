@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel File Analysis Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        .file-input {
+            margin: 10px 0;
+        }
+        .analyze-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .analyze-btn:hover {
+            background-color: #0056b3;
+        }
+        .analyze-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        .sheet-analysis {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .sheet-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .sheet-content {
+            padding: 15px;
+            display: none;
+        }
+        .section {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+        }
+        .section h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        pre {
+            background-color: #f1f3f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Excel File Analysis Debug Tool</h1>
+        <p>Upload your Excel schedule file to analyze its structure and identify parsing issues.</p>
+        
+        <div class="upload-area">
+            <p>📁 Select your Excel file (.xlsx or .xls)</p>
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+            <br>
+            <button id="analyzeBtn" class="analyze-btn" onclick="analyzeFile()" disabled>
+                🔬 Analyze File Structure
+            </button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <p>🔄 Analyzing Excel file structure...</p>
+        </div>
+        
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="success" class="success" style="display:none;"></div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            analyzeBtn.disabled = !file;
+            
+            if (file) {
+                analyzeBtn.textContent = `🔬 Analyze "${file.name}"`;
+            } else {
+                analyzeBtn.textContent = '🔬 Analyze File Structure';
+            }
+        });
+
+        async function analyzeFile() {
+            const file = fileInput.files[0];
+            if (!file) {
+                showError('Please select a file first.');
+                return;
+            }
+
+            hideMessages();
+            loading.style.display = 'block';
+            analyzeBtn.disabled = true;
+            results.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/debug/excel-analysis', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || errorData.error || `HTTP ${response.status}`);
+                }
+
+                const analysis = await response.json();
+                displayAnalysis(analysis);
+                showSuccess(`Successfully analyzed "${file.name}"!`);
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError(`Failed to analyze file: ${error.message}`);
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayAnalysis(analysis) {
+            let html = `
+                <h2>📊 Analysis Results for "${analysis.fileName}"</h2>
+                <div class="section">
+                    <h4>📋 File Overview</h4>
+                    <p><strong>File Size:</strong> ${(analysis.fileSize / 1024).toFixed(1)} KB</p>
+                    <p><strong>Sheet Count:</strong> ${analysis.sheetNames.length}</p>
+                    <p><strong>Sheet Names:</strong> ${analysis.sheetNames.join(', ')}</p>
+                </div>
+            `;
+
+            Object.entries(analysis.sheets).forEach(([sheetName, sheetData]) => {
+                html += `
+                    <div class="sheet-analysis">
+                        <div class="sheet-header" onclick="toggleSheet('${sheetName}')">
+                            📄 Sheet: "${sheetName}" (${sheetData.rowCount} rows)
+                        </div>
+                        <div id="sheet-${sheetName}" class="sheet-content">
+                            <div class="section">
+                                <h4>🏗️ Structure</h4>
+                                <p><strong>Total Rows:</strong> ${sheetData.rowCount}</p>
+                                <p><strong>Range:</strong> ${sheetData.range}</p>
+                            </div>
+                            
+                            <div class="section">
+                                <h4>📋 Header Analysis</h4>
+                                <p><strong>Time Columns Found:</strong> ${sheetData.headerAnalysis.timeColumnIndices.join(', ') || 'None'}</p>
+                                <p><strong>Day Mappings:</strong></p>
+                                <pre>${JSON.stringify(sheetData.headerAnalysis.dayColumnMappings, null, 2)}</pre>
+                            </div>
+                            
+                            <div class="section">
+                                <h4>📊 Content Analysis</h4>
+                                <p><strong>Non-empty Rows:</strong> ${sheetData.contentAnalysis.totalNonEmptyRows}</p>
+                                <p><strong>Potential Time Slots:</strong> ${sheetData.contentAnalysis.potentialTimeSlots.length}</p>
+                                <p><strong>Student Name Patterns:</strong> ${sheetData.contentAnalysis.studentNamePatterns.length}</p>
+                                <p><strong>Lesson Type Patterns:</strong> ${sheetData.contentAnalysis.lessonTypePatterns.length}</p>
+                            </div>
+                            
+                            <div class="section">
+                                <h4>🗓️ Schedule Data Patterns</h4>
+                                <p><strong>Time in First Column:</strong> ${sheetData.potentialScheduleData.patterns.timeInFirstColumn ? '✅ Yes' : '❌ No'}</p>
+                                <p><strong>Multiple Entries Per Cell:</strong> ${sheetData.potentialScheduleData.patterns.multipleEntriesPerCell ? '✅ Yes' : '❌ No'}</p>
+                                <p><strong>Likely Schedule Rows:</strong> ${sheetData.potentialScheduleData.likelyScheduleRows.length}</p>
+                            </div>
+                            
+                            <div class="section">
+                                <h4>🔍 First 15 Rows (Raw Data)</h4>
+                                <pre>${JSON.stringify(sheetData.firstFewRows, null, 2)}</pre>
+                            </div>
+                            
+                            ${sheetData.potentialScheduleData.likelyScheduleRows.length > 0 ? `
+                            <div class="section">
+                                <h4>📅 Detected Schedule Rows</h4>
+                                <pre>${JSON.stringify(sheetData.potentialScheduleData.likelyScheduleRows.slice(0, 5), null, 2)}</pre>
+                            </div>
+                            ` : ''}
+                            
+                            ${sheetData.contentAnalysis.studentNamePatterns.length > 0 ? `
+                            <div class="section">
+                                <h4>👥 Student Name Patterns</h4>
+                                <pre>${JSON.stringify(sheetData.contentAnalysis.studentNamePatterns.slice(0, 10), null, 2)}</pre>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            results.innerHTML = html;
+            results.style.display = 'block';
+        }
+
+        function toggleSheet(sheetName) {
+            const content = document.getElementById(`sheet-${sheetName}`);
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

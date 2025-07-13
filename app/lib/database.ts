@@ -1,5 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 const execAsync = promisify(exec);
 
@@ -11,44 +13,117 @@ const execAsync = promisify(exec);
  */
 export async function executeQuery(sqlQuery: string, params: any[] = []): Promise<any[]> {
   try {
-    // Process parameterized queries by replacing ? with actual values
     let processedQuery = sqlQuery;
+    
     if (params && params.length > 0) {
       let paramIndex = 0;
-      processedQuery = sqlQuery.replace(/\?/g, () => {
-        if (paramIndex < params.length) {
-          const param = params[paramIndex++];
-          // Handle different parameter types
-          if (param === null || param === undefined) {
-            return 'NULL';
-          } else if (typeof param === 'string') {
-            // Escape single quotes for SQL safety
-            return `'${param.replace(/'/g, "''")}'`;
-          } else if (typeof param === 'number') {
-            return param.toString();
-          } else if (typeof param === 'boolean') {
-            return param ? '1' : '0';
-          } else {
-            return `'${String(param).replace(/'/g, "''")}'`;
-          }
+      let hasLargeStrings = false;
+      let clobVariables: string[] = [];
+      
+      // First pass: identify large strings and prepare CLOB variables
+      const processedParams = params.map((param, index) => {
+        if (typeof param === 'string' && param.length > 4000) {
+          hasLargeStrings = true;
+          const varName = `v_clob_${index}`;
+          clobVariables.push(`${varName} CLOB := '${param.replace(/'/g, "''")}'`);
+          return varName;
         }
-        return '?'; // Leave unmatched placeholders as-is
+        return param;
       });
+      
+      // If we have large strings, use Oracle's XMLType to handle them
+      if (hasLargeStrings) {
+        processedQuery = sqlQuery.replace(/\?/g, () => {
+          if (paramIndex < processedParams.length) {
+            const param = processedParams[paramIndex++];
+            if (typeof param === 'string' && param.startsWith('v_clob_')) {
+              const originalParam = params[paramIndex - 1];
+              if (typeof originalParam === 'string' && originalParam.length > 4000) {
+                // Use XMLType to handle large strings
+                const base64Data = Buffer.from(originalParam).toString('base64');
+                return `XMLType('<![CDATA[' || UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_DECODE(UTL_RAW.CAST_TO_RAW('${base64Data}'))) || ']]>').getClobVal()`;
+              }
+            }
+            // Handle other parameter types
+            if (param === null || param === undefined) {
+              return 'NULL';
+            } else if (typeof param === 'string') {
+              return `'${param.replace(/'/g, "''")}'`;
+            } else if (typeof param === 'number') {
+              return param.toString();
+            } else if (typeof param === 'boolean') {
+              return param ? '1' : '0';
+            } else {
+              const stringParam = String(param);
+              return `'${stringParam.replace(/'/g, "''")}'`;
+            }
+          }
+          return '?';
+        });
+      } else {
+        // Normal parameter replacement for smaller strings
+        processedQuery = sqlQuery.replace(/\?/g, () => {
+          if (paramIndex < params.length) {
+            const param = params[paramIndex++];
+            // Handle different parameter types
+            if (param === null || param === undefined) {
+              return 'NULL';
+            } else if (typeof param === 'string') {
+              // Escape single quotes for SQL safety
+              return `'${param.replace(/'/g, "''")}'`;
+            } else if (typeof param === 'number') {
+              return param.toString();
+            } else if (typeof param === 'boolean') {
+              return param ? '1' : '0';
+            } else {
+              const stringParam = String(param);
+              return `'${stringParam.replace(/'/g, "''")}'`;
+            }
+          }
+          return '?'; // Leave unmatched placeholders as-is
+        });
+      }
     }
     
-    console.log('🔍 Executing Oracle Database Query:', processedQuery);
+    console.log('🔍 Executing Oracle Database Query (first 500 chars):', processedQuery.substring(0, 500));
+    console.log('📊 Query length:', processedQuery.length);
+    console.log('📝 Original params count:', params.length);
     
-    // Execute the SQLclScript.sh with the SQL query
-    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${processedQuery.replace(/"/g, '\\"')}"`);
+    // Log parameter info without exposing full content
+    params.forEach((param, index) => {
+      const paramType = typeof param;
+      const paramLength = param ? String(param).length : 0;
+      console.log(`   Param ${index}: ${paramType}, length: ${paramLength}`);
+    });
+    
+    // Always use SQLclScript.sh regardless of query size
+    const command = `bash ./SQLclScript.sh "${processedQuery.replace(/"/g, '\\"')}"`;
+    console.log('🚀 Executing command (first 200 chars):', command.substring(0, 200));
+    console.log('📊 Query length:', processedQuery.length);
+    
+    const result = await execAsync(command);
+    const stdout = result.stdout;
+    const stderr = result.stderr;
     
     if (stderr) {
       console.error('❌ Database query error:', stderr);
+      console.error('❌ Failed query (first 500 chars):', processedQuery.substring(0, 500));
       throw new Error(`Database error: ${stderr}`);
     }
     
     console.log('✅ Database query executed successfully');
+    console.log('📤 Output length:', stdout.length);
+    console.log('📤 Raw output:', JSON.stringify(stdout));
     
-    // Parse JSON response
+    // Check if this is an INSERT/UPDATE/DELETE query that doesn't return data
+    const isModifyingQuery = /^\s*(INSERT|UPDATE|DELETE|COMMIT|ROLLBACK)/i.test(processedQuery.trim());
+    
+    if (isModifyingQuery) {
+      console.log('🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator');
+      return [{ success: true, operation: 'modify', output: stdout.trim() }];
+    }
+    
+    // Parse JSON response for SELECT queries
     try {
       const jsonData = JSON.parse(stdout);
       

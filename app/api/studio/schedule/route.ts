@@ -2,6 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { executeQuery } from '../../../lib/database';
 
+interface Lesson {
+  day: string;
+  date: string;
+  studio: string;
+  student_name: string;
+  teacher_color: string;
+  teacher: string;
+  lesson_type: string;
+  status: string;
+}
+
+interface TimeSlot {
+  time_slot: string;
+  lessons: Lesson[];
+}
+
+interface WeekData {
+  week_info: {
+    sheet_name: string;
+    week_identifier: string;
+  };
+  teachers: Record<string, string>;
+  studios: string[];
+  schedule: TimeSlot[];
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession();
@@ -14,70 +40,66 @@ export async function GET(request: NextRequest) {
 
     let query = `
       SELECT 
-        ws.SCHEDULE_ID as scheduleId,
-        TO_CHAR(ws.WEEK_START_DATE, 'YYYY-MM-DD') as weekOf,
-        ss.SLOT_ID as id,
-        ss.DAY_OF_WEEK as day,
-        ss.TIME_SLOT as time,
-        ss.LESSON_TYPE as lessonType,
-        ss.NOTES as notes,
-        ss.STUDENT_ID as studentId,
-        s.STUDENT_NAME as studentName
-      FROM STUDIO_WEEKLY_SCHEDULES ws
-      LEFT JOIN STUDIO_SCHEDULE_SLOTS ss ON ws.SCHEDULE_ID = ss.SCHEDULE_ID AND ss.STATUS = 'ACTIVE'
-      LEFT JOIN STUDIO_STUDENTS s ON ss.STUDENT_ID = s.STUDENT_ID
-      WHERE ws.STATUS = 'ACTIVE'
+        TO_CHAR(WEEK_START_DATE, 'YYYY-MM-DD') as weekOf,
+        LESSON_ID as lessonId,
+        FULL_WEEK_JSON as weekData
+      FROM STUDIO_PRIVATE_LESSONS
     `;
 
     const params: any[] = [];
     if (weekStart) {
-      query += ` AND ws.WEEK_START_DATE = TO_DATE(?, 'YYYY-MM-DD')`;
+      query += ` WHERE WEEK_START_DATE = TO_DATE(?, 'YYYY-MM-DD')`;
       params.push(weekStart);
     } else {
-      // Default to current week
-      query += ` AND ws.WEEK_START_DATE = TRUNC(SYSDATE, 'IW')`;
+      // Default to most recent week
+      query += ` ORDER BY WEEK_START_DATE DESC`;
     }
-
-    query += ` ORDER BY ws.WEEK_START_DATE, ss.DAY_OF_WEEK, ss.TIME_SLOT`;
 
     const result = await executeQuery(query, params);
     
-    // Group by week and transform to expected format
-    const scheduleMap = new Map();
-    
-    result.forEach((row: any) => {
-      const weekKey = row.weekof || weekStart;
-      if (!scheduleMap.has(weekKey)) {
-        scheduleMap.set(weekKey, {
-          weekOf: weekKey,
-          slots: []
-        });
-      }
-      
-      if (row.id) {
-        scheduleMap.get(weekKey).slots.push({
-          id: row.id?.toString(),
-          day: row.day,
-          time: row.time,
-          studentName: row.studentname || '',
-          lessonType: row.lessontype || 'Solo',
-          notes: row.notes || ''
-        });
-      }
-    });
-
-    // If no schedule exists for the requested week, create an empty one
-    if (scheduleMap.size === 0 && weekStart) {
+    if (result.length === 0) {
+      // If no schedule exists for the requested week, return empty schedule
       return NextResponse.json({
-        weekOf: weekStart,
-        slots: []
+        weekOf: weekStart || new Date().toISOString().split('T')[0],
+        slots: [],
+        teachers: {},
+        studios: []
       });
     }
 
-    // Return the first (and typically only) schedule
-    const schedule = Array.from(scheduleMap.values())[0] || {
-      weekOf: weekStart || new Date().toISOString().split('T')[0],
-      slots: []
+    // Get the first result (should only be one per week)
+    const row = result[0];
+    const weekData: WeekData = typeof row.weekdata === 'string' 
+      ? JSON.parse(row.weekdata) 
+      : row.weekdata;
+
+    // Transform the JSON data to the expected schedule format
+    const slots: any[] = [];
+    
+    weekData.schedule?.forEach((timeSlot: TimeSlot) => {
+      timeSlot.lessons?.forEach((lesson: Lesson, index: number) => {
+        slots.push({
+          id: `${row.lessonid}_${timeSlot.time_slot}_${index}`,
+          day: lesson.day,
+          time: timeSlot.time_slot,
+          studentName: lesson.student_name,
+          lessonType: lesson.lesson_type || 'Private',
+          teacher: lesson.teacher,
+          teacherColor: lesson.teacher_color,
+          studio: lesson.studio,
+          status: lesson.status,
+          notes: ''
+        });
+      });
+    });
+
+    const schedule = {
+      weekOf: row.weekof,
+      lessonId: row.lessonid,
+      slots: slots,
+      teachers: weekData.teachers || {},
+      studios: weekData.studios || [],
+      weekInfo: weekData.week_info || {}
     };
 
     return NextResponse.json(schedule);

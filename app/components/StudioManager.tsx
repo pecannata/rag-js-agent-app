@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
 interface Student {
   id: string;
@@ -28,12 +29,23 @@ interface ScheduleSlot {
   time: string;
   studentName: string;
   lessonType: string;
+  teacher?: string;
+  teacherColor?: string;
+  studio?: string;
+  status?: string;
   notes: string;
 }
 
 interface WeekSchedule {
   weekOf: string;
+  lessonId?: string;
   slots: ScheduleSlot[];
+  teachers?: Record<string, string>;
+  studios?: string[];
+  weekInfo?: {
+    sheet_name: string;
+    week_identifier: string;
+  };
 }
 
 interface Teacher {
@@ -57,14 +69,43 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [currentWeek, setCurrentWeek] = useState<WeekSchedule>({
-    weekOf: new Date().toISOString().split('T')[0],
+    weekOf: '2025-06-09', // Default to the available week
     slots: []
   });
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [availableWeeks, setAvailableWeeks] = useState<{ weekStart: string; formattedDate: string }[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
+  // File input ref for Excel upload
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Helper function to convert 24-hour time to 12-hour format
+  const formatTime = (time24: string) => {
+    if (!time24) return time24;
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // Helper function to convert 12-hour time to 24-hour format
+  const formatTime24 = (time12: string) => {
+    if (!time12) return time12;
+    const [time, period] = time12.split(' ');
+    const [hours, minutes] = time.split(':');
+    let hour = parseInt(hours);
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    return `${hour.toString().padStart(2, '0')}:${minutes}:00`;
+  };
 
   // Time slots for scheduling
   const timeSlots = [
@@ -76,12 +117,78 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  // Helper function to group weeks by month
+  const getWeeksByMonth = () => {
+    const weeksByMonth: { [key: string]: { weekStart: string; formattedDate: string }[] } = {};
+    
+    availableWeeks.forEach(week => {
+      const weekDate = new Date(week.weekStart);
+      const monthYear = weekDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      
+      if (!weeksByMonth[monthYear]) {
+        weeksByMonth[monthYear] = [];
+      }
+      weeksByMonth[monthYear].push(week);
+    });
+    
+    // Sort months chronologically
+    const sortedMonths = Object.keys(weeksByMonth).sort((a, b) => {
+      const dateA = new Date(a + ' 1');
+      const dateB = new Date(b + ' 1');
+      return dateA.getTime() - dateB.getTime();
+    });
+    
+    const result: { [key: string]: { weekStart: string; formattedDate: string }[] } = {};
+    sortedMonths.forEach(month => {
+      result[month] = weeksByMonth[month].sort((a, b) => 
+        new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime()
+      );
+    });
+    
+    return result;
+  };
+
+  // Helper function to get the month of the current selected week
+  const getCurrentWeekMonth = () => {
+    if (!currentWeek.weekOf) return '';
+    const weekDate = new Date(currentWeek.weekOf);
+    return weekDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  };
+
+  // Get filtered weeks for the selected month
+  const getWeeksForSelectedMonth = () => {
+    if (!selectedMonth) return [];
+    const weeksByMonth = getWeeksByMonth();
+    return weeksByMonth[selectedMonth] || [];
+  };
+
+  // Update selected month when available weeks change or on initial load
+  useEffect(() => {
+    if (availableWeeks.length > 0 && currentWeek.weekOf) {
+      const currentMonth = getCurrentWeekMonth();
+      if (currentMonth && !selectedMonth) {
+        setSelectedMonth(currentMonth);
+      }
+    }
+  }, [availableWeeks, currentWeek.weekOf]);
+
+  // Handle month selection change
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
+    const weeksByMonth = getWeeksByMonth();
+    const weeksInMonth = weeksByMonth[month];
+    if (weeksInMonth && weeksInMonth.length > 0) {
+      // Set to first week in the selected month
+      setCurrentWeek(prev => ({ ...prev, weekOf: weeksInMonth[0].weekStart }));
+    }
+  };
+
   // Load data from database
   useEffect(() => {
     loadStudents();
     loadSchedule();
     loadTeachers();
-    loadAnalytics();
+    loadAvailableWeeks();
   }, []);
 
   const loadStudents = async () => {
@@ -120,24 +227,36 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       const response = await fetch(url.toString());
       if (response.ok) {
         const scheduleData = await response.json();
-        setCurrentWeek(scheduleData);
+        // Preserve the user's selected week, only update the schedule data
+        setCurrentWeek(prev => ({
+          ...scheduleData,
+          weekOf: prev.weekOf // Keep the user's selected week
+        }));
       }
     } catch (error) {
       console.error('Error loading schedule:', error);
     }
   };
 
-  const loadAnalytics = async () => {
+  const loadAvailableWeeks = async () => {
     try {
-      const response = await fetch('/api/studio/analytics');
+      const response = await fetch('/api/studio/available-weeks');
       if (response.ok) {
-        const analyticsData = await response.json();
-        // Store analytics data in state if needed
+        const weeksData = await response.json();
+        setAvailableWeeks(weeksData);
+        // Only set the first available week as default during initial load
+        // or if the current week is not in the available weeks list
+        if (isInitialLoad && weeksData.length > 0) {
+          setCurrentWeek(prev => ({ ...prev, weekOf: weeksData[0].weekStart }));
+          setIsInitialLoad(false);
+        }
       }
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      console.error('Error loading available weeks:', error);
     }
   };
+
+
 
   // Reload students when search term changes
   useEffect(() => {
@@ -363,41 +482,332 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     student.parentLastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const [analytics, setAnalytics] = useState({
-    totalStudents: 0,
-    classEnrollment: {
-      auditionPrep: 0,
-      techniqueIntensive: 0,
-      balletIntensive: 0,
-      masterIntensive: 0
-    },
-    ageGroups: {
-      minis: 0,
-      juniors: 0,
-      teens: 0,
-      seniors: 0
-    },
-    totalLessons: 0
-  });
 
-  const getAnalytics = async () => {
+
+
+  // Excel upload and processing functionality
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    console.log('📁 Selected file:', file.name, 'Size:', file.size, 'Type:', file.type);
+    setIsUploading(true);
+    setUploadStatus('Reading Excel file...');
+    
     try {
-      const response = await fetch('/api/studio/analytics');
-      if (response.ok) {
-        const analyticsData = await response.json();
-        setAnalytics(analyticsData);
-        return analyticsData;
-      }
+      const data = await file.arrayBuffer();
+      console.log('📖 File read successfully, size:', data.byteLength);
+      await processExcelFile(data, file.name);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error('❌ Error processing Excel file:', error);
+      setUploadStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
-    return analytics;
   };
 
-  // Update analytics when students or schedule changes
-  useEffect(() => {
-    getAnalytics();
-  }, [students, currentWeek.slots]);
+  const processExcelFile = async (data: ArrayBuffer, fileName: string) => {
+    setUploadStatus('Parsing Excel sheets...');
+    
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetNames = workbook.SheetNames;
+    
+    setUploadStatus(`Found ${sheetNames.length} sheets. Processing...`);
+    
+    for (let i = 0; i < sheetNames.length; i++) {
+      const sheetName = sheetNames[i];
+      setUploadStatus(`Processing sheet ${i + 1}/${sheetNames.length}: ${sheetName}`);
+      
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+      
+      // Skip empty sheets
+      if (jsonData.length === 0) continue;
+      
+      // Process the sheet data
+      await processSheetData(sheetName, jsonData, fileName);
+    }
+    
+    setUploadStatus('Upload completed! Refreshing data...');
+    
+    // Refresh all data
+    await Promise.all([
+      loadStudents(),
+      loadTeachers(),
+      loadSchedule(),
+      loadAvailableWeeks()
+    ]);
+    
+    setUploadStatus('Excel file processed successfully!');
+    
+    // Clear status after a delay
+    setTimeout(() => {
+      setUploadStatus('');
+    }, 3000);
+  };
+
+  const processSheetData = async (sheetName: string, jsonData: any[][], fileName: string) => {
+    try {
+      console.log(`📊 Processing sheet "${sheetName}" with ${jsonData.length} rows`);
+      
+      // Create the schedule data structure
+      const scheduleData = {
+        week_info: {
+          sheet_name: sheetName,
+          week_identifier: `${new Date().toISOString().split('T')[0]}-${sheetName}`,
+          source_file: fileName
+        },
+        schedule: extractScheduleFromSheet(jsonData)
+      };
+      
+      console.log(`📤 Sending ${scheduleData.schedule.length} schedule slots to server for sheet "${sheetName}"`);
+      
+      // Send to backend API to process and store
+      const response = await fetch('/api/studio/upload-schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scheduleData),
+      });
+      
+      if (!response.ok) {
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.details || errorData.error || `HTTP ${response.status}`;
+          console.error(`❌ Server error for sheet "${sheetName}":`, errorData);
+        } catch (parseError) {
+          console.error(`❌ Could not parse error response for sheet "${sheetName}":`, parseError);
+          errorDetails = `HTTP ${response.status} ${response.statusText}`;
+        }
+        throw new Error(`Failed to upload sheet "${sheetName}": ${errorDetails}`);
+      }
+      
+      const result = await response.json();
+      console.log(`✅ Successfully uploaded sheet "${sheetName}":`, result);
+      
+    } catch (error) {
+      console.error(`❌ Error processing sheet "${sheetName}":`, error);
+      throw error;
+    }
+  };
+
+  const extractScheduleFromSheet = (jsonData: any[][]) => {
+    const schedule: any[] = [];
+    
+    console.log('🔍 Extracting schedule from sheet with', jsonData.length, 'rows');
+    
+    // Find the day header row (typically row 3 based on the analysis)
+    let dayHeaderRowIndex = -1;
+    let studioHeaderRowIndex = -1;
+    
+    for (let i = 0; i < Math.min(10, jsonData.length); i++) {
+      const row = jsonData[i];
+      if (row) {
+        // Look for day names in the row
+        const hasdays = row.some(cell => 
+          cell && typeof cell === 'string' && 
+          ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+            .some(day => cell.toString().toUpperCase().includes(day))
+        );
+        if (hasdays && dayHeaderRowIndex === -1) {
+          dayHeaderRowIndex = i;
+          console.log('📅 Found day header row at index:', i);
+        }
+        
+        // Look for studio information
+        const hasStudios = row.some(cell => 
+          cell && typeof cell === 'string' && 
+          cell.toString().toUpperCase().includes('STUDIO')
+        );
+        if (hasStudios && studioHeaderRowIndex === -1) {
+          studioHeaderRowIndex = i;
+          console.log('🏢 Found studio header row at index:', i);
+        }
+      }
+    }
+    
+    if (dayHeaderRowIndex === -1) {
+      console.warn('⚠️ Could not find day header row in sheet');
+      return schedule;
+    }
+    
+    // Build column mapping for days and studios
+    const dayRow = jsonData[dayHeaderRowIndex];
+    const studioRow = studioHeaderRowIndex !== -1 ? jsonData[studioHeaderRowIndex] : [];
+    
+    const columnMapping: { day: string; studio: string; colIndex: number }[] = [];
+    
+    for (let col = 0; col < dayRow.length; col++) {
+      const dayCell = dayRow[col];
+      const studioCell = studioRow[col];
+      
+      if (dayCell && typeof dayCell === 'string') {
+        const dayName = dayCell.toString().toUpperCase();
+        const studioName = studioCell && typeof studioCell === 'string' 
+          ? studioCell.toString().trim() 
+          : 'Studio A';
+        
+        if (['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].includes(dayName)) {
+          columnMapping.push({
+            day: dayName.charAt(0) + dayName.slice(1).toLowerCase(),
+            studio: studioName,
+            colIndex: col
+          });
+        }
+      }
+    }
+    
+    console.log('🗺️ Column mapping:', columnMapping);
+    
+    // Process data rows starting after headers
+    const startRow = Math.max(dayHeaderRowIndex, studioHeaderRowIndex) + 1;
+    for (let i = startRow; i < jsonData.length; i++) {
+      const row = jsonData[i];
+      if (!row || !row[1]) continue; // Time is in column 1 (B)
+      
+      const timeValue = row[1]; // Time is in column B (index 1)
+      if (timeValue === null || timeValue === undefined) continue;
+      
+      // Convert Excel time decimal to time string
+      const timeString = convertExcelTimeToString(timeValue);
+      if (!timeString) continue;
+      
+      console.log(`⏰ Processing time slot: ${timeString} (row ${i})`);
+      
+      // Check each mapped column for lessons
+      columnMapping.forEach(({ day, studio, colIndex }) => {
+        const cellValue = row[colIndex];
+        if (cellValue && cellValue.toString().trim() !== '') {
+          const lessons = parseCellValue(cellValue.toString(), studio);
+          
+          if (lessons.length > 0) {
+            schedule.push({
+              time: timeString,
+              day: day,
+              lessons: lessons
+            });
+            console.log(`✅ Added ${lessons.length} lessons for ${day} ${timeString}`);
+          }
+        }
+      });
+    }
+    
+    console.log(`📊 Extracted ${schedule.length} total schedule slots`);
+    return schedule;
+  };
+
+  const parseCellValue = (cellValue: string, studioName?: string): any[] => {
+    // Split by common delimiters to handle multiple lessons in one cell
+    const parts = cellValue.split(/[\n\r]+/).filter(part => part.trim() !== '');
+    const lessons: any[] = [];
+    
+    parts.forEach(part => {
+      const trimmed = part.trim();
+      if (trimmed === '' || trimmed.toLowerCase() === 'rehearsal') return;
+      
+      // Try to extract lesson information
+      const lesson = {
+        student_info: trimmed,
+        teacher: extractTeacher(trimmed),
+        lesson_type: extractLessonType(trimmed),
+        studio: studioName || extractStudio(trimmed),
+        notes: ''
+      };
+      
+      lessons.push(lesson);
+    });
+    
+    return lessons;
+  };
+
+  // Convert Excel decimal time to HH:MM:SS format
+  const convertExcelTimeToString = (excelTime: any): string | null => {
+    // Handle different input types
+    let timeDecimal: number;
+    
+    if (typeof excelTime === 'number') {
+      timeDecimal = excelTime;
+    } else if (typeof excelTime === 'string') {
+      // Try to parse as number first
+      const parsed = parseFloat(excelTime);
+      if (isNaN(parsed)) {
+        // If not a number, might already be a time string
+        return formatTimeToHourMinute(excelTime);
+      }
+      timeDecimal = parsed;
+    } else {
+      return null;
+    }
+    
+    // Excel stores time as fraction of a day
+    // 0.5 = 12:00 PM, 0.25 = 6:00 AM, etc.
+    const totalMinutes = Math.round(timeDecimal * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  };
+
+  const extractTeacher = (text: string): string => {
+    // Look for common teacher name patterns
+    const teacherMatch = text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\b/);
+    return teacherMatch ? teacherMatch[1] : '';
+  };
+
+  const extractLessonType = (text: string): string => {
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('solo')) return 'Solo';
+    if (lowerText.includes('choreo')) return 'Choreography';
+    if (lowerText.includes('private')) return 'Private';
+    if (lowerText.includes('group')) return 'Group';
+    return 'Solo'; // Default
+  };
+
+  const extractStudio = (text: string): string => {
+    const studioMatch = text.match(/studio\s*(\d+|[a-z])/i);
+    return studioMatch ? `Studio ${studioMatch[1].toUpperCase()}` : 'Studio A';
+  };
+
+  const formatTimeToHourMinute = (timeStr: string): string => {
+    // Handle various time formats
+    const cleanTime = timeStr.trim();
+    
+    // If already in HH:MM:SS format, return as is
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(cleanTime)) {
+      return cleanTime;
+    }
+    
+    // If in HH:MM format, add :00
+    if (/^\d{1,2}:\d{2}$/.test(cleanTime)) {
+      return `${cleanTime}:00`;
+    }
+    
+    // Try to parse 12-hour format
+    const match = cleanTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (match) {
+      let hours = parseInt(match[1]);
+      const minutes = match[2];
+      const ampm = match[3]?.toUpperCase();
+      
+      if (ampm === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (ampm === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+    }
+    
+    // Default fallback
+    return '09:00:00';
+  };
 
   return (
     <div className="flex h-full bg-gray-50">
@@ -470,12 +880,48 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           </button>
         </nav>
         
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 space-y-3">
+          {/* File upload input (hidden) */}
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
+          
+          {/* Upload Excel button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
+          >
+            {isUploading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading...
+              </span>
+            ) : (
+              <>📤 Upload Excel</>
+            )}
+          </button>
+          
+          {/* Upload status */}
+          {uploadStatus && (
+            <div className="text-xs text-center p-2 bg-blue-50 text-blue-700 rounded">
+              {uploadStatus}
+            </div>
+          )}
+          
+          {/* Export CSV button */}
           <button
             onClick={exportToExcel}
             className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
           >
-            Export to CSV
+            📁 Export to CSV
           </button>
         </div>
       </div>
@@ -749,18 +1195,63 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           {/* Schedule View */}
           {activeView === 'schedule' && (
             <div className="space-y-6">
-              {/* Week Selector */}
+              {/* Month and Week Selector */}
               <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Week of {new Date(currentWeek.weekOf).toLocaleDateString()}
-                  </h3>
-                  <input
-                    type="date"
-                    value={currentWeek.weekOf}
-                    onChange={(e) => setCurrentWeek(prev => ({ ...prev, weekOf: e.target.value }))}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="flex items-center gap-4">
+                    {/* Month Selector */}
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="month-selector" className="text-sm font-medium text-gray-700">
+                        Month:
+                      </label>
+                      <select
+                        id="month-selector"
+                        value={selectedMonth}
+                        onChange={(e) => handleMonthChange(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+                      >
+                        <option value="">Select Month</option>
+                        {Object.keys(getWeeksByMonth()).map(month => (
+                          <option key={month} value={month}>
+                            {month}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Week Selector */}
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="week-selector" className="text-sm font-medium text-gray-700">
+                        Week:
+                      </label>
+                      <select
+                        id="week-selector"
+                        value={currentWeek.weekOf}
+                        onChange={(e) => setCurrentWeek(prev => ({ ...prev, weekOf: e.target.value }))}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
+                        disabled={!selectedMonth}
+                      >
+                        <option value="">Select Week</option>
+                        {getWeeksForSelectedMonth().map(week => (
+                          <option key={week.weekStart} value={week.weekStart}>
+                            Week of {week.formattedDate}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    {currentWeek.weekInfo && (
+                      <div className="text-right">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {currentWeek.weekInfo.sheet_name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {currentWeek.slots.length} lessons scheduled
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -787,25 +1278,34 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                             {time}
                           </td>
                           {days.map(day => {
-                            const slot = currentWeek.slots.find(s => s.day === day && s.time === time);
+                            // Convert time to 24-hour format for comparison
+                            const time24 = formatTime24(time);
+                            const slot = currentWeek.slots.find(s => {
+                              const dayMatch = s.day.toUpperCase() === day.toUpperCase();
+                              const timeMatch = s.time === time24 || formatTime(s.time) === time;
+                              return dayMatch && timeMatch;
+                            });
+                            
                             return (
                               <td key={`${day}-${time}`} className="px-6 py-4 whitespace-nowrap">
                                 {slot ? (
-                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                                    <div className="text-sm font-medium text-blue-900">{slot.studentName}</div>
-                                    <div className="text-xs text-blue-700">{slot.lessonType}</div>
+                                  <div 
+                                    className="border rounded-lg p-2 text-white" 
+                                    style={{
+                                      backgroundColor: slot.teacherColor ? `#${slot.teacherColor}` : '#3B82F6',
+                                      borderColor: slot.teacherColor ? `#${slot.teacherColor}` : '#2563EB'
+                                    }}
+                                  >
+                                    <div className="text-sm font-medium">{slot.studentName}</div>
+                                    <div className="text-xs opacity-90">{slot.teacher}</div>
+                                    <div className="text-xs opacity-75">{slot.studio}</div>
+                                    <div className="text-xs opacity-75">{slot.lessonType}</div>
                                     <div className="flex gap-1 mt-1">
                                       <button
-                                        onClick={() => handleUpdateScheduleSlot(slot.id, { studentName: prompt('Student name:') || slot.studentName })}
-                                        className="text-xs text-blue-600 hover:text-blue-800"
+                                        onClick={() => alert(`Student: ${slot.studentName}\nTeacher: ${slot.teacher}\nStudio: ${slot.studio}\nType: ${slot.lessonType}\nStatus: ${slot.status}`)}
+                                        className="text-xs text-white hover:opacity-80"
                                       >
-                                        Edit
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteScheduleSlot(slot.id)}
-                                        className="text-xs text-red-600 hover:text-red-800"
-                                      >
-                                        Delete
+                                        Details
                                       </button>
                                     </div>
                                   </div>
@@ -832,84 +1332,21 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           {/* Analytics View */}
           {activeView === 'analytics' && (
             <div className="space-y-6">
-              {/* Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-8 w-8 bg-blue-100 rounded-full">
-                        <span className="text-blue-600 font-medium">👥</span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">Total Students</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.totalStudents}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-8 w-8 bg-green-100 rounded-full">
-                        <span className="text-green-600 font-medium">📚</span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">Technique Intensive</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.classEnrollment.techniqueIntensive}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-8 w-8 bg-purple-100 rounded-full">
-                        <span className="text-purple-600 font-medium">🩰</span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">Ballet Intensive</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.classEnrollment.balletIntensive}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-8 w-8 bg-orange-100 rounded-full">
-                        <span className="text-orange-600 font-medium">📅</span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">Weekly Lessons</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.totalLessons}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Age Groups */}
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Age Groups</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{analytics.ageGroups.minis}</div>
-                    <div className="text-sm text-gray-500">Minis (4-7)</div>
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📊</div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
+                  <p className="text-gray-600 mb-6">Studio analytics and reporting features</p>
+                  <div className="space-y-2 text-sm text-gray-500">
+                    <p>• Student enrollment trends</p>
+                    <p>• Class attendance analytics</p>
+                    <p>• Revenue and billing reports</p>
+                    <p>• Teacher performance metrics</p>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{analytics.ageGroups.juniors}</div>
-                    <div className="text-sm text-gray-500">Juniors (8-11)</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{analytics.ageGroups.teens}</div>
-                    <div className="text-sm text-gray-500">Teens (12-15)</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{analytics.ageGroups.seniors}</div>
-                    <div className="text-sm text-gray-500">Seniors (16+)</div>
+                  <div className="mt-6">
+                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                      Coming Soon - Analytics Features
+                    </button>
                   </div>
                 </div>
               </div>

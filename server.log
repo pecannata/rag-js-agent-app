@@ -1,13 +1,32 @@
-nohup: ignoring input
 
-> rag-js-agent-app@1.0.99 start
-> next start
+> rag-js-agent-app@1.0.160 dev
+> next dev
 
+ ⚠ Port 3000 is in use, using available port 3001 instead.
    ▲ Next.js 15.3.4
-   - Local:        http://localhost:3000
-   - Network:      http://192.168.1.149:3000
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.149:3001
+   - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 346ms
-(node:4027) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Ready in 2s
+ ○ Compiling /api/debug/weeks ...
+ ✓ Compiled /api/debug/weeks in 815ms (364 modules)
+🔍 Debug: Checking all available weeks in database...
+🔍 Executing Oracle Database Query: 
+      SELECT 
+        TO_CHAR(WEEK_START_DATE, 'YYYY-MM-DD') as week_start,
+        TO_CHAR(WEEK_START_DATE, 'DD-MON-YY') as formatted_date,
+        TO_CHAR(WEEK_START_DATE, 'Day') as day_name,
+        LESSON_ID as lesson_id,
+        CASE 
+          WHEN FULL_WEEK_JSON IS NOT NULL THEN 'HAS_DATA'
+          ELSE 'NO_DATA'
+        END as has_data_status
+      FROM STUDIO_PRIVATE_LESSONS
+      ORDER BY WEEK_START_DATE
+    
+✅ Database query executed successfully
+ GET /api/debug/weeks 200 in 4950ms
+ ✓ Compiled in 48ms
+ ✓ Compiled in 186ms (277 modules)

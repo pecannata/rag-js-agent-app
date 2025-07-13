@@ -13,6 +13,7 @@ set linesize 32767
 set wrap off
 set trimout on
 set trimspool on
+SET DEFINE OFF
 $1;
 commit;
 !

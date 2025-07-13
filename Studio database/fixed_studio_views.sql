@@ -1,0 +1,94 @@
+-- Fixed Studio Manager Database Views
+-- Views corrected to work with actual existing tables
+
+-- Drop existing views first
+DROP VIEW STUDIO_ANALYTICS_V;
+DROP VIEW STUDIO_STUDENTS_V;
+
+-- Simple student view that works with the STUDIO_STUDENTS table
+CREATE OR REPLACE VIEW STUDIO_STUDENTS_V AS
+SELECT 
+    STUDENT_ID,
+    STUDENT_NAME,
+    PARENT_FIRST_NAME,
+    PARENT_LAST_NAME,
+    CONTACT_EMAIL,
+    CONTACT_PHONE,
+    BIRTH_DATE,
+    AGE,
+    AUDITION_STATUS,
+    NOTES,
+    CREATED_DATE,
+    MODIFIED_DATE,
+    -- Mock class enrollment flags (since class tables don't exist)
+    'N' AS AUDITION_PREP,
+    'N' AS TECHNIQUE_INTENSIVE,
+    'N' AS BALLET_INTENSIVE,
+    'N' AS MASTER_INTENSIVE,
+    -- Age group classification
+    CASE 
+        WHEN AGE BETWEEN 4 AND 7 THEN 'Minis'
+        WHEN AGE BETWEEN 8 AND 11 THEN 'Juniors'
+        WHEN AGE BETWEEN 12 AND 15 THEN 'Teens'
+        WHEN AGE >= 16 THEN 'Seniors'
+        ELSE 'Unknown'
+    END AS AGE_GROUP
+FROM STUDIO_STUDENTS;
+
+-- Simple analytics view that works with existing tables
+CREATE OR REPLACE VIEW STUDIO_ANALYTICS_V AS
+SELECT 
+    -- Total counts from existing tables
+    (SELECT COUNT(*) FROM STUDIO_STUDENTS) AS TOTAL_STUDENTS,
+    (SELECT COUNT(*) FROM STUDIO_STUDENTS WHERE AGE BETWEEN 4 AND 7) AS MINIS_COUNT,
+    (SELECT COUNT(*) FROM STUDIO_STUDENTS WHERE AGE BETWEEN 8 AND 11) AS JUNIORS_COUNT,
+    (SELECT COUNT(*) FROM STUDIO_STUDENTS WHERE AGE BETWEEN 12 AND 15) AS TEENS_COUNT,
+    (SELECT COUNT(*) FROM STUDIO_STUDENTS WHERE AGE >= 16) AS SENIORS_COUNT,
+    
+    -- Mock class enrollment counts (since class tables don't exist)
+    0 AS AUDITION_PREP_COUNT,
+    0 AS TECHNIQUE_INTENSIVE_COUNT,
+    0 AS BALLET_INTENSIVE_COUNT,
+    0 AS MASTER_INTENSIVE_COUNT,
+    
+    -- Lesson count from private lessons table
+    (SELECT COUNT(*) FROM STUDIO_PRIVATE_LESSONS 
+     WHERE WEEK_START_DATE >= TRUNC(SYSDATE, 'IW') 
+     AND WEEK_START_DATE < TRUNC(SYSDATE, 'IW') + 7) AS CURRENT_WEEK_LESSONS,
+    
+    -- Total lessons count
+    (SELECT COUNT(*) FROM STUDIO_PRIVATE_LESSONS) AS TOTAL_LESSONS,
+    
+    -- Teacher count
+    (SELECT COUNT(*) FROM STUDIO_TEACHERS WHERE STATUS = 'Active') AS ACTIVE_TEACHERS
+FROM DUAL;
+
+-- Teachers view (simple wrapper)
+CREATE OR REPLACE VIEW STUDIO_TEACHERS_V AS
+SELECT 
+    TEACHER_ID,
+    TEACHER_NAME,
+    FIRST_NAME,
+    LAST_NAME,
+    EMAIL,
+    PHONE,
+    SPECIALTIES,
+    STATUS,
+    NOTES,
+    CREATED_DATE,
+    MODIFIED_DATE
+FROM STUDIO_TEACHERS;
+
+-- Private lessons view with enhanced information
+CREATE OR REPLACE VIEW STUDIO_PRIVATE_LESSONS_V AS
+SELECT 
+    LESSON_ID,
+    WEEK_START_DATE,
+    WEEK_IDENTIFIER,
+    SHEET_NAME,
+    TIME_SLOT,
+    LESSON_DATA,
+    FULL_WEEK_JSON,
+    CREATED_DATE,
+    MODIFIED_DATE
+FROM STUDIO_PRIVATE_LESSONS;
