@@ -229,11 +229,30 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       const response = await fetch(url.toString());
       if (response.ok) {
         const scheduleData = await response.json();
-        // Preserve the user's selected week, only update the schedule data
-        setCurrentWeek(prev => ({
-          ...scheduleData,
-          weekOf: prev.weekOf // Keep the user's selected week
-        }));
+        // Preserve the user's selected week and any local slots that haven't been saved
+        setCurrentWeek(prev => {
+          // Merge server slots with local slots, prioritizing local changes
+          const serverSlots = scheduleData.slots || [];
+          const localSlots = prev.slots || [];
+          
+          // Create a map of server slots by their ID
+          const serverSlotMap = new Map(serverSlots.map(slot => [slot.id, slot]));
+          
+          // Keep all local slots and add server slots that don't exist locally
+          const mergedSlots = [...localSlots];
+          serverSlots.forEach(serverSlot => {
+            const localSlotExists = localSlots.some(localSlot => localSlot.id === serverSlot.id);
+            if (!localSlotExists) {
+              mergedSlots.push(serverSlot);
+            }
+          });
+          
+          return {
+            ...scheduleData,
+            weekOf: prev.weekOf, // Keep the user's selected week
+            slots: mergedSlots // Preserve local slots
+          };
+        });
       }
     } catch (error) {
       console.error('Error loading schedule:', error);
