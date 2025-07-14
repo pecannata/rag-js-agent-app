@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { executeQuery } from '../../../lib/database';
+import { executeQuery, truncateJSON } from '../../../lib/database';
 
 interface Lesson {
   day: string;
@@ -69,9 +69,13 @@ export async function GET(request: NextRequest) {
 
     // Get the first result (should only be one per week)
     const row = result[0];
+    console.log('📖 Loading schedule data:', truncateJSON(row));
+    
     const weekData: WeekData = typeof row.weekdata === 'string' 
       ? JSON.parse(row.weekdata) 
       : row.weekdata;
+
+    console.log('🔄 Parsed week data:', truncateJSON(weekData));
 
     // Transform the JSON data to the expected schedule format
     const slots: any[] = [];

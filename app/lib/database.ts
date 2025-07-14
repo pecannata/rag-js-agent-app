@@ -261,3 +261,17 @@ export function formatOracleDate(oracleDate: string): string {
     return oracleDate;
   }
 }
+
+/**
+ * Utility function to truncate JSON for logging purposes
+ * @param obj - The object to stringify and truncate
+ * @param maxLength - Maximum length of the returned string (default: 1000)
+ * @returns Truncated JSON string
+ */
+export function truncateJSON(obj: any, maxLength: number = 1000): string {
+  const jsonStr = JSON.stringify(obj, null, 2);
+  if (jsonStr.length <= maxLength) {
+    return jsonStr;
+  }
+  return jsonStr.substring(0, maxLength) + '...[TRUNCATED]';
+}

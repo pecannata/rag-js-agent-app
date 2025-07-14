@@ -84,6 +84,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [selectedRole, setSelectedRole] = useState('student');
+  const [isPrivateLessonsSaving, setIsPrivateLessonsSaving] = useState(false);
+  const [privateLessonsSaveStatus, setPrivateLessonsSaveStatus] = useState<string>('');
   
   // File input ref for Excel upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -422,6 +424,84 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       }
     } catch (error) {
       console.error('Error deleting student:', error);
+    }
+  };
+
+  // Utility function to truncate JSON for logging
+  const truncateJSON = (obj: any, maxLength: number = 1000): string => {
+    const jsonStr = JSON.stringify(obj, null, 2);
+    if (jsonStr.length <= maxLength) {
+      return jsonStr;
+    }
+    return jsonStr.substring(0, maxLength) + '...[TRUNCATED]';
+  };
+
+  // Save private lessons data to database in Excel format
+  const handleSavePrivateLessons = async () => {
+    if (!currentWeek.weekOf) {
+      setPrivateLessonsSaveStatus('Please select a week first.');
+      return;
+    }
+
+    setIsPrivateLessonsSaving(true);
+    setPrivateLessonsSaveStatus('Saving private lessons schedule...');
+
+    try {
+      // Convert current schedule to Excel-compatible format
+      const scheduleData = {
+        week_start: currentWeek.weekOf,
+        schedule_data: {
+          slots: currentWeek.slots,
+          teachers: currentWeek.teachers || {},
+          studios: currentWeek.studios || ['Studio 1', 'Studio 2', 'Studio 3'],
+          weekInfo: currentWeek.weekInfo || {
+            sheet_name: `Week of ${currentWeek.weekOf}`,
+            week_identifier: `manual-${currentWeek.weekOf}`
+          }
+        }
+      };
+
+      console.log('💾 Saving private lessons data:', truncateJSON(scheduleData));
+
+      const response = await fetch('/api/studio/save-schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scheduleData),
+      });
+
+      if (!response.ok) {
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.details || errorData.error || `HTTP ${response.status}`;
+          console.error('❌ Server error saving private lessons:', errorData);
+        } catch (parseError) {
+          console.error('❌ Could not parse error response:', parseError);
+          errorDetails = `HTTP ${response.status} ${response.statusText}`;
+        }
+        throw new Error(`Failed to save private lessons: ${errorDetails}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Successfully saved private lessons:', truncateJSON(result));
+      
+      setPrivateLessonsSaveStatus('Private lessons saved successfully!');
+      
+      // Refresh the schedule data
+      await loadSchedule();
+      
+    } catch (error) {
+      console.error('❌ Error saving private lessons:', error);
+      setPrivateLessonsSaveStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsPrivateLessonsSaving(false);
+      
+      // Clear status after a delay
+      setTimeout(() => {
+        setPrivateLessonsSaveStatus('');
+      }, 3000);
     }
   };
 
@@ -1791,6 +1871,29 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                         ))}
                       </select>
                     </div>
+                    
+                    {/* Save Button */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSavePrivateLessons}
+                        disabled={isPrivateLessonsSaving || !currentWeek.weekOf}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-green-400 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isPrivateLessonsSaving ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            💾 Save
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     {currentWeek.weekInfo && (
@@ -1806,6 +1909,15 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                   </div>
                 </div>
               </div>
+              
+              {/* Save Status Display */}
+              {privateLessonsSaveStatus && (
+                <div className="bg-white rounded-lg shadow p-4">
+                  <div className="text-sm text-center p-2 bg-green-50 text-green-700 rounded">
+                    {privateLessonsSaveStatus}
+                  </div>
+                </div>
+              )}
               
               {/* Instructor Color Legend */}
               <div className="bg-white rounded-lg shadow p-4 mb-4">
