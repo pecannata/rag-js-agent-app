@@ -66,7 +66,7 @@ interface StudioManagerProps {
 }
 
 export default function StudioManager({ apiKey }: StudioManagerProps) {
-  const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'private-lessons' | 'analytics'>('students');
+  const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'private-lessons' | 'invoicing' | 'analytics'>('students');
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [currentWeek, setCurrentWeek] = useState<WeekSchedule>({
@@ -85,7 +85,10 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [selectedRole, setSelectedRole] = useState('student');
   const [isPrivateLessonsSaving, setIsPrivateLessonsSaving] = useState(false);
-  const [privateLessonsSaveStatus, setPrivateLessonsSaveStatus] = useState<string>('');
+  const [privateLessonsSaveStatus, setPrivateLessonsSaveStatus] = useState<string>('');  
+  const [invoicingStatus, setInvoicingStatus] = useState<string>('');  
+  const [isProcessingInvoices, setIsProcessingInvoices] = useState(false);  
+  const [invoiceResults, setInvoiceResults] = useState<any[]>([]);
   const [isResetMode, setIsResetMode] = useState(false);
   
   // File input ref for Excel upload
@@ -665,6 +668,56 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           return { ...prev, slots: [...prev.slots, newSlot] };
         }
       });
+    }
+  };
+
+  // Handle invoice processing
+  const handleProcessInvoices = async () => {
+    if (!currentWeek.weekOf) {
+      setInvoicingStatus('Please select a week first.');
+      return;
+    }
+
+    setIsProcessingInvoices(true);
+    setInvoicingStatus('Processing invoices...');
+    setInvoiceResults([]);
+
+    try {
+      const response = await fetch('/api/studio/invoicing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          weekStartDate: currentWeek.weekOf
+        }),
+      });
+
+      if (!response.ok) {
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.details || errorData.error || `HTTP ${response.status}`;
+        } catch (parseError) {
+          errorDetails = `HTTP ${response.status} ${response.statusText}`;
+        }
+        throw new Error(`Failed to process invoices: ${errorDetails}`);
+      }
+
+      const result = await response.json();
+      setInvoiceResults(result.invoices || []);
+      setInvoicingStatus(`Successfully processed ${result.processedInvoices} invoices!`);
+      
+    } catch (error) {
+      console.error('Error processing invoices:', error);
+      setInvoicingStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingInvoices(false);
+      
+      // Clear status after a delay
+      setTimeout(() => {
+        setInvoicingStatus('');
+      }, 5000);
     }
   };
 
@@ -1501,6 +1554,18 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           </button>
           
           <button
+            onClick={() => setActiveView('invoicing')}
+            className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeView === 'invoicing'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span className="mr-3">💰</span>
+            Invoicing
+          </button>
+          
+          <button
             onClick={() => setActiveView('analytics')}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               activeView === 'analytics'
@@ -1569,6 +1634,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
               {activeView === 'teachers' && 'Teacher Management'}
               {activeView === 'staff' && 'Staff Management'}
               {activeView === 'private-lessons' && 'Private Lessons'}
+              {activeView === 'invoicing' && 'Invoicing'}
               {activeView === 'analytics' && 'Studio Analytics'}
             </h1>
             
@@ -2079,6 +2145,207 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoicing View */}
+          {activeView === 'invoicing' && (
+            <div className="space-y-6">
+              {/* Week Selector */}
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {/* Month Selector */}
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="invoice-month-selector" className="text-sm font-medium text-gray-700">
+                        Month:
+                      </label>
+                      <select
+                        id="invoice-month-selector"
+                        value={selectedMonth}
+                        onChange={(e) => handleMonthChange(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+                      >
+                        <option value="">Select Month</option>
+                        {Object.keys(getWeeksByMonth()).map(month => (
+                          <option key={month} value={month}>
+                            {month}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Week Selector */}
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="invoice-week-selector" className="text-sm font-medium text-gray-700">
+                        Week:
+                      </label>
+                      <select
+                        id="invoice-week-selector"
+                        value={currentWeek.weekOf}
+                        onChange={(e) => setCurrentWeek(prev => ({ ...prev, weekOf: e.target.value }))}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
+                        disabled={!selectedMonth}
+                      >
+                        <option value="">Select Week</option>
+                        {getWeeksForSelectedMonth().map(week => (
+                          <option key={week.weekStart} value={week.weekStart}>
+                            Week of {week.formattedDate}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Process Invoices Button */}
+                    <button
+                      onClick={handleProcessInvoices}
+                      disabled={isProcessingInvoices || !currentWeek.weekOf}
+                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-green-400 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isProcessingInvoices ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          💳 Process Invoices
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {currentWeek.weekInfo && (
+                    <div className="text-right">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {currentWeek.weekInfo.sheet_name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {currentWeek.slots.length} lessons scheduled
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Status Display */}
+              {invoicingStatus && (
+                <div className="bg-white rounded-lg shadow p-4">
+                  <div className={`text-sm text-center p-3 rounded ${
+                    invoicingStatus.includes('Error') 
+                      ? 'bg-red-50 text-red-700' 
+                      : 'bg-green-50 text-green-700'
+                  }`}>
+                    {invoicingStatus}
+                  </div>
+                </div>
+              )}
+              
+              {/* Invoice Results */}
+              {invoiceResults.length > 0 && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">Invoice Results</h3>
+                    <p className="text-sm text-gray-600">Successfully processed {invoiceResults.length} invoices</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Student
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Teacher
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Lessons
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Cost
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {invoiceResults.map((invoice, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="font-medium text-gray-900">{invoice.student_name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{invoice.student_email}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{invoice.teacher_name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{invoice.lesson_count}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">${invoice.total_cost}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {invoice.error ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  Error
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  {invoice.status || 'Created'}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              {invoice.stripe_invoice_url && (
+                                <a
+                                  href={invoice.stripe_invoice_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-900 mr-3"
+                                >
+                                  View Invoice
+                                </a>
+                              )}
+                              {invoice.error && (
+                                <span className="text-red-600 text-xs">
+                                  {invoice.error}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              
+              {/* Info Card */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="text-center py-8">
+                  <div className="text-6xl mb-4">💰</div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">Stripe Invoicing System</h3>
+                  <p className="text-gray-600 mb-6">Automatically generate and send invoices to students</p>
+                  <div className="space-y-2 text-sm text-gray-500">
+                    <p>• Counts lessons per student per teacher for a given week</p>
+                    <p>• Calculates costs using the formula: lessons × 2 × teacher price</p>
+                    <p>• Creates Stripe customers and invoices with student emails</p>
+                    <p>• Uses teacher-to-color mapping from the JSON schedule data</p>
+                  </div>
                 </div>
               </div>
             </div>

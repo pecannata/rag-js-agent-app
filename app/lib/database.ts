@@ -96,14 +96,35 @@ export async function executeQuery(sqlQuery: string, params: any[] = []): Promis
       console.log(`   Param ${index}: ${paramType}, length: ${paramLength}`);
     });
     
-    // Always use SQLclScript.sh regardless of query size
-    const command = `bash ./SQLclScript.sh "${processedQuery.replace(/"/g, '\\"')}"`;
-    console.log('🚀 Executing command (first 200 chars):', command.substring(0, 200));
-    console.log('📊 Query length:', processedQuery.length);
+    // For complex queries with JSON paths, write to temp file to avoid shell parsing issues
+    let result;
+    if (processedQuery.includes('JSON_TABLE') || processedQuery.includes('$[*]') || processedQuery.includes('$.schedule[*]')) {
+      const tempFile = join(process.cwd(), 'temp_query.sql');
+      writeFileSync(tempFile, `SET SQLFORMAT JSON-FORMATTED\nset feedback off\nset long 10000000\nset pagesize 0\nset linesize 32767\nset wrap off\nset trimout on\nset trimspool on\nSET DEFINE OFF\n${processedQuery};\ncommit;`);
+      
+      const command = `sql -S RAGUSER/WelcomeRAG123###@129.213.106.172/RAG23ai_PDB1.sub08201532330.philfnvcn.oraclevcn.com @${tempFile}`;
+      console.log('🚀 Executing complex query from temp file');
+      console.log('📊 Query length:', processedQuery.length);
+      
+      result = await execAsync(command);
+      
+      // Clean up temp file
+      try {
+        unlinkSync(tempFile);
+      } catch (err) {
+        console.warn('Warning: Could not delete temp file:', err);
+      }
+    } else {
+      // Use SQLclScript.sh for simple queries
+      const command = `bash ./SQLclScript.sh "${processedQuery.replace(/"/g, '\\"')}"`;
+      console.log('🚀 Executing command (first 200 chars):', command.substring(0, 200));
+      console.log('📊 Query length:', processedQuery.length);
+      
+      result = await execAsync(command);
+    }
     
-    const result = await execAsync(command);
-const stdout = result.stdout;
-const stderr = result.stderr;
+    const stdout = result.stdout;
+    const stderr = result.stderr;
 
 if (stderr) {
   console.error('❌ Database query error:', stderr);
