@@ -86,6 +86,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   const [selectedRole, setSelectedRole] = useState('student');
   const [isPrivateLessonsSaving, setIsPrivateLessonsSaving] = useState(false);
   const [privateLessonsSaveStatus, setPrivateLessonsSaveStatus] = useState<string>('');
+  const [isResetMode, setIsResetMode] = useState(false);
   
   // File input ref for Excel upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -543,6 +544,28 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
 
   // Handle cell click based on selected role
   const handleCellClick = (day: string, time: string, studio: string) => {
+    // If reset mode is active, clear the cell completely
+    if (isResetMode) {
+      const time24 = formatTime24(time);
+      
+      // Remove ALL slots that match this day/time/studio combination
+      setCurrentWeek(prev => ({
+        ...prev,
+        slots: prev.slots.filter(slot => {
+          const dayMatch = slot.day.toUpperCase() === day.toUpperCase();
+          const timeMatch = slot.time === time24;
+          const studioMatch = slot.studio === studio;
+          // Keep slots that DON'T match (remove all that do match)
+          return !(dayMatch && timeMatch && studioMatch);
+        })
+      }));
+      
+      // Optionally turn off reset mode after clearing a cell
+      // setIsResetMode(false);
+      
+      return;
+    }
+    
     if (selectedRole === 'student') {
       // For students, show a popup to input student name and lesson type
       const studentName = prompt('Enter your name:');
@@ -1829,6 +1852,20 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                           </option>
                         ))}
                       </select>
+                      
+                      {/* Reset Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsResetMode(prev => !prev)}
+                        className={`ml-2 px-3 py-2 rounded-lg font-medium transition-colors text-sm border border-gray-300 ${
+                          isResetMode 
+                            ? 'bg-red-600 text-white border-red-600' 
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="Reset Cell"
+                      >
+                        Reset
+                      </button>
                     </div>
 
                     {/* Month Selector */}
