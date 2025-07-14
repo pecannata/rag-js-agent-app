@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         SPECIALTIES,
         STATUS,
         NOTES,
+        PRICE,
         CREATED_DATE,
         MODIFIED_DATE
       FROM STUDIO_TEACHERS
@@ -53,6 +54,7 @@ export async function GET(request: NextRequest) {
       specialties: row.specialties || '',
       status: row.status || 'Active',
       notes: row.notes || '',
+      price: row.price || 0,
       createdDate: row.created_date,
       modifiedDate: row.modified_date
     }));
@@ -80,14 +82,15 @@ export async function POST(request: NextRequest) {
       phone,
       specialties,
       status,
-      notes
+      notes,
+      price
     } = body;
 
     // Insert teacher
     const insertQuery = `
       INSERT INTO STUDIO_TEACHERS 
-      (TEACHER_NAME, FIRST_NAME, LAST_NAME, EMAIL, PHONE, SPECIALTIES, STATUS, NOTES)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (TEACHER_NAME, FIRST_NAME, LAST_NAME, EMAIL, PHONE, SPECIALTIES, STATUS, NOTES, PRICE)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const teacherParams = [
@@ -98,7 +101,8 @@ export async function POST(request: NextRequest) {
       phone,
       specialties,
       status || 'Active',
-      notes
+      notes,
+      price || 0
     ];
 
     await executeQuery(insertQuery, teacherParams);

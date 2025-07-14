@@ -21,7 +21,8 @@ export async function PUT(
       phone,
       specialties,
       status,
-      notes
+      notes,
+      price
     } = body;
 
     const updateQuery = `
@@ -34,6 +35,7 @@ export async function PUT(
           SPECIALTIES = ?, 
           STATUS = ?, 
           NOTES = ?,
+          PRICE = ?,
           MODIFIED_DATE = SYSDATE
       WHERE TEACHER_ID = ?
     `;
@@ -47,6 +49,7 @@ export async function PUT(
       specialties,
       status,
       notes,
+      price || 0,
       parseInt(params.id)
     ];
 
