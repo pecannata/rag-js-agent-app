@@ -102,18 +102,18 @@ export async function executeQuery(sqlQuery: string, params: any[] = []): Promis
     console.log('📊 Query length:', processedQuery.length);
     
     const result = await execAsync(command);
-    const stdout = result.stdout;
-    const stderr = result.stderr;
-    
-    if (stderr) {
-      console.error('❌ Database query error:', stderr);
-      console.error('❌ Failed query (first 500 chars):', processedQuery.substring(0, 500));
-      throw new Error(`Database error: ${stderr}`);
-    }
-    
-    console.log('✅ Database query executed successfully');
-    console.log('📤 Output length:', stdout.length);
-    console.log('📤 Raw output:', JSON.stringify(stdout));
+const stdout = result.stdout;
+const stderr = result.stderr;
+
+if (stderr) {
+  console.error('❌ Database query error:', stderr);
+  console.error('❌ Failed query (first 500 chars):', processedQuery.substring(0, 500));
+  throw new Error(`Database error: ${stderr}`);
+}
+
+console.log('✅ Database query executed successfully');
+console.log('📤 Output length:', stdout.length);
+console.log('📤 Raw output:', truncateJSON(stdout));
     
     // Check if this is an INSERT/UPDATE/DELETE query that doesn't return data
     const isModifyingQuery = /^\s*(INSERT|UPDATE|DELETE|COMMIT|ROLLBACK)/i.test(processedQuery.trim());
@@ -137,7 +137,7 @@ export async function executeQuery(sqlQuery: string, params: any[] = []): Promis
       }
     } catch (parseError) {
       console.error('❌ Failed to parse database response as JSON:', parseError);
-      console.log('Raw output:', stdout);
+      console.log('Raw output (truncated):', truncateJSON(stdout));
       
       // If not JSON, try to handle it as raw text
       if (stdout.trim()) {
