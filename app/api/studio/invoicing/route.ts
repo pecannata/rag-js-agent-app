@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
 
 async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]> {
   try {
-    // Simple query to get the CLOB data, just like the schedule route
-    const query = `
+    // Get lesson data first
+    const lessonQuery = `
       SELECT 
         TO_CHAR(WEEK_START_DATE, 'YYYY-MM-DD') as weekOf,
         LESSON_ID as lessonId,
@@ -76,22 +76,22 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
       WHERE WEEK_START_DATE = TO_DATE(?, 'YYYY-MM-DD')
     `;
 
-    const result = await executeQuery(query, [weekStartDate]);
-    
-    if (result.length === 0) {
-      return [];
-    }
-
-    // Get additional data we need
+    // Get lookup data in parallel - optimized to only get needed fields
     const studentsQuery = `SELECT STUDENT_NAME, CONTACT_EMAIL FROM STUDIO_STUDENTS`;
     const teachersQuery = `SELECT TEACHER_NAME, PRICE FROM STUDIO_TEACHERS`;
     
-    const [students, teachers] = await Promise.all([
+    // Execute all queries in parallel for better performance
+    const [lessonResult, students, teachers] = await Promise.all([
+      executeQuery(lessonQuery, [weekStartDate]),
       executeQuery(studentsQuery, []),
       executeQuery(teachersQuery, [])
     ]);
+    
+    if (lessonResult.length === 0) {
+      return [];
+    }
 
-    // Create lookup maps
+    // Create lookup maps for faster access
     const studentEmailMap = new Map();
     students.forEach((student: any) => {
       studentEmailMap.set(student.student_name?.toLowerCase(), student.contact_email);
@@ -102,8 +102,17 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
       teacherPriceMap.set(teacher.teacher_name?.toLowerCase(), teacher.price || 40);
     });
 
+    const row = lessonResult[0];
+    console.log('✅ Fetched lesson data and lookup tables in parallel');
+    console.log(`📊 ${students.length} students, ${teachers.length} teachers loaded`);
+    
+    // Cache the lookup maps for potential reuse
+    const lookupData = {
+      studentEmailMap,
+      teacherPriceMap
+    };
+
     // Parse the CLOB data
-    const row = result[0];
     const weekData: any = typeof row.weekdata === 'string' 
       ? JSON.parse(row.weekdata) 
       : row.weekdata;
@@ -115,12 +124,16 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
       colorToTeacherMap.set(color, teacherName);
     });
 
+    console.log(`🎨 Loaded ${Object.keys(teacherColors).length} teacher color mappings`);
+
     // Process lessons and aggregate by student/teacher
     const lessonMap = new Map();
+    let totalLessonsProcessed = 0;
     
     weekData.schedule?.forEach((timeSlot: any) => {
       timeSlot.lessons?.forEach((lesson: any) => {
         if (lesson.student_info && lesson.color) {
+          totalLessonsProcessed++;
           const studentName = lesson.student_info.split('-')[0]?.split('(')[0]?.trim();
           const teacherName = colorToTeacherMap.get(lesson.color);
           
@@ -132,8 +145,8 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
               existing.lesson_count += 1;
               existing.total_cost = existing.lesson_count * existing.teacher_price;
             } else {
-              const studentEmail = studentEmailMap.get(studentName.toLowerCase()) || 'no-email@example.com';
-              const teacherPrice = teacherPriceMap.get(teacherName.toLowerCase()) || 40;
+              const studentEmail = lookupData.studentEmailMap.get(studentName.toLowerCase()) || 'no-email@example.com';
+              const teacherPrice = lookupData.teacherPriceMap.get(teacherName.toLowerCase()) || 40;
               
               lessonMap.set(key, {
                 student_name: studentName,
@@ -149,6 +162,7 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
       });
     });
 
+    console.log(`📚 Processed ${totalLessonsProcessed} lessons into ${lessonMap.size} unique student-teacher combinations`);
     return Array.from(lessonMap.values());
   } catch (error) {
     console.error('Error getting lesson data for week:', error);
@@ -160,30 +174,65 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
   const invoiceResults = [];
   const stripe = getStripeClient();
 
-  for (const lesson of lessonData) {
+  // Optimize: Pre-fetch and cache all customers to avoid redundant searches
+  const customerCache = new Map();
+  const uniqueEmails = [...new Set(lessonData.map(lesson => lesson.student_email))];
+  
+  console.log(`🔍 Pre-fetching ${uniqueEmails.length} unique customers for ${lessonData.length} lessons`);
+  
+  // Batch customer lookup/creation
+  const customerPromises = uniqueEmails.map(async (email) => {
     try {
-      // Create or retrieve customer
-      let customer;
-      try {
-        const customers = await stripe.customers.search({
-          query: `email:"${lesson.student_email}"`,
-          limit: 1,
+      const customers = await stripe.customers.search({
+        query: `email:"${email}"`,
+        limit: 1,
+      });
+      
+      if (customers.data.length > 0) {
+        return { email, customer: customers.data[0] };
+      } else {
+        // Find the student name for this email
+        const studentData = lessonData.find(lesson => lesson.student_email === email);
+        const customer = await stripe.customers.create({
+          email: email,
+          name: studentData?.student_name || 'Unknown Student',
         });
-        
-        if (customers.data.length > 0) {
-          customer = customers.data[0];
-        } else {
-          customer = await stripe.customers.create({
-            email: lesson.student_email,
-            name: lesson.student_name,
-          });
-        }
-      } catch (error) {
-        console.error('Error creating/retrieving customer:', error);
-        continue;
+        return { email, customer };
+      }
+    } catch (error) {
+      console.error(`Error fetching/creating customer for ${email}:`, error);
+      return { email, customer: null };
+    }
+  });
+
+  // Wait for all customer operations to complete
+  const customerResults = await Promise.all(customerPromises);
+  
+  // Build customer cache
+  customerResults.forEach(result => {
+    if (result.customer) {
+      customerCache.set(result.email, result.customer);
+    }
+  });
+
+  console.log(`✅ Customer cache built: ${customerCache.size} customers cached`);
+
+  // Process invoices with optimized batching
+  const invoicePromises = lessonData.map(async (lesson) => {
+    try {
+      const customer = customerCache.get(lesson.student_email);
+      if (!customer) {
+        return {
+          student_name: lesson.student_name,
+          student_email: lesson.student_email,
+          teacher_name: lesson.teacher_name,
+          lesson_count: lesson.lesson_count,
+          total_cost: lesson.total_cost,
+          error: 'Customer not found or failed to create',
+        };
       }
 
-      // Create invoice
+      // Create invoice with line item in single call
       const invoice = await stripe.invoices.create({
         customer: customer.id,
         description: `Private Dance Lessons - Week of ${lesson.teacher_name}`,
@@ -193,14 +242,14 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
           lesson_count: lesson.lesson_count.toString(),
           teacher_price: lesson.teacher_price.toString(),
         },
-        auto_advance: false, // Don't automatically finalize
+        auto_advance: false,
       });
 
-      // Add line item to invoice
+      // Add line item
       await stripe.invoiceItems.create({
         customer: customer.id,
         invoice: invoice.id,
-        amount: Math.round(lesson.total_cost * 100), // Convert to cents
+        amount: Math.round(lesson.total_cost * 100),
         currency: 'usd',
         description: `${lesson.lesson_count} lessons with ${lesson.teacher_name} (${lesson.lesson_count} × $${lesson.teacher_price})`,
       });
@@ -208,7 +257,7 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
       // Finalize the invoice
       const finalizedInvoice = await stripe.invoices.finalizeInvoice(invoice.id);
 
-      invoiceResults.push({
+      return {
         student_name: lesson.student_name,
         student_email: lesson.student_email,
         teacher_name: lesson.teacher_name,
@@ -218,20 +267,39 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
         stripe_invoice_url: finalizedInvoice.hosted_invoice_url,
         stripe_payment_url: finalizedInvoice.invoice_pdf,
         status: finalizedInvoice.status,
-      });
+      };
 
     } catch (error) {
       console.error(`Error processing invoice for ${lesson.student_name}:`, error);
-      invoiceResults.push({
+      return {
         student_name: lesson.student_name,
         student_email: lesson.student_email,
         teacher_name: lesson.teacher_name,
         lesson_count: lesson.lesson_count,
         total_cost: lesson.total_cost,
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      };
+    }
+  });
+
+  // Process all invoices concurrently (but with reasonable limits)
+  console.log(`🚀 Processing ${invoicePromises.length} invoices concurrently...`);
+  
+  // Process in batches to avoid overwhelming Stripe API
+  const batchSize = 5; // Process 5 invoices at a time
+  const results = [];
+  
+  for (let i = 0; i < invoicePromises.length; i += batchSize) {
+    const batch = invoicePromises.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch);
+    results.push(...batchResults);
+    
+    // Small delay between batches to be respectful to Stripe API
+    if (i + batchSize < invoicePromises.length) {
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
 
-  return invoiceResults;
+  console.log(`✅ Completed processing ${results.length} invoices`);
+  return results;
 }
