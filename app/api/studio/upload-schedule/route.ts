@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { executeQuery } from '../../../lib/database';
-import { writeFileSync, appendFileSync } from 'fs';
+import { appendFileSync } from 'fs';
 import { join } from 'path';
 
 // Debug logging function
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       console.log('📅 Parsed week start date:', weekStartDate);
     } catch (dateError) {
       console.warn('⚠️ Could not parse date from sheet name, using current date:', dateError);
-      weekStartDate = new Date().toISOString().split('T')[0];
+      weekStartDate = new Date().toISOString().split('T')[0] || '2025-01-01';
     }
     
     console.log('📅 Using week start date:', weekStartDate);
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
             VALUES (TO_DATE(?, 'YYYY-MM-DD'), ?)
           `;
           
-          const summaryResult = await executeQuery(summaryInsertQuery, [
+          await executeQuery(summaryInsertQuery, [
             weekStartDate,
             JSON.stringify(summaryData)
           ]);
@@ -395,7 +395,7 @@ function parseWeekStartFromSheetName(sheetName: string): string {
   if (sheetName.toLowerCase().includes('spring break')) {
     // For "Spring Break 317-323", parse the date range
     const match = sheetName.match(/(\d{1,2})(\d{1,2})-(\d{1,2})(\d{1,2})/);
-    if (match) {
+    if (match && match[1] && match[2]) {
       const month = parseInt(match[1]);
       const day = parseInt(match[2]);
       return `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -411,6 +411,9 @@ function parseWeekStartFromSheetName(sheetName: string): string {
   const dateRangeMatch = cleanedSheetName.match(/^(\d+)-(\d+)$/);
   if (dateRangeMatch) {
     const startStr = dateRangeMatch[1];
+    if (!startStr) {
+      throw new Error('Start date string is undefined');
+    }
     console.log(`📅 Parsing start date from: "${startStr}"`);
     
     // Parse the start date
@@ -418,19 +421,19 @@ function parseWeekStartFromSheetName(sheetName: string): string {
     
     if (startStr.length === 2) {
       // Format: "69" = June 9th, "92" = September 2nd
-      month = parseInt(startStr[0]);
-      day = parseInt(startStr[1]);
+      month = parseInt(startStr.charAt(0));
+      day = parseInt(startStr.charAt(1));
       console.log(`📅 Two-digit format: month=${month}, day=${day}`);
     } else if (startStr.length === 3) {
       // Format: "915" = September 15th or "112" = January 12th
-      if (startStr[0] === '1' && parseInt(startStr.slice(1)) <= 31) {
+      if (startStr.charAt(0) === '1' && parseInt(startStr.slice(1)) <= 31) {
         // Likely January ("112" = January 12th)
         month = 1;
         day = parseInt(startStr.slice(1));
         console.log(`📅 Three-digit January format: month=${month}, day=${day}`);
       } else {
         // Likely September ("915" = September 15th)
-        month = parseInt(startStr[0]);
+        month = parseInt(startStr.charAt(0));
         day = parseInt(startStr.slice(1));
         console.log(`📅 Three-digit format: month=${month}, day=${day}`);
       }

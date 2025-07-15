@@ -251,7 +251,7 @@ export function formatOracleDate(oracleDate: string): string {
     // Handle different Oracle date formats
     if (oracleDate.includes('-')) {
       const parts = oracleDate.split('-');
-      if (parts.length === 3) {
+      if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
         const day = parts[0].padStart(2, '0');
         const month = parts[1];
         const year = parts[2];
@@ -273,7 +273,8 @@ export function formatOracleDate(oracleDate: string): string {
     // If it's already in a good format, try to parse and reformat
     const date = new Date(oracleDate);
     if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
+      const datePart = date.toISOString().split('T')[0];
+      return datePart || oracleDate;
     }
     
     return oracleDate; // Return as-is if we can't parse it

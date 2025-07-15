@@ -36,7 +36,13 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
         
         // Get the first sheet
         const firstSheetName = workbook.SheetNames[0];
+        if (!firstSheetName) {
+          throw new Error('No sheets found in the Excel file');
+        }
         const worksheet = workbook.Sheets[firstSheetName];
+        if (!worksheet) {
+          throw new Error('Could not access the worksheet');
+        }
         
         // Convert to JSON
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
@@ -83,7 +89,6 @@ export const parseScheduleSheet = (worksheet: any): ExcelScheduleSlot[] => {
   
   // Look for time slots in the first column and days in the header row
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const timePattern = /^(\d{1,2}):(\d{2})$/;
   
   for (let row = range.s.r; row <= range.e.r; row++) {
     for (let col = range.s.c; col <= range.e.c; col++) {
@@ -142,20 +147,23 @@ export const formatDate = (dateValue: any): string => {
   // Handle Excel date serial numbers
   if (typeof dateValue === 'number') {
     const date = new Date((dateValue - 25569) * 86400 * 1000);
-    return date.toISOString().split('T')[0];
+    const datePart = date.toISOString().split('T')[0];
+    return datePart || '';
   }
   
   // Handle string dates
   if (typeof dateValue === 'string') {
     const date = new Date(dateValue);
     if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
+      const datePart = date.toISOString().split('T')[0];
+      return datePart || '';
     }
   }
   
   // Handle Date objects
   if (dateValue instanceof Date) {
-    return dateValue.toISOString().split('T')[0];
+    const datePart = dateValue.toISOString().split('T')[0];
+    return datePart || '';
   }
   
   return '';
@@ -199,5 +207,6 @@ export const exportToExcel = (students: any[], scheduleSlots: any[] = []): void 
   }
   
   // Save file
-  XLSX.writeFile(wb, `studio-data-${new Date().toISOString().split('T')[0]}.xlsx`);
+  const datePart = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `studio-data-${datePart || 'unknown'}.xlsx`);
 };

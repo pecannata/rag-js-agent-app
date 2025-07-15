@@ -12,7 +12,7 @@ function getStripeClient(): Stripe {
   }
   
   return new Stripe(stripeSecretKey, {
-    apiVersion: '2024-06-20',
+    apiVersion: '2025-06-30.basil',
   });
 }
 
@@ -171,7 +171,6 @@ async function getLessonDataForWeek(weekStartDate: string): Promise<LessonData[]
 }
 
 async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
-  const invoiceResults = [];
   const stripe = getStripeClient();
 
   // Optimize: Pre-fetch and cache all customers to avoid redundant searches
@@ -246,6 +245,10 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
       });
 
       // Add line item
+      if (!invoice.id) {
+        throw new Error('Invoice ID is required but was not provided');
+      }
+      
       await stripe.invoiceItems.create({
         customer: customer.id,
         invoice: invoice.id,

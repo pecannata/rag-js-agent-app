@@ -94,14 +94,6 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Insert student
-    const insertStudentQuery = `
-      INSERT INTO STUDIO_STUDENTS 
-      (STUDENT_NAME, PARENT_FIRST_NAME, PARENT_LAST_NAME, CONTACT_EMAIL, CONTACT_PHONE, 
-       BIRTH_DATE, AUDITION_STATUS, NOTES, CREATED_BY)
-      VALUES (?, ?, ?, ?, ?, TO_DATE(?, 'YYYY-MM-DD'), ?, ?, ?)
-      RETURNING STUDENT_ID INTO ?
-    `;
-
     const studentParams = [
       name,
       parentFirstName,

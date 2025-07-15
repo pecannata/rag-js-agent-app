@@ -4,8 +4,9 @@ import { executeQuery } from '../../../../lib/database';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession();
     if (!session) {
@@ -50,7 +51,7 @@ export async function PUT(
       status,
       notes,
       price || 0,
-      parseInt(params.id)
+      parseInt(id)
     ];
 
     await executeQuery(updateQuery, updateParams);
@@ -66,9 +67,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession();
     if (!session) {
@@ -82,7 +84,7 @@ export async function DELETE(
       WHERE TEACHER_ID = ? AND STATUS = 'ACTIVE'
     `;
 
-    const checkResult = await executeQuery(checkQuery, [parseInt(params.id)]);
+    const checkResult = await executeQuery(checkQuery, [parseInt(id)]);
     const lessonCount = checkResult[0]?.lesson_count || 0;
 
     if (lessonCount > 0) {
@@ -93,7 +95,7 @@ export async function DELETE(
 
     // Delete the teacher
     const deleteQuery = `DELETE FROM STUDIO_TEACHERS WHERE TEACHER_ID = ?`;
-    await executeQuery(deleteQuery, [parseInt(params.id)]);
+    await executeQuery(deleteQuery, [parseInt(id)]);
 
     return NextResponse.json({ 
       success: true, 

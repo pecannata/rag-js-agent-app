@@ -1,17 +1,17 @@
 {
-  "version": "1.0.161",
+  "version": "1.0.224",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-13T20:21:09.331Z",
-  "buildDate": "Jul 13, 2025",
-  "sourceVersion": "v1.0.160.071325",
+  "buildTime": "2025-07-15T00:57:09.361Z",
+  "buildDate": "Jul 14, 2025",
+  "sourceVersion": "v1.0.223.071425",
   "git": {
     "branch": "main",
-    "commit": "7379088886e6953c81cfb9b35a3c2862627f0926",
-    "shortCommit": "73790888",
-    "commitDate": "2025-07-13 13:42:27 -0500",
-    "commitMessage": "please change the name \"schedule\" to \"Private lessons\"."
+    "commit": "e8c94ae1e9aad4fba3777061d04cdbfac37ecc6b",
+    "shortCommit": "e8c94ae1",
+    "commitDate": "2025-07-14 18:34:02 -0500",
+    "commitMessage": "Increase invoices performance"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.160-73790888-20250713-202109"
+  "buildSignature": "1.0.223-e8c94ae1-20250715-005709"
 }

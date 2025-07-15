@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { executeQuery } from '../../../lib/database';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   console.log('🧪 Testing database operations...');
   
   try {

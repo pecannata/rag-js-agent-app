@@ -59,13 +59,14 @@ interface Teacher {
   specialties: string;
   status: string;
   notes: string;
+  price?: number;
 }
 
 interface StudioManagerProps {
   apiKey: string;
 }
 
-export default function StudioManager({ apiKey }: StudioManagerProps) {
+export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
   const [activeView, setActiveView] = useState<'students' | 'teachers' | 'staff' | 'private-lessons' | 'invoicing' | 'analytics'>('students');
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -97,7 +98,11 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   // Helper function to convert 24-hour time to 12-hour format
   const formatTime = (time24: string) => {
     if (!time24) return time24;
-    const [hours, minutes] = time24.split(':');
+    const timeParts = time24.split(':');
+    if (timeParts.length < 2) return time24;
+    const hours = timeParts[0];
+    const minutes = timeParts[1];
+    if (!hours || !minutes) return time24;
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
@@ -107,8 +112,16 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
   // Helper function to convert 12-hour time to 24-hour format
   const formatTime24 = (time12: string) => {
     if (!time12) return time12;
-    const [time, period] = time12.split(' ');
-    const [hours, minutes] = time.split(':');
+    const timeParts = time12.split(' ');
+    if (timeParts.length < 2) return time12;
+    const time = timeParts[0];
+    const period = timeParts[1];
+    if (!time || !period) return time12;
+    const hourMinuteParts = time.split(':');
+    if (hourMinuteParts.length < 2) return time12;
+    const hours = hourMinuteParts[0];
+    const minutes = hourMinuteParts[1];
+    if (!hours || !minutes) return time12;
     let hour = parseInt(hours);
     if (period === 'PM' && hour !== 12) hour += 12;
     if (period === 'AM' && hour === 12) hour = 0;
@@ -148,9 +161,12 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     const result: { [key: string]: { weekStart: string; formattedDate: string }[] } = {};
     sortedMonths.forEach(month => {
-      result[month] = weeksByMonth[month].sort((a, b) => 
-        new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime()
-      );
+      const monthWeeks = weeksByMonth[month];
+      if (monthWeeks) {
+        result[month] = monthWeeks.sort((a, b) => 
+          new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime()
+        );
+      }
     });
     
     return result;
@@ -186,8 +202,11 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     const weeksByMonth = getWeeksByMonth();
     const weeksInMonth = weeksByMonth[month];
     if (weeksInMonth && weeksInMonth.length > 0) {
-      // Set to first week in the selected month
-      setCurrentWeek(prev => ({ ...prev, weekOf: weeksInMonth[0].weekStart }));
+      const firstWeek = weeksInMonth[0];
+      if (firstWeek && firstWeek.weekStart) {
+        // Set to first week in the selected month
+        setCurrentWeek(prev => ({ ...prev, weekOf: firstWeek.weekStart }));
+      }
     }
   };
 
@@ -241,13 +260,10 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           const serverSlots = scheduleData.slots || [];
           const localSlots = prev.slots || [];
           
-          // Create a map of server slots by their ID
-          const serverSlotMap = new Map(serverSlots.map(slot => [slot.id, slot]));
-          
           // Keep all local slots and add server slots that don't exist locally
           const mergedSlots = [...localSlots];
-          serverSlots.forEach(serverSlot => {
-            const localSlotExists = localSlots.some(localSlot => localSlot.id === serverSlot.id);
+          serverSlots.forEach((serverSlot: ScheduleSlot) => {
+            const localSlotExists = localSlots.some((localSlot: ScheduleSlot) => localSlot.id === serverSlot.id);
             if (!localSlotExists) {
               mergedSlots.push(serverSlot);
             }
@@ -509,11 +525,6 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     }
   };
 
-  // Legacy function - replaced by handleCellClick
-  const handleAddScheduleSlot = async (day: string, time: string, studio?: string) => {
-    // This function is no longer used - all cell interactions go through handleCellClick
-    console.log('Legacy handleAddScheduleSlot called - use handleCellClick instead');
-  };
 
   // Helper function to get fallback color for slots without Excel colors
   const getFallbackColor = (teacherName: string): string => {
@@ -531,19 +542,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     return '#9CA3AF'; // Default gray color
   };
 
-  const handleUpdateScheduleSlot = (slotId: string, updates: Partial<ScheduleSlot>) => {
-    setCurrentWeek(prev => ({
-      ...prev,
-      slots: prev.slots.map(slot => slot.id === slotId ? { ...slot, ...updates } : slot)
-    }));
-  };
 
-  const handleDeleteScheduleSlot = (slotId: string) => {
-    setCurrentWeek(prev => ({
-      ...prev,
-      slots: prev.slots.filter(slot => slot.id !== slotId)
-    }));
-  };
 
   // Handle cell click based on selected role
   const handleCellClick = (day: string, time: string, studio: string) => {
@@ -605,14 +604,16 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
           // Update existing slot - preserve existing color and teacher if they exist
           const updatedSlots = [...prev.slots];
           const existingSlot = updatedSlots[existingSlotIndex];
-          updatedSlots[existingSlotIndex] = { 
-            ...existingSlot, 
-            studentName, 
-            lessonType,
-            // Keep existing teacher and color if they exist
-            teacher: existingSlot.teacher || '',
-            color: existingSlot.color || 'transparent' // Default white/transparent for student-only slots
-          };
+          if (existingSlot) {
+            updatedSlots[existingSlotIndex] = { 
+              ...existingSlot, 
+              studentName, 
+              lessonType,
+              // Keep existing teacher and color if they exist
+              teacher: existingSlot.teacher || '',
+              color: existingSlot.color || 'transparent' // Default white/transparent for student-only slots
+            } as ScheduleSlot;
+          }
           return { ...prev, slots: updatedSlots };
         } else {
           // Add new slot with neutral student color
@@ -650,7 +651,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
             ...updatedSlots[existingSlotIndex], 
             teacher: teacherName,
             color: teacherColor
-          };
+          } as ScheduleSlot;
           return { ...prev, slots: updatedSlots };
         } else {
           // Create new slot with teacher color (no student info yet)
@@ -739,8 +740,26 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
       'Notes': student.notes
     }));
     
+    if (csvData.length === 0) {
+      // Handle empty data case
+      const csvContent = 'Student Name,Parent First Name,Parent Last Name,Contact Email,Contact Phone,Birth Date,Age,Audition Status,Audition Prep,Technique Intensive,Ballet Intensive,Master Intensive,Notes\n';
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, 'studio-students.csv');
+      return;
+    }
+    
+    // At this point, we know csvData has at least one element
+    const firstRow = csvData[0];
+    if (!firstRow) {
+      // Additional safety check
+      const csvContent = 'Student Name,Parent First Name,Parent Last Name,Contact Email,Contact Phone,Birth Date,Age,Audition Status,Audition Prep,Technique Intensive,Ballet Intensive,Master Intensive,Notes\n';
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, 'studio-students.csv');
+      return;
+    }
+    
     const csvContent = [
-      Object.keys(csvData[0]).join(','),
+      Object.keys(firstRow).join(','),
       ...csvData.map(row => Object.values(row).join(','))
     ].join('\n');
     
@@ -764,6 +783,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     if (!files || files.length === 0) return;
     
     const file = files[0];
+    if (!file) return;
+    
     console.log('📁 Selected file:', file.name, 'Size:', file.size, 'Type:', file.type);
     setIsUploading(true);
     setUploadStatus('Reading Excel file...');
@@ -794,9 +815,13 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     for (let i = 0; i < sheetNames.length; i++) {
       const sheetName = sheetNames[i];
+      if (!sheetName) continue;
+      
       setUploadStatus(`Processing sheet ${i + 1}/${sheetNames.length}: ${sheetName}`);
       
       const worksheet = workbook.Sheets[sheetName];
+      if (!worksheet) continue;
+      
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
       
       // Skip empty sheets
@@ -878,7 +903,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     // Strategy 1: Look for legend area (typically bottom-right section)
     console.log('🔍 Looking for legend area in bottom-right section...');
-    const legendArea = findLegendArea(jsonData, worksheet);
+    const legendArea = findLegendArea(jsonData);
     if (legendArea) {
       extractFromLegendArea(jsonData, worksheet, teacherColorMap, legendArea);
     }
@@ -886,17 +911,19 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     // Strategy 2: Access the notes/comments from the worksheet object
     const notes = worksheet['!comments'] || [];
     
-    notes.forEach(comment => {
+    notes.forEach((comment: any) => {
       const text = comment.t;
       if (text && typeof text === 'string') {
         // Extract teacher-color pairs from the comment text
         const pattern = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*[:-]\s*#([0-9A-Fa-f]{6})/g;
         let match;
         while ((match = pattern.exec(text)) !== null) {
-          const teacherName = match[1].trim();
-          const colorCode = `#${match[2].trim()}`;
-          teacherColorMap[teacherName] = colorCode;
-          console.log(`🎨 Mapped from notes: ${teacherName} -> ${colorCode}`);
+          if (match[1] && match[2]) {
+            const teacherName = match[1].trim();
+            const colorCode = `#${match[2].trim()}`;
+            teacherColorMap[teacherName] = colorCode;
+            console.log(`🎨 Mapped from notes: ${teacherName} -> ${colorCode}`);
+          }
         }
       }
     });
@@ -959,7 +986,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
         
         for (const pattern of colorPatterns) {
           const match = cellValue.match(pattern);
-          if (match) {
+          if (match && match[1] && match[2]) {
             const teacherName = match[1].trim();
             const colorInfo = match[2].trim();
             
@@ -983,7 +1010,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     console.log('📊 Teacher color mappings found:', teacherColorMap);
   };
   
-  const findLegendArea = (jsonData: any[][], worksheet: any) => {
+  const findLegendArea = (jsonData: any[][]) => {
     console.log('🔍 Searching for legend area...');
     
     // Look for common legend indicators in the bottom portion of the sheet
@@ -1129,43 +1156,6 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     return null;
   };
   
-  const extractTeacherNamesFromLegendArea = (jsonData: any[][], worksheet: any, startRow: number, startCol: number, teacherColorMap: { [key: string]: string }) => {
-    // Look in a small area around the legend cell for teacher names with colors
-    const searchRadius = 10;
-    
-    for (let row = Math.max(0, startRow - searchRadius); row < Math.min(jsonData.length, startRow + searchRadius); row++) {
-      const rowData = jsonData[row];
-      if (!rowData) continue;
-      
-      for (let col = Math.max(0, startCol - searchRadius); col < Math.min(rowData.length, startCol + searchRadius); col++) {
-        const cellValue = rowData[col];
-        if (!cellValue || typeof cellValue !== 'string') continue;
-        
-        // Check if this looks like a teacher name
-        if (isLikelyTeacherName(cellValue)) {
-          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-          const cellStyle = worksheet[cellAddress]?.s;
-          let cellColor = null;
-          
-          if (cellStyle) {
-            if (cellStyle.fgColor?.rgb) {
-              cellColor = `#${cellStyle.fgColor.rgb}`;
-            } else if (cellStyle.bgColor?.rgb) {
-              cellColor = `#${cellStyle.bgColor.rgb}`;
-            }
-          }
-          
-          if (cellColor) {
-            const teacherName = cellValue.trim();
-            if (!teacherColorMap[teacherName]) {
-              teacherColorMap[teacherName] = cellColor;
-              console.log(`🎨 Found teacher-color mapping from legend area: ${teacherName} -> ${cellColor}`);
-            }
-          }
-        }
-      }
-    }
-  };
   
   const isLikelyTeacherName = (text: string): boolean => {
     // Check if text looks like a teacher name
@@ -1230,8 +1220,6 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     let dayHeaderRowIndex = -1;
     let studioHeaderRowIndex = -1;
     
-    // Known instructors to filter out from regular schedule
-    const knownInstructors = ['MEGHAN', 'RYANN', 'PAIGE', 'GRACIE', 'CARALIN', 'HUNTER', 'EMERY', 'ARDEN'];
     
     for (let i = 0; i < Math.min(10, jsonData.length); i++) {
       const row = jsonData[i];
@@ -1273,9 +1261,18 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     const columnMapping: { day: string; studio: string; colIndex: number }[] = [];
     
+    // Check if dayRow exists before processing
+    if (!dayRow) {
+      console.warn('⚠️ Day row is undefined');
+      return {
+        schedule,
+        teacherColorMap
+      };
+    }
+    
     for (let col = 0; col < dayRow.length; col++) {
       const dayCell = dayRow[col];
-      const studioCell = studioRow[col];
+      const studioCell = studioRow?.[col];
       
       if (dayCell && typeof dayCell === 'string') {
         const dayName = dayCell.toString().toUpperCase();
@@ -1420,25 +1417,25 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     // Pattern 1: Student - Teacher
     let teacherMatch = text.match(/-.+?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
-    if (teacherMatch) {
+    if (teacherMatch && teacherMatch[1]) {
       return teacherMatch[1].trim();
     }
     
     // Pattern 2: Student (Teacher)
     teacherMatch = text.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\)/i);
-    if (teacherMatch) {
+    if (teacherMatch && teacherMatch[1]) {
       return teacherMatch[1].trim();
     }
     
     // Pattern 3: Teacher: Student
     teacherMatch = text.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*:/i);
-    if (teacherMatch) {
+    if (teacherMatch && teacherMatch[1]) {
       return teacherMatch[1].trim();
     }
     
     // Pattern 4: Look for "with [Teacher]" or "w/ [Teacher]"
     teacherMatch = text.match(/(?:with|w\/|w\s)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
-    if (teacherMatch) {
+    if (teacherMatch && teacherMatch[1]) {
       return teacherMatch[1].trim();
     }
     
@@ -1458,7 +1455,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
 
   const extractStudio = (text: string): string => {
     const studioMatch = text.match(/studio\s*(\d+|[a-z])/i);
-    return studioMatch ? `Studio ${studioMatch[1].toUpperCase()}` : 'Studio A';
+    return studioMatch && studioMatch[1] ? `Studio ${studioMatch[1].toUpperCase()}` : 'Studio A';
   };
 
   const formatTimeToHourMinute = (timeStr: string): string => {
@@ -1477,7 +1474,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
     
     // Try to parse 12-hour format
     const match = cleanTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-    if (match) {
+    if (match && match[1] && match[2]) {
       let hours = parseInt(match[1]);
       const minutes = match[2];
       const ampm = match[3]?.toUpperCase();
@@ -2033,7 +2030,7 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                   {/* Only show teachers that exist in studio_teachers table AND have colors from JSON */}
                   {currentWeek.teachers && Object.keys(currentWeek.teachers).length > 0 ? (
                     Object.entries(currentWeek.teachers)
-                      .filter(([teacherName, color]) => {
+                      .filter(([teacherName]) => {
                         // Check if this teacher exists in the studio_teachers table with exact or very close matches
                         const cleanTeacherName = teacherName.toLowerCase().trim();
                         return teachers.some(teacher => {
@@ -2121,8 +2118,8 @@ export default function StudioManager({ apiKey }: StudioManagerProps) {
                                     <div
                                       className="rounded p-1 text-black text-xs h-full flex flex-col justify-center cursor-pointer hover:opacity-90 transition-opacity"
                                       style={{
-                                        backgroundColor: slot.color || getFallbackColor(slot.teacher),
-                                        borderLeft: `4px solid ${slot.color || getFallbackColor(slot.teacher)}`
+                                        backgroundColor: slot.color || getFallbackColor(slot.teacher || ''),
+                                        borderLeft: `4px solid ${slot.color || getFallbackColor(slot.teacher || '')}`
                                       }}
                                       onClick={() => handleCellClick(day, time, studio)}
                                     >

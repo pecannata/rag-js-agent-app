@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
     // Analyze each sheet
     for (const sheetName of workbook.SheetNames) {
       const worksheet = workbook.Sheets[sheetName];
+      if (!worksheet) continue;
+      
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
       
       // Get sheet range
@@ -106,10 +108,10 @@ function analyzeContent(jsonData: any[][]): any {
   const contentAnalysis = {
     totalRows: jsonData.length,
     totalNonEmptyRows: 0,
-    potentialTimeSlots: [],
-    studentNamePatterns: [],
-    lessonTypePatterns: [],
-    teacherNamePatterns: []
+    potentialTimeSlots: [] as any[],
+    studentNamePatterns: [] as any[],
+    lessonTypePatterns: [] as any[],
+    teacherNamePatterns: [] as any[]
   };
   
   const timePattern = /\b(\d{1,2}):(\d{2})\s*(AM|PM)?\b/i;
@@ -143,7 +145,7 @@ function analyzeContent(jsonData: any[][]): any {
       // Check for potential student names
       const nameMatches = cellStr.match(namePattern);
       if (nameMatches) {
-        nameMatches.forEach(name => {
+        nameMatches.forEach((name: string) => {
           contentAnalysis.studentNamePatterns.push({
             row: rowIndex,
             col: colIndex,
@@ -154,7 +156,7 @@ function analyzeContent(jsonData: any[][]): any {
       }
       
       // Check for lesson type keywords
-      lessonTypeWords.forEach(keyword => {
+      lessonTypeWords.forEach((keyword: string) => {
         if (cellStr.toLowerCase().includes(keyword)) {
           contentAnalysis.lessonTypePatterns.push({
             row: rowIndex,
@@ -172,7 +174,7 @@ function analyzeContent(jsonData: any[][]): any {
 
 function findPotentialScheduleData(jsonData: any[][]): any {
   const scheduleData = {
-    likelyScheduleRows: [],
+    likelyScheduleRows: [] as any[],
     patterns: {
       timeInFirstColumn: false,
       studentsInDayColumns: false,
@@ -209,8 +211,8 @@ function findPotentialScheduleData(jsonData: any[][]): any {
   });
   
   // Check for multiple entries per cell (separated by newlines)
-  jsonData.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
+  jsonData.forEach((row, _rowIndex) => {
+    row.forEach((cell, _colIndex) => {
       if (cell && typeof cell === 'string' && cell.includes('\n')) {
         scheduleData.patterns.multipleEntriesPerCell = true;
       }
