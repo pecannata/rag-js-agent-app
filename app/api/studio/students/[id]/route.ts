@@ -58,60 +58,66 @@ export async function PUT(
     await executeQuery(updateStudentQuery, studentParams);
 
     // Update class enrollments - first delete existing enrollments
-    await executeQuery(
-      'DELETE FROM STUDIO_STUDENT_CLASSES WHERE STUDENT_ID = ?',
-      [studentId]
-    );
+    try {
+      await executeQuery(
+        'DELETE FROM STUDIO_STUDENT_CLASSES WHERE STUDENT_ID = ?',
+        [studentId]
+      );
 
-    // Get class type mappings
-    const classTypeQuery = `SELECT CLASS_TYPE_ID, CLASS_TYPE_CODE FROM STUDIO_CLASS_TYPES`;
-    const classTypes = await executeQuery(classTypeQuery, []);
-    
-    const classCodeMap: { [key: string]: number } = {};
-    classTypes.forEach((ct: any) => {
-      classCodeMap[ct.class_type_code] = ct.class_type_id;
-    });
+      // Get class type mappings
+      const classTypeQuery = `SELECT CLASS_TYPE_ID, CLASS_TYPE_CODE FROM STUDIO_CLASS_TYPES WHERE IS_ACTIVE = 'Y'`;
+      const classTypes = await executeQuery(classTypeQuery, []);
+      
+      const classCodeMap: { [key: string]: number } = {};
+      classTypes.forEach((ct: any) => {
+        classCodeMap[ct.class_type_code] = ct.class_type_id;
+      });
 
-    // Insert new enrollments
-    const enrollmentPromises = [];
-    
-    if (classes.auditionPrep && classCodeMap['AUD_PREP']) {
-      enrollmentPromises.push(
-        executeQuery(
-          'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID) VALUES (?, ?)',
-          [studentId, classCodeMap['AUD_PREP']]
-        )
-      );
-    }
-    
-    if (classes.techniqueIntensive && classCodeMap['TECH_INT']) {
-      enrollmentPromises.push(
-        executeQuery(
-          'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID) VALUES (?, ?)',
-          [studentId, classCodeMap['TECH_INT']]
-        )
-      );
-    }
-    
-    if (classes.balletIntensive && classCodeMap['BALLET_INT']) {
-      enrollmentPromises.push(
-        executeQuery(
-          'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID) VALUES (?, ?)',
-          [studentId, classCodeMap['BALLET_INT']]
-        )
-      );
-    }
-    
-    if (classes.masterIntensive && classCodeMap['MASTER_INT']) {
-      enrollmentPromises.push(
-        executeQuery(
-          'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID) VALUES (?, ?)',
-          [studentId, classCodeMap['MASTER_INT']]
-        )
-      );
-    }
+      // Insert new enrollments
+      const enrollmentPromises = [];
+      
+      if (classes.auditionPrep && classCodeMap['AUD_PREP']) {
+        enrollmentPromises.push(
+          executeQuery(
+            'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID, STATUS) VALUES (?, ?, \'ACTIVE\')',
+            [studentId, classCodeMap['AUD_PREP']]
+          )
+        );
+      }
+      
+      if (classes.techniqueIntensive && classCodeMap['TECH_INT']) {
+        enrollmentPromises.push(
+          executeQuery(
+            'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID, STATUS) VALUES (?, ?, \'ACTIVE\')',
+            [studentId, classCodeMap['TECH_INT']]
+          )
+        );
+      }
+      
+      if (classes.balletIntensive && classCodeMap['BALLET_INT']) {
+        enrollmentPromises.push(
+          executeQuery(
+            'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID, STATUS) VALUES (?, ?, \'ACTIVE\')',
+            [studentId, classCodeMap['BALLET_INT']]
+          )
+        );
+      }
+      
+      if (classes.masterIntensive && classCodeMap['MASTER_INT']) {
+        enrollmentPromises.push(
+          executeQuery(
+            'INSERT INTO STUDIO_STUDENT_CLASSES (STUDENT_ID, CLASS_TYPE_ID, STATUS) VALUES (?, ?, \'ACTIVE\')',
+            [studentId, classCodeMap['MASTER_INT']]
+          )
+        );
+      }
 
-    await Promise.all(enrollmentPromises);
+      await Promise.all(enrollmentPromises);
+      console.log('✅ Class enrollments updated successfully');
+    } catch (classError) {
+      console.error('⚠️ Error updating class enrollments:', classError);
+      // Don't fail the entire request if class enrollments fail
+    }
 
     return NextResponse.json({ 
       success: true, 

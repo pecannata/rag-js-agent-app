@@ -11,35 +11,52 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
+    const includeInactive = searchParams.get('includeInactive') === 'true';
 
     let query = `
       SELECT 
         TEACHER_ID,
         TEACHER_NAME,
-        FIRST_NAME,
-        LAST_NAME,
         EMAIL,
         PHONE,
         SPECIALTIES,
         STATUS,
         NOTES,
         PRICE,
-        CREATED_DATE,
-        MODIFIED_DATE
+        TO_CHAR(CREATED_DATE, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as CREATED_DATE,
+        TO_CHAR(MODIFIED_DATE, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as MODIFIED_DATE
       FROM STUDIO_TEACHERS
     `;
 
     const params: any[] = [];
+    const conditions: string[] = [];
+    
+    // Add search conditions
     if (search) {
-      query += ` WHERE UPPER(TEACHER_NAME) LIKE UPPER(?) 
-                 OR UPPER(FIRST_NAME) LIKE UPPER(?) 
-                 OR UPPER(LAST_NAME) LIKE UPPER(?)
-                 OR UPPER(EMAIL) LIKE UPPER(?)`;
+      conditions.push(`(
+        UPPER(TEACHER_NAME) LIKE UPPER(?) 
+        OR UPPER(EMAIL) LIKE UPPER(?)
+        OR UPPER(SPECIALTIES) LIKE UPPER(?)
+      )`);
       const searchPattern = `%${search}%`;
-      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+      params.push(searchPattern, searchPattern, searchPattern);
+    }
+    
+    // Add status filter unless explicitly including inactive
+    if (!includeInactive) {
+      conditions.push('UPPER(STATUS) = ?');
+      params.push('ACTIVE');
+    }
+    
+    // Add WHERE clause if conditions exist
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
-    query += ` ORDER BY TEACHER_NAME`;
+    query += ` ORDER BY UPPER(TEACHER_NAME)`;
+
+    console.log('🔍 Teachers query:', query);
+    console.log('🔍 Query params:', params);
 
     const result = await executeQuery(query, params);
     
@@ -47,22 +64,26 @@ export async function GET(request: NextRequest) {
     const teachers = result.map((row: any) => ({
       id: row.teacher_id?.toString(),
       name: row.teacher_name || '',
-      firstName: row.first_name || '',
-      lastName: row.last_name || '',
+      firstName: '', // No longer in database
+      lastName: '',  // No longer in database
       email: row.email || '',
       phone: row.phone || '',
       specialties: row.specialties || '',
       status: row.status || 'Active',
       notes: row.notes || '',
-      price: row.price || 0,
+      price: parseFloat(row.price) || 0,
       createdDate: row.created_date,
       modifiedDate: row.modified_date
     }));
 
+    console.log(`✅ Fetched ${teachers.length} teachers from Oracle database`);
     return NextResponse.json(teachers);
   } catch (error) {
-    console.error('Error fetching teachers:', error);
-    return NextResponse.json({ error: 'Failed to fetch teachers' }, { status: 500 });
+    console.error('❌ Error fetching teachers:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch teachers', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -76,8 +97,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       name,
-      firstName,
-      lastName,
       email,
       phone,
       specialties,
@@ -86,24 +105,29 @@ export async function POST(request: NextRequest) {
       price
     } = body;
 
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      return NextResponse.json({ error: 'Teacher name is required' }, { status: 400 });
+    }
+
     // Insert teacher
     const insertQuery = `
       INSERT INTO STUDIO_TEACHERS 
-      (TEACHER_NAME, FIRST_NAME, LAST_NAME, EMAIL, PHONE, SPECIALTIES, STATUS, NOTES, PRICE)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (TEACHER_NAME, EMAIL, PHONE, SPECIALTIES, STATUS, NOTES, PRICE)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     const teacherParams = [
-      name,
-      firstName,
-      lastName,
-      email,
-      phone,
-      specialties,
-      status || 'Active',
-      notes,
-      price || 0
+      name.trim(),
+      email?.trim() || '',
+      phone?.trim() || '',
+      specialties?.trim() || '',
+      (status || 'Active').toUpperCase(),
+      notes?.trim() || '',
+      parseFloat(price) || 0
     ];
+
+    console.log('🔍 Creating teacher with params:', teacherParams);
 
     await executeQuery(insertQuery, teacherParams);
 

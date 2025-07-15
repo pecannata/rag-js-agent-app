@@ -16,8 +16,6 @@ export async function PUT(
     const body = await request.json();
     const {
       name,
-      firstName,
-      lastName,
       email,
       phone,
       specialties,
@@ -26,11 +24,14 @@ export async function PUT(
       price
     } = body;
 
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      return NextResponse.json({ error: 'Teacher name is required' }, { status: 400 });
+    }
+
     const updateQuery = `
       UPDATE STUDIO_TEACHERS 
       SET TEACHER_NAME = ?, 
-          FIRST_NAME = ?, 
-          LAST_NAME = ?, 
           EMAIL = ?, 
           PHONE = ?, 
           SPECIALTIES = ?, 
@@ -42,17 +43,17 @@ export async function PUT(
     `;
 
     const updateParams = [
-      name,
-      firstName,
-      lastName,
-      email,
-      phone,
-      specialties,
-      status,
-      notes,
-      price || 0,
+      name.trim(),
+      email?.trim() || '',
+      phone?.trim() || '',
+      specialties?.trim() || '',
+      (status || 'Active').toUpperCase(),
+      notes?.trim() || '',
+      parseFloat(price) || 0,
       parseInt(id)
     ];
+
+    console.log('🔍 Updating teacher with params:', updateParams);
 
     await executeQuery(updateQuery, updateParams);
 

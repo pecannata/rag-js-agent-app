@@ -80,6 +80,8 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
+  const [isSavingStudent, setIsSavingStudent] = useState(false);
+  const [isSavingTeacher, setIsSavingTeacher] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
@@ -335,6 +337,7 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
   };
 
   const handleSaveStudent = async (student: Student) => {
+    setIsSavingStudent(true);
     try {
       const method = isAddingStudent ? 'POST' : 'PUT';
       const url = isAddingStudent 
@@ -358,6 +361,8 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
       }
     } catch (error) {
       console.error('Error saving student:', error);
+    } finally {
+      setIsSavingStudent(false);
     }
   };
 
@@ -371,13 +376,15 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
       phone: '',
       specialties: '',
       status: 'Active',
-      notes: ''
+      notes: '',
+      price: 0
     };
     setSelectedTeacher(newTeacher);
     setIsAddingTeacher(true);
   };
 
   const handleSaveTeacher = async (teacher: Teacher) => {
+    setIsSavingTeacher(true);
     try {
       const method = isAddingTeacher ? 'POST' : 'PUT';
       const url = isAddingTeacher 
@@ -401,6 +408,8 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
       }
     } catch (error) {
       console.error('Error saving teacher:', error);
+    } finally {
+      setIsSavingTeacher(false);
     }
   };
 
@@ -1696,10 +1705,19 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                           Parent
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Contact
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Phone
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Birth Date
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Age
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Notes
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Classes
@@ -1723,10 +1741,20 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{student.email}</div>
-                            <div className="text-sm text-gray-500">{student.phone}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {student.phone}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {student.birthDate}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {student.age}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="max-w-xs truncate" title={student.notes}>
+                              {student.notes || '-'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1">
@@ -1788,7 +1816,7 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                           Teacher
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Contact
+                          Email
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Specialties
@@ -1809,7 +1837,6 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                         <tr key={teacher.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="font-medium text-gray-900">{teacher.name}</div>
-                            <div className="text-sm text-gray-500">{teacher.firstName} {teacher.lastName}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{teacher.email}</div>
@@ -1818,7 +1845,7 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{teacher.specialties}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.price || [30, 40, 50][Math.floor(Math.random() * 3)]}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.price || 'Not set'}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               teacher.status === 'Active'
@@ -2034,16 +2061,10 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                         // Check if this teacher exists in the studio_teachers table with exact or very close matches
                         const cleanTeacherName = teacherName.toLowerCase().trim();
                         return teachers.some(teacher => {
-                          const teacherFullName = `${teacher.firstName} ${teacher.lastName}`.toLowerCase().trim();
                           const teacherDisplayName = teacher.name.toLowerCase().trim();
-                          const teacherFirstName = teacher.firstName.toLowerCase().trim();
-                          const teacherLastName = teacher.lastName.toLowerCase().trim();
                           
                           // Exact matches only
-                          return cleanTeacherName === teacherFullName ||
-                                 cleanTeacherName === teacherDisplayName ||
-                                 cleanTeacherName === teacherFirstName ||
-                                 cleanTeacherName === teacherLastName;
+                          return cleanTeacherName === teacherDisplayName;
                         });
                       })
                       .sort(([a], [b]) => a.localeCompare(b))
@@ -2522,9 +2543,20 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                 </button>
                 <button
                   onClick={() => handleSaveStudent(selectedStudent)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isSavingStudent}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Save
+                  {isSavingStudent ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
                 </button>
               </div>
             </div>
@@ -2566,29 +2598,19 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedTeacher.firstName}
-                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, firstName: e.target.value } : null)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedTeacher.lastName}
-                      onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, lastName: e.target.value } : null)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price per Lesson ($)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={selectedTeacher.price || ''}
+                    onChange={(e) => setSelectedTeacher(prev => prev ? { ...prev, price: parseFloat(e.target.value) || 0 } : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter price per lesson"
+                  />
                 </div>
                 
                 <div>
@@ -2670,9 +2692,20 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
                 </button>
                 <button
                   onClick={() => handleSaveTeacher(selectedTeacher)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                  disabled={isSavingTeacher}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Save
+                  {isSavingTeacher ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
                 </button>
               </div>
             </div>

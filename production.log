@@ -1155,3 +1155,225 @@ Error fetching teachers: Error: Database execution failed: Database error: 2025-
 ✅ Database query executed successfully
 📤 Output length: 19842
 📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"STUDENT_ID\",\n          \"type\" : \"NUMBER\"\n        },\n        {\n          \"name\" : \"STUDENT_NAME\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"PARENT_FIRST_NAME\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"PARENT_LAST_NAME\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"CONTACT_EMAIL\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"CONTACT_PHONE\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"BIRTH_DATE_STR\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"AGE\",\n          \"type\" : \"NUMBER\"\n        },\n        {\n          \"name\" : \"AUDITION_STATUS\",\n          \"type\" : \"VARCHAR2\"\n        },\n        {\n          \"name\" : \"NOTES\",\n          \"type\"...[TRUNCATED]
+🧪 Testing database operations...
+Test 1: Simple SELECT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS
+📊 Query length: 52
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS"
+📊 Query length: 52
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ SELECT result: [ { count: 1 } ]
+Test 2: INSERT with small JSON
+🔄 Executing insert...
+🔍 Executing Oracle Database Query (first 500 chars): 
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{"test":"small data","timestamp":"2025-07-15T23:13:47.446Z"}')
+    
+📊 Query length: 202
+📝 Original params count: 2
+   Param 0: string, length: 10
+   Param 1: string, length: 60
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{\"test\":\"small data\",\"timestamp\":\"2
+📊 Query length: 202
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ INSERT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 3: Explicit COMMIT
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ COMMIT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 4: Verify INSERT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 112
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 112
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ VERIFY result: [ { count: 1 } ]
+Test 5: Cleanup
+🔍 Executing Oracle Database Query (first 500 chars): DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 94
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 94
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+🧪 Testing database operations...
+Test 1: Simple SELECT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS
+📊 Query length: 52
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS"
+📊 Query length: 52
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ SELECT result: [ { count: 1 } ]
+Test 2: INSERT with small JSON
+🔄 Executing insert...
+🔍 Executing Oracle Database Query (first 500 chars): 
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{"test":"small data","timestamp":"2025-07-15T23:15:38.089Z"}')
+    
+📊 Query length: 202
+📝 Original params count: 2
+   Param 0: string, length: 10
+   Param 1: string, length: 60
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{\"test\":\"small data\",\"timestamp\":\"2
+📊 Query length: 202
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ INSERT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 3: Explicit COMMIT
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ COMMIT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 4: Verify INSERT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 112
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 112
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ VERIFY result: [ { count: 1 } ]
+Test 5: Cleanup
+🔍 Executing Oracle Database Query (first 500 chars): DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 94
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 94
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+🧪 Testing database operations...
+Test 1: Simple SELECT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS
+📊 Query length: 52
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS"
+📊 Query length: 52
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ SELECT result: [ { count: 1 } ]
+Test 2: INSERT with small JSON
+🔄 Executing insert...
+🔍 Executing Oracle Database Query (first 500 chars): 
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{"test":"small data","timestamp":"2025-07-15T23:18:04.616Z"}')
+    
+📊 Query length: 202
+📝 Original params count: 2
+   Param 0: string, length: 10
+   Param 1: string, length: 60
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "
+      INSERT INTO STUDIO_PRIVATE_LESSONS 
+      (WEEK_START_DATE, FULL_WEEK_JSON)
+      VALUES (TO_DATE('2025-07-13', 'YYYY-MM-DD'), '{\"test\":\"small data\",\"timestamp\":\"2
+📊 Query length: 202
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ INSERT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 3: Explicit COMMIT
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+✅ COMMIT result: [ { success: true, operation: 'modify', output: '' } ]
+Test 4: Verify INSERT
+🔍 Executing Oracle Database Query (first 500 chars): SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 112
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "SELECT COUNT(*) as count FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 112
+✅ Database query executed successfully
+📤 Output length: 209
+📤 Raw output: "\n{\n  \"results\" : [\n    {\n      \"columns\" : [\n        {\n          \"name\" : \"COUNT\",\n          \"type\" : \"NUMBER\"\n        }\n      ],\n      \"items\" : [\n        {\n          \"count\" : 1\n        }\n      ]\n    }\n  ]\n}"
+✅ VERIFY result: [ { count: 1 } ]
+Test 5: Cleanup
+🔍 Executing Oracle Database Query (first 500 chars): DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')
+📊 Query length: 94
+📝 Original params count: 1
+   Param 0: string, length: 10
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "DELETE FROM STUDIO_PRIVATE_LESSONS WHERE WEEK_START_DATE = TO_DATE('2025-07-13', 'YYYY-MM-DD')"
+📊 Query length: 94
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator
+🔍 Executing Oracle Database Query (first 500 chars): COMMIT
+📊 Query length: 6
+📝 Original params count: 0
+🚀 Executing command (first 200 chars): bash ./SQLclScript.sh "COMMIT"
+📊 Query length: 6
+✅ Database query executed successfully
+📤 Output length: 1
+📤 Raw output: "\n"
+🔄 This is a modifying query (INSERT/UPDATE/DELETE), returning success indicator

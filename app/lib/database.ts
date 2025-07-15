@@ -146,6 +146,9 @@ console.log('📤 Raw output:', truncateJSON(stdout));
     
     // Parse JSON response for SELECT queries
     try {
+      if (/Error/.test(stdout)) {
+        throw new Error('SQL Error: ' + stdout);
+      }
       const jsonData = JSON.parse(stdout);
       
       // Extract the actual data from Oracle's JSON format
