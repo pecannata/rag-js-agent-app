@@ -93,6 +93,8 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
   const [isProcessingInvoices, setIsProcessingInvoices] = useState(false);  
   const [invoiceResults, setInvoiceResults] = useState<any[]>([]);
   const [isResetMode, setIsResetMode] = useState(false);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   
   // File input ref for Excel upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -298,6 +300,21 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
       }
     } catch (error) {
       console.error('Error loading available weeks:', error);
+    }
+  };
+
+  const loadAnalytics = async () => {
+    setIsLoadingAnalytics(true);
+    try {
+      const response = await fetch('/api/studio/analytics');
+      if (response.ok) {
+        const analyticsData = await response.json();
+        setAnalytics(analyticsData);
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setIsLoadingAnalytics(false);
     }
   };
 
@@ -1572,7 +1589,10 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
           </button>
           
           <button
-            onClick={() => setActiveView('analytics')}
+            onClick={() => {
+              setActiveView('analytics');
+              loadAnalytics();
+            }}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               activeView === 'analytics'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -2372,24 +2392,172 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
           {/* Analytics View */}
           {activeView === 'analytics' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📊</div>
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
-                  <p className="text-gray-600 mb-6">Studio analytics and reporting features</p>
-                  <div className="space-y-2 text-sm text-gray-500">
-                    <p>• Student enrollment trends</p>
-                    <p>• Class attendance analytics</p>
-                    <p>• Revenue and billing reports</p>
-                    <p>• Teacher performance metrics</p>
+              {isLoadingAnalytics ? (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">Loading Analytics...</h3>
+                    <div className="flex justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
                   </div>
-                  <div className="mt-6">
-                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                      Coming Soon - Analytics Features
+                </div>
+              ) : analytics ? (
+                <>
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="text-2xl">👥</div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-500">Total Students</div>
+                          <div className="text-2xl font-semibold text-gray-900">{analytics.overview.totalStudents}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="text-2xl">👨‍🏫</div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-500">Active Teachers</div>
+                          <div className="text-2xl font-semibold text-gray-900">{analytics.overview.activeTeachers}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="text-2xl">📚</div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-500">Active Classes</div>
+                          <div className="text-2xl font-semibold text-gray-900">{analytics.overview.activeClasses}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="text-2xl">🆕</div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-500">Recent Students</div>
+                          <div className="text-2xl font-semibold text-gray-900">{analytics.overview.recentStudents}</div>
+                          <div className="text-xs text-gray-500">Last 30 days</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Age Distribution */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Age Distribution</h3>
+                    <div className="space-y-3">
+                      {analytics.ageDistribution.map((group: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="text-sm text-gray-700">{group.ageGroup}</div>
+                          <div className="flex items-center">
+                            <div className="bg-blue-200 h-4 rounded-full mr-3" style={{ width: `${Math.max(group.count * 20, 20)}px` }}></div>
+                            <div className="text-sm font-medium text-gray-900">{group.count}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Class Enrollment */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Class Enrollment</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {analytics.classEnrollment.map((classItem: any, index: number) => (
+                            <tr key={index}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{classItem.className}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{classItem.classCode}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{classItem.enrolledCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Teacher Workload */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Teacher Workload</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialties</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {analytics.teacherWorkload.map((teacher: any, index: number) => (
+                            <tr key={index}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{teacher.teacherName}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{teacher.specialties}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.price}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{teacher.studentCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Audition Status */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Audition Status Breakdown</h3>
+                    <div className="space-y-3">
+                      {analytics.auditionStatus.map((status: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="text-sm text-gray-700">{status.status}</div>
+                          <div className="flex items-center">
+                            <div className="bg-green-200 h-4 rounded-full mr-3" style={{ width: `${Math.max(status.count * 15, 15)}px` }}></div>
+                            <div className="text-sm font-medium text-gray-900">{status.count}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">No Analytics Data</h3>
+                    <p className="text-gray-600 mb-6">Unable to load analytics data. Please try again.</p>
+                    <button 
+                      onClick={loadAnalytics}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Retry Loading Analytics
                     </button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>

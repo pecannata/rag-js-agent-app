@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     try {
       result = await executeQuery(query, params);
     } catch (dbError) {
-      console.error('Database query error:', dbError.message);
+      console.error('Database query error:', dbError instanceof Error ? dbError.message : 'Unknown error');
       return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
     
