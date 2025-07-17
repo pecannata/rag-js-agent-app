@@ -396,6 +396,62 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     }
   };
 
+  // Function to print the current blog post
+  const printCurrentPost = () => {
+    if (!currentPost) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${currentPost.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; page-break-after: avoid; }
+    p { margin-bottom: 1em; }
+    ul, ol { margin-bottom: 1em; padding-left: 2em; }
+    blockquote { border-left: 4px solid #ccc; margin: 1em 0; padding-left: 1em; color: #666; font-style: italic; }
+    code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-family: 'Monaco', 'Consolas', monospace; }
+    pre { background: #f5f5f5; padding: 1em; border-radius: 5px; overflow-x: auto; page-break-inside: avoid; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; page-break-inside: avoid; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    del { color: #888; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+    svg { width: 16px; height: 16px; vertical-align: middle; }
+    .inline-flex { display: inline-flex; align-items: center; gap: 4px; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>${currentPost.title}</h1>
+  <div>${currentPost.content}</div>
+</body>
+</html>`;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Wait for the content to load, then trigger print dialog
+    setTimeout(() => {
+      printWindow.print();
+      
+      // Optional: Close the window after printing (user can cancel if needed)
+      printWindow.onafterprint = function() {
+        printWindow.close();
+      };
+    }, 100);
+  };
+
+
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
@@ -407,6 +463,14 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
               {currentPost && (
                 <span className="ml-2 text-sm font-normal text-gray-600">
                   {isCreating ? 'New Post' : currentPost.title}
+                  {!isEditing && currentPost && (
+                    <button
+                      onClick={printCurrentPost}
+                      className="ml-2 px-3 py-1 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded"
+                    >
+                      📄 Print
+                    </button>
+                  )}
                   {hasUnsavedChanges && (
                     <span className="ml-2 text-orange-600" title="Unsaved changes">•</span>
                   )}
