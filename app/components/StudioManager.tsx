@@ -214,13 +214,8 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
     }
   };
 
-  // Load data from database
-  useEffect(() => {
-    loadStudents();
-    loadSchedule();
-    loadTeachers();
-    loadAvailableWeeks();
-  }, []);
+  // Note: Data loading is now handled individually when sidebar items are selected
+  // This prevents automatic queries when the Studio Manager tab is first opened
 
   const loadStudents = async () => {
     try {
@@ -320,15 +315,11 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
 
 
 
-  // Reload students when search term changes
-  useEffect(() => {
-    loadStudents();
-  }, [searchTerm]);
+  // Note: Students are now loaded only when the Students tab is selected
+  // Search functionality will work within the already loaded data
 
-  // Reload schedule when week changes
-  useEffect(() => {
-    loadSchedule();
-  }, [currentWeek.weekOf]);
+  // Note: Schedule is now loaded only when the Private Lessons tab is selected
+  // Week changes will not automatically trigger data loads
 
   const handleAddStudent = () => {
     const newStudent: Student = {
@@ -1529,7 +1520,10 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
         
         <nav className="flex-1 p-4 space-y-2">
           <button
-            onClick={() => setActiveView('students')}
+            onClick={() => {
+              setActiveView('students');
+              loadStudents();
+            }}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               activeView === 'students'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -1541,7 +1535,10 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
           </button>
           
           <button
-            onClick={() => setActiveView('teachers')}
+            onClick={() => {
+              setActiveView('teachers');
+              loadTeachers();
+            }}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               activeView === 'teachers'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -1565,7 +1562,11 @@ export default function StudioManager({ apiKey: _apiKey }: StudioManagerProps) {
           </button>
           
           <button
-            onClick={() => setActiveView('private-lessons')}
+            onClick={() => {
+              setActiveView('private-lessons');
+              loadSchedule();
+              loadAvailableWeeks();
+            }}
             className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               activeView === 'private-lessons'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { executeQuery } from '@/app/lib/database';
+import { executeQuery } from '../../../lib/database';
 import Stripe from 'stripe';
 
 // Initialize Stripe only when needed
@@ -216,8 +216,14 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
 
   console.log(`✅ Customer cache built: ${customerCache.size} customers cached`);
 
-  // Process invoices with optimized batching
-  const invoicePromises = lessonData.map(async (lesson) => {
+  // Process invoices in small parallel batches to balance speed and reliability
+  console.log(`🚀 Processing ${lessonData.length} invoices in batches of 10...`);
+  
+  const results = [];
+  const batchSize = 10; // Process 10 invoices at a time for optimal balance
+  
+  // Create a function to process a single invoice
+  const processInvoice = async (lesson: LessonData) => {
     try {
       const customer = customerCache.get(lesson.student_email);
       if (!customer) {
@@ -283,23 +289,24 @@ async function processInvoices(lessonData: LessonData[]): Promise<any[]> {
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
-  });
-
-  // Process all invoices concurrently (but with reasonable limits)
-  console.log(`🚀 Processing ${invoicePromises.length} invoices concurrently...`);
+  };
   
-  // Process in batches to avoid overwhelming Stripe API
-  const batchSize = 5; // Process 5 invoices at a time
-  const results = [];
-  
-  for (let i = 0; i < invoicePromises.length; i += batchSize) {
-    const batch = invoicePromises.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch);
+  // Process in batches
+  for (let i = 0; i < lessonData.length; i += batchSize) {
+    const batch = lessonData.slice(i, i + batchSize);
+    const batchNumber = Math.floor(i / batchSize) + 1;
+    const totalBatches = Math.ceil(lessonData.length / batchSize);
+    
+    console.log(`📦 Processing batch ${batchNumber}/${totalBatches} (${batch.length} invoices): ${batch.map(l => l.student_name).join(', ')}`);
+    
+    // Process this batch in parallel
+    const batchResults = await Promise.all(batch.map(lesson => processInvoice(lesson)));
     results.push(...batchResults);
     
-    // Small delay between batches to be respectful to Stripe API
-    if (i + batchSize < invoicePromises.length) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait between batches to prevent API overload (except after the last batch)
+    if (i + batchSize < lessonData.length) {
+      console.log(`⏳ Waiting 1.5 seconds before next batch...`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
   }
 
