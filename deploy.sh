@@ -13,15 +13,28 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration - EDIT THESE VALUES
-LINUX_SERVER="129.213.106.172"           # e.g., "192.168.1.100" or "your-server.com"
+LINUX_SERVER="129.146.0.190"           # e.g., "192.168.1.100" or "your-server.com"
 LINUX_USER="opc"             # e.g., "oracle" or "root"
 SSH_KEY="/Users/pcannata/.ssh/ssh-key-2023-03-25-phil-react.key"                # e.g., "~/.ssh/id_rsa" (optional, leave empty for password auth)
 DEPLOY_PATH="/opt/rag-js-agent-app"
 SERVICE_NAME="rag-js-agent"
 
-# API Keys - EDIT THESE
-COHERE_API_KEY="your_cohere_api_key_here"
-SERPAPI_KEY="your_serpapi_key_here"
+# Load API keys from secrets file
+if [ -f ".env.secrets.local" ]; then
+    echo "Loading API keys from .env.secrets.local file..."
+    source .env.secrets.local
+elif [ -f ".env.secrets" ]; then
+    echo "Loading API keys from .env.secrets file..."
+    source .env.secrets
+else
+    echo "⚠️  Warning: .env.secrets.local file not found. Using default placeholder keys."
+    echo "   Create .env.secrets.local file with your actual API keys for production deployment."
+fi
+
+# API Keys - These will be loaded from .env.secrets or use defaults
+COHERE_API_KEY="${COHERE_API_KEY:-your_cohere_api_key_here}"
+SERPAPI_KEY="${SERPAPI_KEY:-your_serpapi_key_here}"
+STRIPE_SECRET_KEY="${STRIPE_SECRET_KEY:-sk_test_placeholder}"
 
 function print_step() {
     echo -e "${BLUE}===> $1${NC}"
@@ -151,6 +164,7 @@ SERVICE_NAME="$2"
 COHERE_API_KEY="$3"
 SERPAPI_KEY="$4"
 LINUX_SERVER="$5"
+STRIPE_SECRET_KEY="$6"
 
 echo "🔧 Starting remote installation..."
 
@@ -231,7 +245,7 @@ fi
 
 # Install Node.js dependencies
 echo "Installing Node.js dependencies..."
-npm install --production
+npm install --legacy-peer-deps
 
 # Install Python dependencies for document processing
 echo "Installing Python dependencies..."
@@ -253,6 +267,13 @@ SERPAPI_KEY=$SERPAPI_KEY
 
 # Oracle Database access via SQLclScript.sh
 # No connection strings needed - using local SQLcl installation
+
+# =====================================================
+# STRIPE CONFIGURATION FOR INVOICING
+# =====================================================
+
+# Stripe Secret Key - For testing with enhanced batching
+STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 EOF
 
 chmod 600 .env.local
@@ -353,7 +374,7 @@ REMOTE_SCRIPT
 
     # Transfer and execute the remote script
     $SCP_CMD /tmp/remote_install.sh "$LINUX_USER@$LINUX_SERVER:/tmp/"
-    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$COHERE_API_KEY' '$SERPAPI_KEY' '$LINUX_SERVER'"
+    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$COHERE_API_KEY' '$SERPAPI_KEY' '$LINUX_SERVER' '$STRIPE_SECRET_KEY'"
     
     print_success "Remote installation complete"
 }
