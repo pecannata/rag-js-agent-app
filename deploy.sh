@@ -161,10 +161,7 @@ set -e
 
 DEPLOY_PATH="$1"
 SERVICE_NAME="$2"
-COHERE_API_KEY="$3"
-SERPAPI_KEY="$4"
-LINUX_SERVER="$5"
-STRIPE_SECRET_KEY="$6"
+LINUX_SERVER="$3"
 
 echo "🔧 Starting remote installation..."
 
@@ -252,31 +249,33 @@ echo "Installing Python dependencies..."
 pip3 install --user PyPDF2==2.12.1 python-docx==0.8.11 'Pillow<9.0.0' python-pptx==1.0.2 XlsxWriter nltk 2>/dev/null || echo "Warning: Some Python packages may have failed to install"
 
 
-# Create environment file
-echo "Creating environment configuration..."
-cat > .env.local << EOF
+# Update environment file for production
+echo "Updating environment configuration for production..."
+if [ -f ".env.local" ]; then
+    echo "Using existing .env.local file from deployment package"
+    
+    # Update the NEXTAUTH_URL for production
+    sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=http://$LINUX_SERVER:3000|g" .env.local
+    
+    # Ensure proper permissions
+    chmod 600 .env.local
+    
+    echo "✅ Updated NEXTAUTH_URL to production URL: http://$LINUX_SERVER:3000"
+else
+    echo "⚠️  Warning: .env.local file not found in deployment package"
+    echo "Creating minimal environment configuration..."
+    
+    # Fallback: create basic .env.local if not found
+    cat > .env.local << EOF
 # NextAuth.js Configuration
 NEXTAUTH_SECRET=um9aZX/BP6mrqA2o0fNu2x4Za6kn7ht1sC/o08j3WW4=
 NEXTAUTH_URL=http://$LINUX_SERVER:3000
 
-# Cohere API key
-COHERE_API_KEY=$COHERE_API_KEY
-
-# SerpAPI key
-SERPAPI_KEY=$SERPAPI_KEY
-
-# Oracle Database access via SQLclScript.sh
-# No connection strings needed - using local SQLcl installation
-
-# =====================================================
-# STRIPE CONFIGURATION FOR INVOICING
-# =====================================================
-
 # Stripe Secret Key - For testing with enhanced batching
 STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 EOF
-
-chmod 600 .env.local
+    chmod 600 .env.local
+fi
 
 # Build the application
 echo "Building application..."
@@ -374,7 +373,7 @@ REMOTE_SCRIPT
 
     # Transfer and execute the remote script
     $SCP_CMD /tmp/remote_install.sh "$LINUX_USER@$LINUX_SERVER:/tmp/"
-    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$COHERE_API_KEY' '$SERPAPI_KEY' '$LINUX_SERVER' '$STRIPE_SECRET_KEY'"
+    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$LINUX_SERVER'"
     
     print_success "Remote installation complete"
 }
