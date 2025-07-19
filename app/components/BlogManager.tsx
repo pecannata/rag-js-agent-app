@@ -790,8 +790,8 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       base_url: '/tinymce',
                       suffix: '.min',
                       menubar: false,
-                      plugins: 'lists advlist link image table code codesample media anchor charmap emoticons insertdatetime pagebreak preview fullscreen searchreplace visualblocks visualchars paste spellchecker template save help wordcount autosave',
-                      toolbar: 'fullscreen | undo redo | save template | formatselect fontselect fontsizeselect | bold italic underline strikethrough | subscript superscript | forecolor backcolor | removeformat | alignleft aligncenter alignright | bullist numlist indent outdent | blockquote hr | link unlink anchor | image media | table tableinsertrowbefore tableinsertrowafter tabledeleterow | charmap emoticons insertdatetime pagebreak | paste pastetext spellchecker | preview searchreplace | visualblocks visualchars | code codesample | help',
+                      plugins: 'lists advlist link image table code codesample media anchor charmap emoticons insertdatetime pagebreak preview fullscreen searchreplace visualblocks visualchars save help wordcount autosave autolink importcss nonbreaking quickbars',
+                      toolbar: 'fullscreen | undo redo | save | formatselect fontselect fontsizeselect | bold italic underline strikethrough | subscript superscript | forecolor backcolor | removeformat | alignleft aligncenter alignright | bullist numlist indent outdent | blockquote hr | link unlink anchor | image media | table tableinsertrowbefore tableinsertrowafter tabledeleterow | charmap emoticons insertdatetime pagebreak | preview searchreplace | visualblocks visualchars | code codesample | help',
                       content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; line-height: 1.6; } ' +
                         'blockquote { border-left: 4px solid #e5e7eb; margin: 1.5rem 0; padding-left: 1rem; font-style: italic; color: #6b7280; } ' +
                         'hr { border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0; }',
@@ -924,14 +924,51 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       },
                       // Media plugin configuration
                       media_live_embeds: true,
-                      media_url_resolver: function (data: any, resolve: any) {
-                        if (data.url.indexOf('youtube.com') !== -1 || data.url.indexOf('youtu.be') !== -1) {
-                          resolve({
-                            html: '<iframe src="' + data.url + '" width="560" height="315" frameborder="0" allowfullscreen></iframe>'
-                          });
-                        } else {
-                          resolve({ html: '' });
-                        }
+                      media_url_resolver: function (data: any) {
+                        return new Promise((resolve, reject) => {
+                          try {
+                            console.log('Media URL resolver called with:', data.url);
+                            
+                            if (!data.url) {
+                              resolve({ html: '' });
+                              return;
+                            }
+                            
+                            const url = data.url.toString().toLowerCase();
+                            
+                            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                              // Convert YouTube URLs to embed format
+                              let videoId = '';
+                              
+                              if (url.includes('watch?v=')) {
+                                const match = data.url.match(/[?\&]v=([^\&]+)/);
+                                videoId = match ? match[1] : '';
+                              } else if (url.includes('youtu.be/')) {
+                                const match = data.url.match(/youtu\.be\/([^?]+)/);
+                                videoId = match ? match[1] : '';
+                              } else if (url.includes('embed/')) {
+                                const match = data.url.match(/embed\/([^?]+)/);
+                                videoId = match ? match[1] : '';
+                              }
+                              
+                              if (videoId) {
+                                const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                                resolve({
+                                  html: `<iframe src="${embedUrl}" width="560" height="315" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+                                });
+                              } else {
+                                console.warn('Could not extract video ID from YouTube URL:', data.url);
+                                resolve({ html: '' });
+                              }
+                            } else {
+                              // Not a YouTube URL, let TinyMCE handle it normally
+                              resolve({ html: '' });
+                            }
+                          } catch (error) {
+                            console.error('Media URL resolver error:', error);
+                            resolve({ html: '' }); // Don't reject, just resolve with empty HTML
+                          }
+                        });
                       },
                       // Anchor plugin configuration
                       anchor_top: '#top',
@@ -987,43 +1024,19 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       // Visual chars plugin
                       visualchars_default_state: false,
                       // Productivity configuration
-                      // Paste plugin
-                      paste_as_text: false,
-                      paste_auto_cleanup_on_paste: true,
-                      paste_remove_styles: false,
-                      paste_remove_styles_if_webkit: false,
-                      paste_strip_class_attributes: 'mso',
-                      paste_merge_formats: true,
-                      smart_paste: true,
-                      // Spellchecker plugin
-                      spellchecker_rpc_url: '/spellcheck.php', // You'd need to implement this endpoint
-                      spellchecker_languages: 'English=en,Spanish=es,French=fr,German=de',
-                      browser_spellcheck: true, // Use browser's built-in spellcheck
-                      // Template plugin
-                      templates: [
-                        {
-                          title: 'Blog Post Template',
-                          description: 'Standard blog post structure',
-                          content: '<h1>Blog Post Title</h1><p>Introduction paragraph that hooks the reader...</p><h2>Main Section</h2><p>Content goes here...</p><h2>Conclusion</h2><p>Wrap up your thoughts...</p>'
-                        },
-                        {
-                          title: 'Tutorial Template',
-                          description: 'Step-by-step tutorial format',
-                          content: '<h1>How to: [Tutorial Title]</h1><p><strong>What you\'ll learn:</strong> Brief overview</p><h2>Prerequisites</h2><ul><li>Requirement 1</li><li>Requirement 2</li></ul><h2>Step 1: [First Step]</h2><p>Detailed instructions...</p><h2>Step 2: [Second Step]</h2><p>More instructions...</p><h2>Conclusion</h2><p>Summary and next steps...</p>'
-                        },
-                        {
-                          title: 'Review Template',
-                          description: 'Product or service review format',
-                          content: '<h1>[Product/Service] Review</h1><p><strong>Rating:</strong> ⭐⭐⭐⭐⭐</p><h2>Overview</h2><p>Brief introduction to what you\'re reviewing...</p><h2>Pros</h2><ul><li>Positive point 1</li><li>Positive point 2</li></ul><h2>Cons</h2><ul><li>Negative point 1</li><li>Negative point 2</li></ul><h2>Final Verdict</h2><p>Your conclusion and recommendation...</p>'
-                        }
-                      ],
+                      // Use browser's built-in spellcheck
+                      browser_spellcheck: true,
+                      // Template plugin removed (deprecated in TinyMCE 7.0)
                       // Save plugin
                       save_enablewhendirty: true,
                       save_onsavecallback: function() {
                         // This will trigger the existing save functionality
                         console.log('Save triggered from TinyMCE save button');
                       },
-                      plugins_include_list: ['lists', 'advlist', 'link', 'image', 'table', 'code', 'codesample', 'media', 'anchor', 'charmap', 'emoticons', 'insertdatetime', 'pagebreak', 'preview', 'fullscreen', 'searchreplace', 'visualblocks', 'visualchars', 'paste', 'spellchecker', 'template', 'save', 'help', 'wordcount', 'autosave'],
+                      // Explicitly disable problematic plugins
+                      external_plugins: {},
+                      // Prevent automatic loading of unwanted plugins
+                      plugins_exclude: ['onboarding'],
                       setup: (editor: any) => {
                         let isInitialized = false;
                         
@@ -1032,28 +1045,15 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                           isInitialized = true;
                         });
                         
-                        // Prevent content from being reset
-                        editor.on('BeforeSetContent', (e: any) => {
-                          if (isInitialized && e.content && e.content !== editor.getContent()) {
-                            console.log('Content being set:', e.content.substring(0, 100));
-                          }
-                        });
-                        
-                        // Track content changes without interference
+                        // Track content changes
                         editor.on('Change', () => {
                           if (isInitialized) {
-                            // Small delay to ensure change is processed
-                            setTimeout(() => {
-                              const content = editor.getContent();
-                              if (content !== formData.content) {
-                                handleEditorChange(content);
-                              }
-                            }, 10);
+                            const content = editor.getContent();
+                            if (content !== formData.content) {
+                              handleEditorChange(content);
+                            }
                           }
                         });
-                        
-                        // Disable any automatic onboarding
-                        editor.on('NewDocument', () => {});
                       },
                     }}
                     value={formData.content}
