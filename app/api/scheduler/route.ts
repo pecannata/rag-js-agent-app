@@ -150,7 +150,7 @@ async function processScheduledPosts(): Promise<{ success: boolean; publishedCou
               status
             ) VALUES (
               'send_email',
-              ${post.id},
+              '${escapeSqlString(post.title)}',
               CURRENT_TIMESTAMP + INTERVAL '1' MINUTE,
               'pending'
             )
@@ -193,12 +193,12 @@ async function processScheduledEmails(): Promise<{ success: boolean; processedCo
     const getPendingEmailsQuery = `
       SELECT 
         sj.id,
-        sj.reference_id as post_id,
+        sj.reference_id,
         bp.title as post_title,
         bp.slug as post_slug,
         bp.excerpt
       FROM scheduled_jobs sj
-      JOIN blog_posts bp ON sj.reference_id = bp.id
+      JOIN blog_posts bp ON sj.reference_id = bp.title
       WHERE sj.job_type = 'send_email' 
         AND sj.status = 'pending'
         AND sj.scheduled_for <= CURRENT_TIMESTAMP
@@ -268,13 +268,13 @@ async function processScheduledEmails(): Promise<{ success: boolean; processedCo
         // Create email campaign
         const createCampaignQuery = `
           INSERT INTO email_campaigns (
-            post_id,
+            post_title,
             campaign_type,
             subject,
             recipient_count,
             status
           ) VALUES (
-            ${job.post_id},
+            '${escapeSqlString(job.post_title)}',
             'post_notification',
             'New Post: ${escapeSqlString(job.post_title)}',
             ${subscribers.length},
@@ -291,7 +291,7 @@ async function processScheduledEmails(): Promise<{ success: boolean; processedCo
         // Get the campaign ID
         const getCampaignQuery = `
           SELECT id FROM email_campaigns 
-          WHERE post_id = ${job.post_id} AND campaign_type = 'post_notification'
+          WHERE post_title = '${escapeSqlString(job.post_title)}' AND campaign_type = 'post_notification'
           ORDER BY created_at DESC
           FETCH FIRST 1 ROWS ONLY
         `;
@@ -458,7 +458,7 @@ export async function GET(request: NextRequest) {
         TO_CHAR(sj.completed_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as completed_at,
         bp.title as post_title
       FROM scheduled_jobs sj
-      LEFT JOIN blog_posts bp ON sj.reference_id = bp.id AND sj.job_type IN ('publish_post', 'send_email')
+      LEFT JOIN blog_posts bp ON sj.reference_id = bp.title AND sj.job_type IN ('publish_post', 'send_email')
     `;
     
     const conditions = [];

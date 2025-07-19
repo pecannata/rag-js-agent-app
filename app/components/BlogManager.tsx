@@ -312,6 +312,13 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
       return;
     }
 
+    // Find the post title by ID since the API expects title for deletion
+    const postToDelete = posts.find(post => post.id === postId);
+    if (!postToDelete) {
+      setError('Post not found');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -321,7 +328,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: postId }),
+        body: JSON.stringify({ title: postToDelete.title }),
       });
 
       if (response.ok) {

@@ -254,13 +254,13 @@ async function processEmailJob(job: EmailJob): Promise<{ success: boolean; error
     // Create email campaign record
     const createCampaignQuery = `
       INSERT INTO email_campaigns (
-        post_id,
+        post_title,
         campaign_type,
         subject,
         recipient_count,
         status
       ) VALUES (
-        ${job.data.postId},
+        '${escapeSqlString(job.data.postTitle)}',
         'post_notification',
         'New Post: ${escapeSqlString(job.data.postTitle)}',
         ${subscribers.length},
@@ -278,7 +278,7 @@ async function processEmailJob(job: EmailJob): Promise<{ success: boolean; error
     // Get the campaign ID
     const getCampaignQuery = `
       SELECT id FROM email_campaigns 
-      WHERE post_id = ${job.data.postId} AND campaign_type = 'post_notification'
+      WHERE post_title = '${escapeSqlString(job.data.postTitle)}' AND campaign_type = 'post_notification'
       ORDER BY created_at DESC
       FETCH FIRST 1 ROWS ONLY
     `;

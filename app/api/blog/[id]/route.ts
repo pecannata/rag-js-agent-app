@@ -60,32 +60,49 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const postId = parseInt(id);
     
-    if (isNaN(postId)) {
-      return NextResponse.json(
-        { error: 'Invalid blog post ID' },
-        { status: 400 }
-      );
+    // First try to parse as numeric ID for backward compatibility
+    const postId = parseInt(id);
+    let query = '';
+    
+    if (!isNaN(postId)) {
+      // Numeric ID - use the old id field (for backward compatibility)
+      query = `
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+          TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
+          TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+        FROM blog_posts 
+        WHERE id = ${postId} AND status = 'published'
+      `;
+    } else {
+      // Assume it's a title - escape it properly
+      const escapedTitle = id.replace(/'/g, "''");
+      query = `
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+          TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
+          TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+        FROM blog_posts 
+        WHERE title = '${escapedTitle}' AND status = 'published'
+      `;
     }
-
-    // Query to get a specific blog post
-    const query = `
-      SELECT 
-        id,
-        title,
-        slug,
-        content,
-        excerpt,
-        author,
-        status,
-        tags,
-        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
-        TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
-        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
-      FROM blog_posts 
-      WHERE id = ${postId} AND status = 'published'
-    `;
 
     const result = await executeOracleQuery(query);
     

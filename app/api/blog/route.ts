@@ -14,11 +14,21 @@ function escapeSqlString(str: string): string {
   return str
     .replace(/\\/g, '\\\\')         // Escape backslashes first
     .replace(/'/g, "''")           // Escape single quotes for SQL
-    .replace(/\0/g, '')           // Remove null bytes
-    .replace(/\x1a/g, '')         // Remove substitute character
-    .replace(/\r\n/g, '\n')       // Normalize line endings
-    .replace(/\r/g, '\n');        // Convert CR to LF
-    // Note: Preserving newlines for CLOB content - SQLclScript.sh can handle them
+    .replace(/\u2018/g, "''")     // Escape left single quotation mark (U+2018)
+    .replace(/\u2019/g, "''")     // Escape right single quotation mark (U+2019)
+    .replace(/\u201C/g, '\"')     // Escape left double quotation mark (U+201C)
+    .replace(/\u201D/g, '\"')     // Escape right double quotation mark (U+201D)
+    .replace(/\u2013/g, '-')        // Replace en dash with regular dash
+    .replace(/\u2014/g, '--')       // Replace em dash with double dash
+    .replace(/\u2026/g, '...')       // Replace ellipsis with three dots
+    .replace(/\0/g, '')             // Remove null bytes
+    .replace(/\x1a/g, '')           // Remove substitute character
+    .replace(/\r\n/g, ' ')           // Convert CRLF to spaces
+    .replace(/\r/g, ' ')             // Convert CR to spaces  
+    .replace(/\n/g, ' ')             // Convert LF to spaces
+    .replace(/\s+/g, ' ')            // Collapse multiple spaces to single space
+    .trim();                         // Remove leading/trailing whitespace
+    // Note: Converting newlines to spaces to prevent SQL statement termination while preserving readability
 }
 
 // Utility function to validate and sanitize numeric IDs
@@ -51,7 +61,7 @@ async function insertBlogPostSafely(postData: {
       console.log('⚠️ Content is large, using TO_CLOB() chunking strategy...');
       
       // Split content into manageable chunks for Oracle (less than 4000 chars each)
-      const chunkSize = 3900; // Safe size under 4000 char limit
+      const chunkSize = 2000; // Conservative size to account for escaping and special characters
       const chunks: string[] = [];
       
       for (let i = 0; i < postData.content.length; i += chunkSize) {
@@ -71,8 +81,8 @@ async function insertBlogPostSafely(postData: {
       
       // Add each chunk as TO_CLOB('chunk') concatenated with ||
       const clobParts = chunks.map(chunk => {
-        // Escape single quotes in the chunk for SQL
-        const escapedChunk = chunk.replace(/'/g, "''");
+        // Use the comprehensive escapeSqlString function for each chunk
+        const escapedChunk = escapeSqlString(chunk);
         return `TO_CLOB('${escapedChunk}')`;
       });
       
@@ -96,7 +106,18 @@ async function insertBlogPostSafely(postData: {
       console.log('✅ TO_CLOB Insert result (ALL content stored):', insertResult);
       
       if (!insertResult.success) {
+        console.error('❌ TO_CLOB Insert failed with error:', insertResult.error);
         return insertResult;
+      }
+      
+      // Additional verification - check if the post was actually inserted
+      const verifyQuery = `SELECT title FROM blog_posts WHERE slug = '${postData.slug}'`;
+      const verifyResult = await executeOracleQuery(verifyQuery);
+      console.log('🔍 Post insertion verification:', verifyResult);
+      
+      if (!verifyResult.success || !verifyResult.data || verifyResult.data.length === 0) {
+        console.error('❌ Post was not actually inserted despite success response');
+        return { success: false, error: 'Post insertion verification failed' };
       }
     } else {
       // Direct CLOB insertion for smaller content
@@ -133,7 +154,7 @@ async function insertBlogPostSafely(postData: {
 
 // Function to handle CLOB content updates with chunking for large content
 async function updateBlogPostSafely(postData: {
-  id: number;
+  originalTitle: string; // Original title to identify the record
   title: string;
   content: string;
   excerpt: string;
@@ -151,7 +172,7 @@ async function updateBlogPostSafely(postData: {
       console.log('⚠️ Update content is large, using TO_CLOB() chunking strategy...');
       
       // Split content into manageable chunks for Oracle (less than 4000 chars each)
-      const chunkSize = 3900; // Safe size under 4000 char limit
+      const chunkSize = 2000; // Conservative size to account for escaping and special characters
       const chunks: string[] = [];
       
       for (let i = 0; i < postData.content.length; i += chunkSize) {
@@ -168,8 +189,8 @@ async function updateBlogPostSafely(postData: {
       
       // Add each chunk as TO_CLOB('chunk') concatenated with ||
       const clobParts = chunks.map(chunk => {
-        // Escape single quotes in the chunk for SQL
-        const escapedChunk = chunk.replace(/'/g, "''");
+        // Use the comprehensive escapeSqlString function for each chunk
+        const escapedChunk = escapeSqlString(chunk);
         return `TO_CLOB('${escapedChunk}')`;
       });
       
@@ -183,7 +204,7 @@ async function updateBlogPostSafely(postData: {
           published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
           scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
           is_scheduled = ${postData.isScheduled ? 1 : 0}
-        WHERE id = ${postData.id}`;
+        WHERE title = '${escapeSqlString(postData.originalTitle)}'`;
       
       console.log('📊 Executing TO_CLOB concatenation update for blog post');
       console.log('📊 Total update content length:', postData.content.length);
@@ -206,7 +227,7 @@ async function updateBlogPostSafely(postData: {
           published_at = ${postData.publishedAt ? `TIMESTAMP '${escapeSqlString(postData.publishedAt)}'` : 'NULL'},
           scheduled_date = ${postData.scheduledDate ? `TIMESTAMP '${escapeSqlString(postData.scheduledDate)}'` : 'NULL'},
           is_scheduled = ${postData.isScheduled ? 1 : 0}
-        WHERE id = ${postData.id}
+        WHERE title = '${escapeSqlString(postData.originalTitle)}'
       `;
       
       return await executeOracleQuery(updateQuery);
@@ -219,8 +240,9 @@ async function updateBlogPostSafely(postData: {
 }
 
 interface BlogPost {
-  id?: number;
-  title: string;
+  id?: number; // Kept for backwards compatibility, but title is now primary
+  title: string; // This is now the primary key
+  originalTitle?: string; // Used for updates when title changes
   slug: string;
   content: string;
   excerpt: string;
@@ -248,8 +270,10 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     const isModificationQuery = ['UPDATE', 'INSERT', 'DELETE', 'CREATE', 'DROP', 'ALTER'].includes(queryType);
     
     // Execute the SQLclScript.sh with the SQL query
-    // Simple escaping - just escape double quotes for the shell command
-    const escapedQuery = sqlQuery.replace(/"/g, '\\"');
+    // Proper escaping for shell - escape both double quotes and backslashes
+    const escapedQuery = sqlQuery
+      .replace(/\\/g, '\\\\')  // Escape backslashes first
+      .replace(/"/g, '\\"');   // Then escape double quotes
     const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`);
     
     if (stderr) {
@@ -263,6 +287,13 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     if (isModificationQuery) {
       const trimmedOutput = stdout.trim();
       console.log('📝 Modification query completed', queryType, '- Output:', trimmedOutput || '(empty - success)');
+      
+      // Check for Oracle errors in the output
+      if (trimmedOutput.includes('Error starting at line') || trimmedOutput.includes('ORA-') || trimmedOutput.includes('Error report')) {
+        console.error('❌ Oracle error detected in modification query:', trimmedOutput);
+        return { success: false, error: trimmedOutput };
+      }
+      
       return { success: true, data: trimmedOutput || 'Operation completed successfully' };
     }
     
@@ -328,14 +359,18 @@ async function initializeBlogTable(): Promise<boolean> {
     return true;
   }
 
-  // First, check if table exists by trying to query it
-  const checkTableQuery = `SELECT COUNT(*) as count FROM blog_posts WHERE ROWNUM <= 1`;
-  const checkResult = await executeOracleQuery(checkTableQuery);
-  
-  if (checkResult.success) {
-    console.log('✅ Blog posts table already exists (verified by query)');
-    tableInitialized = true;
-    return true;
+  try {
+    // First, check if table exists by trying to query it
+    const checkTableQuery = `SELECT COUNT(*) as count FROM blog_posts WHERE ROWNUM <= 1`;
+    const checkResult = await executeOracleQuery(checkTableQuery);
+    
+    if (checkResult.success) {
+      console.log('✅ Blog posts table already exists (verified by query)');
+      tableInitialized = true;
+      return true;
+    }
+  } catch (error) {
+    console.log('ℹ️ Table check failed, will attempt to create table:', (error as Error).message);
   }
   
   // If query failed, table likely doesn't exist, so create it
@@ -343,8 +378,8 @@ async function initializeBlogTable(): Promise<boolean> {
   
   const createTableQuery = `
     CREATE TABLE blog_posts (
-      id NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-      title VARCHAR2(500) NOT NULL,
+      id NUMBER GENERATED BY DEFAULT AS IDENTITY,
+      title VARCHAR2(500) PRIMARY KEY,
       slug VARCHAR2(500) UNIQUE NOT NULL,
       content CLOB NOT NULL,
       excerpt VARCHAR2(1000),
@@ -353,7 +388,9 @@ async function initializeBlogTable(): Promise<boolean> {
       tags VARCHAR2(2000),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      published_at TIMESTAMP
+      published_at TIMESTAMP,
+      scheduled_date TIMESTAMP,
+      is_scheduled NUMBER(1) DEFAULT 0 CHECK (is_scheduled IN (0, 1))
     )
   `;
 
@@ -388,8 +425,8 @@ function generateSlug(title: string, id?: number): string {
 // GET /api/blog - Get all blog posts
 export async function GET(request: NextRequest) {
   try {
-    // Initialize table if needed
-    await initializeBlogTable();
+    // Table already exists, skip initialization for debugging
+    // await initializeBlogTable();
     
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -644,11 +681,11 @@ export async function PUT(request: NextRequest) {
   try {
     const postData: BlogPost = await request.json();
     
-    // Validate required fields
-    const validId = validateId(postData.id);
-    if (!validId) {
+    // Validate required fields - now use originalTitle or title as identifier
+    const titleToFind = postData.originalTitle || postData.title;
+    if (!titleToFind?.trim()) {
       return NextResponse.json(
-        { error: 'Valid Post ID is required for updates' },
+        { error: 'Title or originalTitle is required to identify the post for updates' },
         { status: 400 }
       );
     }
@@ -660,8 +697,8 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Check if post exists
-    const checkQuery = `SELECT id, status, published_at FROM blog_posts WHERE id = ${validId}`;
+    // Check if post exists using title
+    const checkQuery = `SELECT title, status, published_at FROM blog_posts WHERE title = '${escapeSqlString(titleToFind)}'`;
     const checkResult = await executeOracleQuery(checkQuery);
     
     // Handle check result - Oracle response format already handled in executeOracleQuery
@@ -722,7 +759,7 @@ export async function PUT(request: NextRequest) {
     console.log('📝 Update: Content Length:', postData.content.length);
     
     const result = await updateBlogPostSafely({
-      id: validId,
+      originalTitle: titleToFind,
       title: postData.title,
       content: postData.content,
       excerpt: excerpt,
@@ -757,7 +794,7 @@ export async function PUT(request: NextRequest) {
         TO_CHAR(scheduled_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as scheduled_date,
         is_scheduled
       FROM blog_posts 
-      WHERE id = ${validId}
+      WHERE title = '${escapeSqlString(postData.title)}'
     `;
     
     const getResult = await executeOracleQuery(getPostQuery);
@@ -820,18 +857,17 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/blog - Delete blog post
 export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await request.json();
+    const { title } = await request.json();
     
-    const validId = validateId(id);
-    if (!validId) {
+    if (!title?.trim()) {
       return NextResponse.json(
-        { error: 'Valid Post ID is required' },
+        { error: 'Post title is required for deletion' },
         { status: 400 }
       );
     }
     
     // Check if post exists
-    const checkQuery = `SELECT id FROM blog_posts WHERE id = ${validId}`;
+    const checkQuery = `SELECT title FROM blog_posts WHERE title = '${escapeSqlString(title)}'`;
     const checkResult = await executeOracleQuery(checkQuery);
     
     // Handle check result - Oracle response format already handled in executeOracleQuery
@@ -850,12 +886,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const deleteQuery = `DELETE FROM blog_posts WHERE id = ${validId}`;
+    const deleteQuery = `DELETE FROM blog_posts WHERE title = '${escapeSqlString(title)}'`;
     const result = await executeOracleQuery(deleteQuery);
     
     if (!result.success) {
+      // Check if it's a foreign key constraint violation
+      const errorMessage = result.error || 'Failed to delete blog post';
+      if (errorMessage.includes('ORA-02292') || errorMessage.includes('integrity constraint')) {
+        return NextResponse.json(
+          { error: 'Cannot delete this blog post because it has related records (e.g., campaign references). Please remove related records first.' },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
-        { error: result.error || 'Failed to delete blog post' },
+        { error: errorMessage },
         { status: 500 }
       );
     }

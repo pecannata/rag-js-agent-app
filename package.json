@@ -34,13 +34,16 @@
     "@toast-ui/editor": "^3.2.2",
     "@toast-ui/react-editor": "^3.2.3",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsdom": "^21.1.7",
     "@types/nodemailer": "^6.4.17",
     "@uiw/react-md-editor": "^4.0.7",
+    "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "cohere-ai": "^7.17.1",
     "docx": "^9.5.1",
     "dotenv": "^17.2.0",
     "file-saver": "^2.0.5",
+    "jsdom": "^26.1.0",
     "langchain": "^0.3.29",
     "next": "15.3.4",
     "next-auth": "^4.24.11",
@@ -70,6 +73,7 @@
     "@types/turndown": "^5.0.5",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "tsx": "^4.20.3",
     "typescript": "^5"
   }
 }
