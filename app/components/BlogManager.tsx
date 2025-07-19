@@ -925,7 +925,7 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
                       // Media plugin configuration
                       media_live_embeds: true,
                       media_url_resolver: function (data: any) {
-                        return new Promise((resolve, reject) => {
+                        return new Promise((resolve) => {
                           try {
                             console.log('Media URL resolver called with:', data.url);
                             

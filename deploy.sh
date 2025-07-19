@@ -254,13 +254,13 @@ echo "Updating environment configuration for production..."
 if [ -f ".env.local" ]; then
     echo "Using existing .env.local file from deployment package"
     
-    # Update the NEXTAUTH_URL for production
-    sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=http://$LINUX_SERVER:3000|g" .env.local
+    # Update the NEXTAUTH_URL for production (use HTTPS since we have SSL setup)
+    sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=https://$LINUX_SERVER|g" .env.local
     
     # Ensure proper permissions
     chmod 600 .env.local
     
-    echo "✅ Updated NEXTAUTH_URL to production URL: http://$LINUX_SERVER:3000"
+    echo "✅ Updated NEXTAUTH_URL to production URL: https://$LINUX_SERVER"
 else
     echo "⚠️  Warning: .env.local file not found in deployment package"
     echo "Creating minimal environment configuration..."
@@ -269,7 +269,7 @@ else
     cat > .env.local << EOF
 # NextAuth.js Configuration
 NEXTAUTH_SECRET=um9aZX/BP6mrqA2o0fNu2x4Za6kn7ht1sC/o08j3WW4=
-NEXTAUTH_URL=http://$LINUX_SERVER:3000
+NEXTAUTH_URL=https://$LINUX_SERVER
 
 # Stripe Secret Key - For testing with enhanced batching
 STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
@@ -363,7 +363,7 @@ fi
 echo "✅ Firewall configured"
 
 echo "✅ Installation complete!"
-echo "🌐 Application should be available at: http://$LINUX_SERVER:3000"
+echo "🌐 Application should be available at: https://$LINUX_SERVER (HTTPS) or http://$LINUX_SERVER:3000 (direct)"
 echo "👤 Admin login: phil.cannata@yahoo.com / password123"
 
 # Check service status
@@ -433,7 +433,7 @@ function main() {
     echo "🎉 Deployment Complete!"
     echo "======================="
     echo -e "${NC}"
-    echo "Application URL: http://$LINUX_SERVER:3000"
+    echo "Application URL: https://$LINUX_SERVER (recommended HTTPS)"
     echo "Admin Login: phil.cannata@yahoo.com / password123"
     echo "Test User: test@example.com / password123"
     echo ""
