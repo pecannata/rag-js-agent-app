@@ -278,7 +278,11 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
       .replace(/"/g, '\\"')   // Escape double quotes
       .replace(/`/g, '\\`')    // Escape backticks to prevent command substitution
       .replace(/\$/g, '\\$');  // Escape dollar signs to prevent variable expansion
-    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`);
+    
+    // Increase buffer size for large CLOB data - 50MB should be enough for most blog content
+    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`, {
+      maxBuffer: 50 * 1024 * 1024 // 50MB buffer
+    });
     
     if (stderr) {
       console.error('❌ Blog database query error:', stderr);
@@ -426,7 +430,7 @@ function generateSlug(title: string, id?: number): string {
   return slug;
 }
 
-// GET /api/blog - Get all blog posts
+// GET /api/blog - Get all blog posts with lazy loading support
 export async function GET(request: NextRequest) {
   try {
     // Table already exists, skip initialization for debugging
@@ -436,13 +440,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
+    const lazy = searchParams.get('lazy') === 'true'; // Lazy loading flag
+    const fullContentLimit = parseInt(searchParams.get('fullContentLimit') || '3'); // Number of posts to load with full content
     
+    // Build the query - for lazy loading, exclude content column to avoid loading large CLOBs
     let query = `
       SELECT 
         id,
         title,
         slug,
-        content,
+        ${lazy ? "''" : 'content'} as content,
         excerpt,
         author,
         status,
@@ -453,7 +460,7 @@ export async function GET(request: NextRequest) {
         TO_CHAR(scheduled_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as scheduled_date,
         is_scheduled
       FROM blog_posts
-    `;
+    `
     
     const conditions = [];
     if (status && status !== 'all') {

@@ -17,6 +17,7 @@ interface BlogPost {
   publishedAt?: string;
   scheduledDate?: string;
   isScheduled?: boolean;
+  hasFullContent?: boolean; // Track if content is fully loaded
 }
 
 interface BlogManagerProps {
@@ -124,13 +125,14 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     }
   }, [formData, currentPost]);
 
-  const loadBlogPosts = async () => {
-    console.log('📊 Loading blog posts...');
+const loadBlogPosts = async () => {
+    console.log('📊 Loading blog posts with server-side lazy loading...');
     setLoading(true);
     setError(null);
     
     try {
-      const response = await fetch('/api/blog', {
+      // Request lazy-loaded posts (without content) from the server
+      const response = await fetch('/api/blog?lazy=true', {
         method: 'GET',
       });
       
@@ -139,7 +141,14 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Load response data:', data);
-        setPosts(data.posts || []);
+        
+        // Posts come without content from the server (lazy loaded)
+        const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
+          ...post,
+          hasFullContent: false // No posts have full content initially
+        }));
+        
+        setPosts(lazyPosts);
       } else {
         const errorData = await response.json();
         console.error('❌ Load error:', errorData);
@@ -187,7 +196,37 @@ export default function BlogManager({ apiKey: _apiKey }: BlogManagerProps) {
     setHasUnsavedChanges(false);
   };
 
-  const handleViewPost = (post: BlogPost) => {
+  const handleViewPost = async (post: BlogPost) => {
+    // If post doesn't have full content loaded, fetch it first
+    if (!post.hasFullContent && !post.content) {
+      setLoading(true);
+      try {
+        console.log('🔄 Lazy loading content for post:', post.id);
+        const response = await fetch(`/api/blog/${post.id}`);
+        if (response.ok) {
+          const fullPost = await response.json();
+          // Update the post in our local state with the full content
+          const updatedPosts = posts.map(p => 
+            p.id === post.id ? { ...p, content: fullPost.content, hasFullContent: true } : p
+          );
+          setPosts(updatedPosts);
+          post = { ...post, content: fullPost.content, hasFullContent: true };
+          console.log('✅ Content loaded for post:', post.id, 'Length:', fullPost.content?.length || 0);
+        } else {
+          setError('Failed to load post content');
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading post content:', error);
+        setError('Error loading post content');
+        setLoading(false);
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+    
     setCurrentPost(post);
     setFormData({
       title: post.title || '',
