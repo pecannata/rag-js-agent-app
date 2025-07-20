@@ -14,6 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration - EDIT THESE VALUES
 LINUX_SERVER="129.146.0.190"           # e.g., "192.168.1.100" or "your-server.com"
+DOMAIN_NAME="alwayscurious.ai"          # Your domain name
 LINUX_USER="opc"             # e.g., "oracle" or "root"
 SSH_KEY="/Users/pcannata/.ssh/ssh-key-2023-03-25-phil-react.key"                # e.g., "~/.ssh/id_rsa" (optional, leave empty for password auth)
 DEPLOY_PATH="/opt/rag-js-agent-app"
@@ -162,6 +163,7 @@ set -e
 DEPLOY_PATH="$1"
 SERVICE_NAME="$2"
 LINUX_SERVER="$3"
+DOMAIN_NAME="$4"
 
 echo "🔧 Starting remote installation..."
 
@@ -254,13 +256,28 @@ echo "Updating environment configuration for production..."
 if [ -f ".env.local" ]; then
     echo "Using existing .env.local file from deployment package"
     
-    # Update the NEXTAUTH_URL for production (use HTTPS since we have SSL setup)
-    sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=https://$LINUX_SERVER|g" .env.local
+    # Update the NEXTAUTH_URL for production (use domain name if available, otherwise IP)
+    if [ -n "$DOMAIN_NAME" ]; then
+        sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=https://$DOMAIN_NAME|g" .env.local
+        sed -i "s|NEXT_PUBLIC_BASE_URL=.*|NEXT_PUBLIC_BASE_URL=https://$DOMAIN_NAME|g" .env.local
+        echo "✅ Updated NEXTAUTH_URL to production URL: https://$DOMAIN_NAME"
+    else
+        sed -i "s|NEXTAUTH_URL=http://localhost:3000|NEXTAUTH_URL=https://$LINUX_SERVER|g" .env.local
+        sed -i "s|NEXT_PUBLIC_BASE_URL=.*|NEXT_PUBLIC_BASE_URL=https://$LINUX_SERVER|g" .env.local
+        echo "✅ Updated NEXTAUTH_URL to production URL: https://$LINUX_SERVER"
+    fi
+    
+    # Add NEXT_PUBLIC_BASE_URL if not exists
+    if ! grep -q "NEXT_PUBLIC_BASE_URL" .env.local; then
+        if [ -n "$DOMAIN_NAME" ]; then
+            echo "NEXT_PUBLIC_BASE_URL=https://$DOMAIN_NAME" >> .env.local
+        else
+            echo "NEXT_PUBLIC_BASE_URL=https://$LINUX_SERVER" >> .env.local
+        fi
+    fi
     
     # Ensure proper permissions
     chmod 600 .env.local
-    
-    echo "✅ Updated NEXTAUTH_URL to production URL: https://$LINUX_SERVER"
 else
     echo "⚠️  Warning: .env.local file not found in deployment package"
     echo "Creating minimal environment configuration..."
@@ -269,7 +286,10 @@ else
     cat > .env.local << EOF
 # NextAuth.js Configuration
 NEXTAUTH_SECRET=um9aZX/BP6mrqA2o0fNu2x4Za6kn7ht1sC/o08j3WW4=
-NEXTAUTH_URL=https://$LINUX_SERVER
+NEXTAUTH_URL=https://${DOMAIN_NAME:-$LINUX_SERVER}
+
+# Next.js Configuration
+NEXT_PUBLIC_BASE_URL=https://${DOMAIN_NAME:-$LINUX_SERVER}
 
 # Stripe Secret Key - For testing with enhanced batching
 STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
@@ -362,8 +382,151 @@ else
 fi
 echo "✅ Firewall configured"
 
-echo "✅ Installation complete!"
-echo "🌐 Application should be available at: https://$LINUX_SERVER (HTTPS) or http://$LINUX_SERVER:3000 (direct)"
+# Configure nginx if domain name is provided
+if [ -n "$DOMAIN_NAME" ]; then
+    echo "Configuring nginx for domain: $DOMAIN_NAME..."
+    
+    # Install nginx if not installed
+    if ! command -v nginx &> /dev/null; then
+        echo "Installing nginx..."
+        sudo yum install -y nginx || sudo apt-get install -y nginx
+    fi
+    
+    # Create self-signed SSL certificate if it doesn't exist
+    if [ ! -f "/etc/ssl/certs/nginx-selfsigned.crt" ] || [ ! -f "/etc/ssl/private/nginx-selfsigned.key" ]; then
+        echo "Creating self-signed SSL certificate..."
+        sudo mkdir -p /etc/ssl/certs /etc/ssl/private
+        sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout /etc/ssl/private/nginx-selfsigned.key \
+            -out /etc/ssl/certs/nginx-selfsigned.crt \
+            -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=$DOMAIN_NAME"
+        sudo chmod 600 /etc/ssl/private/nginx-selfsigned.key
+        sudo chmod 644 /etc/ssl/certs/nginx-selfsigned.crt
+        echo "✅ Self-signed SSL certificate created"
+    else
+        echo "✅ SSL certificate already exists"
+    fi
+    
+    # Create nginx configuration directory structure based on system type
+    if [ -d "/etc/nginx/sites-available" ]; then
+        # Debian/Ubuntu style
+        NGINX_AVAILABLE_DIR="/etc/nginx/sites-available"
+        NGINX_ENABLED_DIR="/etc/nginx/sites-enabled"
+        NGINX_CONFIG_FILE="$NGINX_AVAILABLE_DIR/$DOMAIN_NAME"
+    else
+        # RHEL/CentOS/Oracle Linux style
+        NGINX_AVAILABLE_DIR="/etc/nginx/conf.d"
+        NGINX_ENABLED_DIR="/etc/nginx/conf.d"
+        NGINX_CONFIG_FILE="$NGINX_AVAILABLE_DIR/$DOMAIN_NAME.conf"
+    fi
+    
+    # Create directories if they don't exist
+    sudo mkdir -p "$NGINX_AVAILABLE_DIR"
+    sudo mkdir -p "$NGINX_ENABLED_DIR"
+    
+    # Create nginx configuration
+    sudo tee "$NGINX_CONFIG_FILE" > /dev/null << EOF
+server {
+    listen 80;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://\$server_name\$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
+    
+    # SSL configuration - using self-signed certificate
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    
+    # SSL settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    
+    # Proxy to Next.js app
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_read_timeout 86400;
+    }
+}
+EOF
+    
+    # Enable the site based on nginx structure
+    if [ -d "/etc/nginx/sites-available" ]; then
+        # Debian/Ubuntu style - create symlink
+        sudo mkdir -p "$NGINX_ENABLED_DIR"
+        sudo ln -sf "$NGINX_CONFIG_FILE" "$NGINX_ENABLED_DIR/"
+        
+        # Remove default nginx site if it exists
+        sudo rm -f "$NGINX_ENABLED_DIR/default"
+        
+        # Update main nginx config to include sites-enabled if not already included
+        if ! grep -q "include /etc/nginx/sites-enabled/" /etc/nginx/nginx.conf; then
+            sudo sed -i '/http {/a\    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
+        fi
+    else
+        # RHEL/CentOS/Oracle Linux style - config is already in conf.d, no symlink needed
+        # Remove default nginx config if it exists
+        sudo rm -f /etc/nginx/conf.d/default.conf
+        
+        # Ensure conf.d is included (usually is by default)
+        if ! grep -q "include /etc/nginx/conf.d/" /etc/nginx/nginx.conf; then
+            sudo sed -i '/http {/a\    include /etc/nginx/conf.d/*.conf;' /etc/nginx/nginx.conf
+        fi
+    fi
+    
+    # Test nginx configuration
+    if sudo nginx -t; then
+        echo "Nginx configuration is valid"
+        # Reload nginx
+        sudo systemctl enable nginx
+        sudo systemctl restart nginx
+        echo "✅ Nginx configured and started"
+    else
+        echo "❌ Nginx configuration test failed"
+        sudo nginx -t
+    fi
+    
+    # Configure firewall for HTTP/HTTPS
+    if systemctl is-active --quiet firewalld 2>/dev/null; then
+        sudo firewall-cmd --permanent --add-service=http 2>/dev/null || true
+        sudo firewall-cmd --permanent --add-service=https 2>/dev/null || true
+        sudo firewall-cmd --reload 2>/dev/null || true
+    fi
+    
+    # Configure iptables for HTTP/HTTPS
+    sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || true
+    sudo iptables -D INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
+    sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+    sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+    
+    # Save iptables rules
+    if [ -d "/etc/sysconfig" ]; then
+        sudo iptables-save | sudo tee /etc/sysconfig/iptables > /dev/null
+    else
+        sudo mkdir -p /etc/iptables
+        sudo iptables-save | sudo tee /etc/iptables/rules.v4 > /dev/null
+    fi
+    
+    echo "✅ Domain configuration complete!"
+    echo "🌐 Application should be available at: https://$DOMAIN_NAME"
+else
+    echo "✅ Installation complete!"
+    echo "🌐 Application should be available at: https://$LINUX_SERVER (HTTPS) or http://$LINUX_SERVER:3000 (direct)"
+fi
+
 echo "👤 Admin login: phil.cannata@yahoo.com / password123"
 
 # Check service status
@@ -373,7 +536,7 @@ REMOTE_SCRIPT
 
     # Transfer and execute the remote script
     $SCP_CMD /tmp/remote_install.sh "$LINUX_USER@$LINUX_SERVER:/tmp/"
-    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$LINUX_SERVER'"
+    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "chmod +x /tmp/remote_install.sh && /tmp/remote_install.sh '$DEPLOY_PATH' '$SERVICE_NAME' '$LINUX_SERVER' '$DOMAIN_NAME'"
     
     print_success "Remote installation complete"
 }
@@ -433,7 +596,12 @@ function main() {
     echo "🎉 Deployment Complete!"
     echo "======================="
     echo -e "${NC}"
-    echo "Application URL: https://$LINUX_SERVER (recommended HTTPS)"
+    if [[ -n "$DOMAIN_NAME" ]]; then
+        echo "Application URL: https://$DOMAIN_NAME (with nginx reverse proxy)"
+        echo "Direct URL: https://$LINUX_SERVER:3000 (direct to app)"
+    else
+        echo "Application URL: https://$LINUX_SERVER (recommended HTTPS)"
+    fi
     echo "Admin Login: phil.cannata@yahoo.com / password123"
     echo "Test User: test@example.com / password123"
     echo ""

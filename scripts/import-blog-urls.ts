@@ -271,7 +271,8 @@ async function importBlogUrls(urlFilePath: string) {
     console.log(`🔗 Found ${urls.length} URLs to process`);
     
     for (let i = 0; i < urls.length; i++) {
-      const url = urls[i].trim();
+      const url = urls[i]?.trim();
+      if (!url) continue;
       console.log(`\n🌐 Processing URL ${i + 1}/${urls.length}: ${url}`);
       
       try {
@@ -304,7 +305,7 @@ async function importBlogUrls(urlFilePath: string) {
           `SELECT id FROM blog_posts WHERE slug = '${escapeSqlString(slug)}'`
         );
         
-        if (existingPost && existingPost.length > 0) {
+        if (existingPost && existingPost.success && existingPost.data && existingPost.data.length > 0) {
           console.log(`⚠️  Post with slug '${slug}' already exists. Skipping...`);
           continue;
         }

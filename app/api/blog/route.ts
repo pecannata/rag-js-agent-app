@@ -32,14 +32,6 @@ function escapeSqlString(str: string): string {
     // Note: Converting newlines to spaces to prevent SQL statement termination
 }
 
-// Utility function to validate and sanitize numeric IDs
-function validateId(id: any): number | null {
-  const numId = parseInt(id, 10);
-  if (isNaN(numId) || numId <= 0) {
-    return null;
-  }
-  return numId;
-}
 
 // Function to handle CLOB content insertion with chunking for large content
 async function insertBlogPostSafely(postData: {
@@ -442,16 +434,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
-    const lazy = searchParams.get('lazy') === 'true'; // Lazy loading flag
-    const fullContentLimit = parseInt(searchParams.get('fullContentLimit') || '3'); // Number of posts to load with full content
+    const includeContent = searchParams.get('includeContent') === 'true'; // Include full content flag - lazy loading by default
     
-    // Build the query - for lazy loading, exclude content column to avoid loading large CLOBs
+    // Build the query - by default exclude content column to avoid loading large CLOBs (true lazy loading)
+    // Only include content if explicitly requested via includeContent=true
     let query = `
       SELECT 
         id,
         title,
         slug,
-        ${lazy ? "''" : 'content'} as content,
+        ${includeContent ? 'content' : "''"} as content,
         excerpt,
         author,
         status,
