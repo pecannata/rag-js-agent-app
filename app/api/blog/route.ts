@@ -14,6 +14,8 @@ function escapeSqlString(str: string): string {
   return str
     .replace(/\\/g, '\\\\')         // Escape backslashes first
     .replace(/'/g, "''")           // Escape single quotes for SQL
+    .replace(/`/g, "\\`")          // Escape backticks to prevent command substitution
+    .replace(/\$/g, "\\$")         // Escape dollar signs to prevent variable expansion
     .replace(/\u2018/g, "''")     // Escape left single quotation mark (U+2018)
     .replace(/\u2019/g, "''")     // Escape right single quotation mark (U+2019)
     .replace(/\u201C/g, '\"')     // Escape left double quotation mark (U+201C)
@@ -270,10 +272,12 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     const isModificationQuery = ['UPDATE', 'INSERT', 'DELETE', 'CREATE', 'DROP', 'ALTER'].includes(queryType);
     
     // Execute the SQLclScript.sh with the SQL query
-    // Proper escaping for shell - escape both double quotes and backslashes
+    // Proper escaping for shell - escape backslashes, double quotes, backticks, and dollar signs
     const escapedQuery = sqlQuery
       .replace(/\\/g, '\\\\')  // Escape backslashes first
-      .replace(/"/g, '\\"');   // Then escape double quotes
+      .replace(/"/g, '\\"')   // Escape double quotes
+      .replace(/`/g, '\\`')    // Escape backticks to prevent command substitution
+      .replace(/\$/g, '\\$');  // Escape dollar signs to prevent variable expansion
     const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`);
     
     if (stderr) {
