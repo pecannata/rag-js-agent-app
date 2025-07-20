@@ -192,6 +192,60 @@ This verification link will expire in 24 hours.
     `
   }),
 
+  authVerification: (verificationUrl: string, userName?: string) => ({
+    subject: 'Please verify your email address',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Email</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">✉️ Verify Your Email</h1>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #2c3e50; margin-top: 0;">Welcome${userName ? `, ${userName}` : ''}!</h2>
+          
+          <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6;">
+            Thank you for creating an account with AlwaysCurious! To complete your account setup and gain access to all features, please verify your email address.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" 
+               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+              ✅ Verify Email Address
+            </a>
+          </div>
+          
+          <p style="color: #7f8c8d; font-size: 14px; margin-top: 25px;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="${verificationUrl}" style="color: #3498db; word-break: break-all;">${verificationUrl}</a>
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 14px;">
+          <p>If you didn't create this account, you can safely ignore this email.</p>
+          <p>This verification link will expire in 24 hours.</p>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+Welcome${userName ? `, ${userName}` : ''}!
+
+Thank you for creating an account with AlwaysCurious! To complete your account setup and gain access to all features, please verify your email address.
+
+Verify your email: ${verificationUrl}
+
+If you didn't create this account, you can safely ignore this email.
+This verification link will expire in 24 hours.
+    `
+  }),
+
   welcomeEmail: (subscriberName?: string) => ({
     subject: 'Welcome to the AlwaysCurious blog!',
     html: `
@@ -254,6 +308,11 @@ export async function sendEmail(to: string, template: keyof typeof emailTemplate
     // Handle different template parameter structures
     if (template === 'emailVerification') {
       const templateResult = emailTemplates[template](data.verificationUrl, data.subscriberName);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else if (template === 'authVerification') {
+      const templateResult = emailTemplates[template](data.verificationUrl, data.userName);
       subject = templateResult.subject;
       html = templateResult.html;
       text = templateResult.text;
@@ -373,13 +432,23 @@ export async function sendPostNotification(subscriberEmail: string, post: any, u
   });
 }
 
-// Send email verification
+// Send email verification for blog subscribers
 export async function sendEmailVerification(subscriberEmail: string, verificationToken: string, subscriberName?: string) {
   const verificationUrl = `${emailConfig.baseUrl}/api/subscribers?action=verify&token=${verificationToken}`;
   
   return await sendEmail(subscriberEmail, 'emailVerification', {
     verificationUrl,
     subscriberName
+  });
+}
+
+// Send email verification for auth users
+export async function sendAuthEmailVerification(userEmail: string, verificationToken: string, userName?: string) {
+  const verificationUrl = `${emailConfig.baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+  
+  return await sendEmail(userEmail, 'authVerification', {
+    verificationUrl,
+    userName
   });
 }
 

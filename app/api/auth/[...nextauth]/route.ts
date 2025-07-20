@@ -19,6 +19,11 @@ const handler = NextAuth({
         const user = await verifyUser(credentials.email, credentials.password)
         
         if (user) {
+          // Check if email is verified
+          if (!user.emailVerified) {
+            throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
+          }
+          
           return {
             id: user.id,
             email: user.email,

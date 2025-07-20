@@ -1,17 +1,17 @@
 {
-  "version": "1.0.228",
+  "version": "1.0.229",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-16T14:01:20.190Z",
-  "buildDate": "Jul 16, 2025",
-  "sourceVersion": "v1.0.227.071625",
+  "buildTime": "2025-07-20T20:08:57.076Z",
+  "buildDate": "Jul 20, 2025",
+  "sourceVersion": "v1.0.228.072025",
   "git": {
     "branch": "main",
-    "commit": "8381df4e4bb840ce030a6785b38bed58d07085bd",
-    "shortCommit": "8381df4e",
-    "commitDate": "2025-07-15 18:45:03 -0500",
-    "commitMessage": "Can you get the Teachers table in \"Studio Management\" to be in sync with the studio_teachers table in the Oracle and keep then in sync when updates are made. Also sync student tables."
+    "commit": "647f956f5e807dafd39736268e53ea70e792c815",
+    "shortCommit": "647f956f",
+    "commitDate": "2025-07-20 11:41:47 -0500",
+    "commitMessage": "The deployment completed successfully. The script has:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.227-8381df4e-20250716-140120"
+  "buildSignature": "1.0.228-647f956f-20250720-200857"
 }

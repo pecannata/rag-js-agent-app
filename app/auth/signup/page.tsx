@@ -11,6 +11,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [message, setMessage] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,9 +44,15 @@ export default function SignUp() {
 
       if (response.ok) {
         setSuccess(true)
-        setTimeout(() => {
-          router.push('/auth/signin')
-        }, 2000)
+        setMessage(data.message || 'Account created successfully!')
+        // Don't auto-redirect if email verification is required
+        if (data.message && data.message.includes('verify')) {
+          // Keep user on page to see verification message
+        } else {
+          setTimeout(() => {
+            router.push('/auth/signin')
+          }, 3000)
+        }
       } else {
         setError(data.message || 'An error occurred')
       }
@@ -67,7 +74,24 @@ export default function SignUp() {
               </svg>
             </div>
             <h2 className="text-3xl font-bold text-gray-900">Account Created!</h2>
-            <p className="mt-2 text-gray-600">Redirecting to sign in...</p>
+            <p className="mt-4 text-gray-600 text-center">{message}</p>
+            {message.includes('verify') && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  📧 <strong>Check your email!</strong><br/>
+                  We've sent a verification link to <strong>{email}</strong>.
+                  Click the link to verify your account before signing in.
+                </p>
+                <div className="mt-3">
+                  <Link 
+                    href="/auth/signin" 
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Go to Sign In →
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

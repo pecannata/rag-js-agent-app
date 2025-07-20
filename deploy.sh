@@ -225,21 +225,47 @@ chmod +x SQLclScript.sh
 if [ -d "/tmp/data_backup" ]; then
     echo "Restoring existing data files..."
     mkdir -p data
-    # Copy existing users.json if it exists in backup
+    
+    # Preserve production users.json (contains user registrations and data)
     if [ -f "/tmp/data_backup/users.json" ]; then
         cp "/tmp/data_backup/users.json" data/users.json
-        echo "Restored users.json"
+        echo "✅ Restored existing users.json (preserving user data)"
+    else
+        echo "📝 Using new users.json from deployment (no existing users found)"
     fi
+    
     # Copy existing snippets.json if it exists in backup (preserving existing snippets)
     if [ -f "/tmp/data_backup/snippets.json" ]; then
         cp "/tmp/data_backup/snippets.json" data/snippets.json
-        echo "Restored existing snippets.json"
+        echo "✅ Restored existing snippets.json"
     else
-        echo "Using new snippets.json from deployment"
+        echo "📝 Using new snippets.json from deployment"
     fi
+    
+    # Copy other data files that should be preserved
+    for file in message-history.json vector-message-history.json; do
+        if [ -f "/tmp/data_backup/$file" ]; then
+            cp "/tmp/data_backup/$file" "data/$file"
+            echo "✅ Restored existing $file"
+        fi
+    done
+    
+    # Copy image-dimensions directory if it exists
+    if [ -d "/tmp/data_backup/image-dimensions" ]; then
+        cp -r "/tmp/data_backup/image-dimensions" data/
+        echo "✅ Restored existing image-dimensions directory"
+    fi
+    
+    # Copy notes directory if it exists
+    if [ -d "/tmp/data_backup/notes" ]; then
+        cp -r "/tmp/data_backup/notes" data/
+        echo "✅ Restored existing notes directory"
+    fi
+    
     sudo rm -rf "/tmp/data_backup"
+    echo "🎯 Data restoration complete - production data preserved"
 else
-    echo "No existing data to restore"
+    echo "📝 No existing data to restore - using fresh data from deployment"
 fi
 
 # Install Node.js dependencies
@@ -392,17 +418,21 @@ if [ -n "$DOMAIN_NAME" ]; then
         sudo yum install -y nginx || sudo apt-get install -y nginx
     fi
     
-    # Create self-signed SSL certificate if it doesn't exist
-    if [ ! -f "/etc/ssl/certs/nginx-selfsigned.crt" ] || [ ! -f "/etc/ssl/private/nginx-selfsigned.key" ]; then
-        echo "Creating self-signed SSL certificate..."
+    # Create Cloudflare Origin SSL certificate if it doesn't exist
+    if [ ! -f "/etc/ssl/certs/cloudflare-origin.crt" ] || [ ! -f "/etc/ssl/private/cloudflare-origin.key" ]; then
+        echo "Creating Cloudflare Origin SSL certificate..."
         sudo mkdir -p /etc/ssl/certs /etc/ssl/private
+        
+        # Create a certificate that works with Cloudflare's Origin CA
         sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-            -keyout /etc/ssl/private/nginx-selfsigned.key \
-            -out /etc/ssl/certs/nginx-selfsigned.crt \
-            -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=$DOMAIN_NAME"
-        sudo chmod 600 /etc/ssl/private/nginx-selfsigned.key
-        sudo chmod 644 /etc/ssl/certs/nginx-selfsigned.crt
-        echo "✅ Self-signed SSL certificate created"
+            -keyout /etc/ssl/private/cloudflare-origin.key \
+            -out /etc/ssl/certs/cloudflare-origin.crt \
+            -subj "/C=US/ST=California/L=San Francisco/O=Cloudflare Origin/OU=Origin CA/CN=$DOMAIN_NAME" \
+            -addext "subjectAltName=DNS:$DOMAIN_NAME,DNS:www.$DOMAIN_NAME"
+        
+        sudo chmod 600 /etc/ssl/private/cloudflare-origin.key
+        sudo chmod 644 /etc/ssl/certs/cloudflare-origin.crt
+        echo "✅ Cloudflare Origin SSL certificate created"
     else
         echo "✅ SSL certificate already exists"
     fi
@@ -438,9 +468,9 @@ server {
     listen 443 ssl http2;
     server_name $DOMAIN_NAME www.$DOMAIN_NAME;
     
-    # SSL configuration - using self-signed certificate
-    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    # SSL configuration - using Cloudflare Origin certificate
+    ssl_certificate /etc/ssl/certs/cloudflare-origin.crt;
+    ssl_certificate_key /etc/ssl/private/cloudflare-origin.key;
     
     # SSL settings
     ssl_protocols TLSv1.2 TLSv1.3;

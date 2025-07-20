@@ -24,7 +24,8 @@ export async function GET(_request: NextRequest) {
     const safeUsers = users.map(user => ({
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      emailVerified: user.emailVerified
     }))
     
     return NextResponse.json(safeUsers)
