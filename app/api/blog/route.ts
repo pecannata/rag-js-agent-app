@@ -10,10 +10,11 @@ function escapeSqlString(str: string): string {
   if (typeof str !== 'string') {
     return String(str);
   }
-  // Comprehensive SQL string escaping
+  // Comprehensive SQL string escaping for CLOB content
   return str
     .replace(/\\/g, '\\\\')         // Escape backslashes first
     .replace(/'/g, "''")           // Escape single quotes for SQL
+    .replace(/"/g, '\"')           // Escape double quotes 
     .replace(/`/g, "\\`")          // Escape backticks to prevent command substitution
     .replace(/\$/g, "\\$")         // Escape dollar signs to prevent variable expansion
     .replace(/\u2018/g, "''")     // Escape left single quotation mark (U+2018)
@@ -25,12 +26,10 @@ function escapeSqlString(str: string): string {
     .replace(/\u2026/g, '...')       // Replace ellipsis with three dots
     .replace(/\0/g, '')             // Remove null bytes
     .replace(/\x1a/g, '')           // Remove substitute character
-    .replace(/\r\n/g, ' ')           // Convert CRLF to spaces
-    .replace(/\r/g, ' ')             // Convert CR to spaces  
-    .replace(/\n/g, ' ')             // Convert LF to spaces
-    .replace(/\s+/g, ' ')            // Collapse multiple spaces to single space
-    .trim();                         // Remove leading/trailing whitespace
-    // Note: Converting newlines to spaces to prevent SQL statement termination while preserving readability
+    .replace(/[\r\n]+/g, ' ')       // Convert all line breaks to spaces to prevent SQL command separation
+    .replace(/\s+/g, ' ')           // Collapse multiple spaces to single space
+    .trim();                        // Remove leading/trailing whitespace
+    // Note: Converting newlines to spaces to prevent SQL statement termination
 }
 
 // Utility function to validate and sanitize numeric IDs
@@ -57,13 +56,14 @@ async function insertBlogPostSafely(postData: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`📝 Content Length: ${postData.content.length} characters`);
+    console.log(`📝 Content preview (first 100 chars): ${postData.content.substring(0, 100)}`);
 
     // Check if content is large and needs TO_CLOB() chunking
-    if (postData.content.length > 4000) {
+    if (postData.content.length > 2000) {
       console.log('⚠️ Content is large, using TO_CLOB() chunking strategy...');
       
       // Split content into manageable chunks for Oracle (less than 4000 chars each)
-      const chunkSize = 2000; // Conservative size to account for escaping and special characters
+      const chunkSize = 1000; // Very conservative size to account for escaping expansion
       const chunks: string[] = [];
       
       for (let i = 0; i < postData.content.length; i += chunkSize) {
@@ -82,9 +82,11 @@ async function insertBlogPostSafely(postData: {
           `;
       
       // Add each chunk as TO_CLOB('chunk') concatenated with ||
-      const clobParts = chunks.map(chunk => {
+      const clobParts = chunks.map((chunk, index) => {
         // Use the comprehensive escapeSqlString function for each chunk
         const escapedChunk = escapeSqlString(chunk);
+        console.log(`📊 Chunk ${index + 1} length after escaping: ${escapedChunk.length} chars`);
+        console.log(`📊 Chunk ${index + 1} preview: ${escapedChunk.substring(0, 100)}...`);
         return `TO_CLOB('${escapedChunk}')`;
       });
       
@@ -170,11 +172,11 @@ async function updateBlogPostSafely(postData: {
     console.log(`📝 Update: Content Length: ${postData.content.length} characters`);
     
     // Check if content is large and needs TO_CLOB() chunking
-    if (postData.content.length > 4000) {
+    if (postData.content.length > 2000) {
       console.log('⚠️ Update content is large, using TO_CLOB() chunking strategy...');
       
       // Split content into manageable chunks for Oracle (less than 4000 chars each)
-      const chunkSize = 2000; // Conservative size to account for escaping and special characters
+      const chunkSize = 1000; // Very conservative size to account for escaping expansion
       const chunks: string[] = [];
       
       for (let i = 0; i < postData.content.length; i += chunkSize) {
