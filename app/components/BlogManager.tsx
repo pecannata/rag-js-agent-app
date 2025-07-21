@@ -830,7 +830,7 @@ const loadBlogPosts = async () => {
               <div className="flex-1 min-h-0">
                 {isEditing && !isPreviewMode ? (
                   <TinyMCEEditor
-                    apiKey='qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc'
+                    apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || 'no-api-key'}
                     init={{
                       height: '100%',
                       base_url: '/tinymce',
