@@ -1,17 +1,17 @@
 {
-  "version": "1.0.250",
+  "version": "1.0.256",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-21T22:13:07.302Z",
+  "buildTime": "2025-07-21T22:48:01.691Z",
   "buildDate": "Jul 21, 2025",
-  "sourceVersion": "v1.0.249.072125",
+  "sourceVersion": "v1.0.255.072125",
   "git": {
     "branch": "main",
-    "commit": "282c94cdbec85f70baee8552a695a46a065629dd",
-    "shortCommit": "282c94cd",
-    "commitDate": "2025-07-21 16:54:39 -0500",
-    "commitMessage": "Are the three queries used to get the categorized posts running in parallel.Are there other optimizations that can be done."
+    "commit": "9ba8590538a5eeb9bffe7e2d3bf139167680488b",
+    "shortCommit": "9ba85905",
+    "commitDate": "2025-07-21 17:22:47 -0500",
+    "commitMessage": "Can some kind of caching be used because the blog posts are rarely going to change. And MP2 was implemented, see below."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.249-282c94cd-20250721-221307"
+  "buildSignature": "1.0.255-9ba85905-20250721-224801"
 }

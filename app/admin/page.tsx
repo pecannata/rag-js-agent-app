@@ -97,6 +97,13 @@ export default function SystemInfoPage() {
                 Subscribers
               </button>
               <button
+                onClick={() => window.location.href = '/admin/cache'}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
+              >
+                <span className="mr-1">🗄️</span>
+                Cache Admin
+              </button>
+              <button
                 onClick={() => window.location.href = '/'}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
               >

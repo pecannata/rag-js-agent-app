@@ -1,6 +1,6 @@
 {
   "name": "rag-js-agent-app",
-  "version": "1.0.250",
+  "version": "1.0.256",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -47,6 +47,7 @@
     "langchain": "^0.3.29",
     "next": "15.3.4",
     "next-auth": "^4.24.11",
+    "node-cache": "^5.1.2",
     "nodemailer": "^7.0.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
