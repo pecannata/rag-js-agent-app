@@ -297,6 +297,168 @@ Visit our blog: ${emailConfig.baseUrl}
 
 Thanks for joining our community!
     `
+  }),
+
+  adminNewUserNotification: (userEmail: string, userId: string) => ({
+    subject: '🔔 New User Registration - Approval Required',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New User Registration</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); padding: 35px; border-radius: 12px; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);">
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">🔔 New User Registration</h1>
+          <div style="background: rgba(255,255,255,0.2); height: 2px; width: 60px; margin: 15px auto; border-radius: 1px;"></div>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
+          <h2 style="color: #2c3e50; margin-top: 0; font-size: 22px; font-weight: 600; line-height: 1.3;">⚠️ Admin Action Required</h2>
+          
+          <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6; margin: 15px 0;">
+            A new user has verified their email and is awaiting admin approval to access the application.
+          </p>
+          
+          <div style="background: #fff; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin: 20px 0;">
+            <h3 style="color: #2c3e50; margin-top: 0; font-size: 18px;">User Details:</h3>
+            <ul style="color: #5a6c7d; font-size: 16px; line-height: 1.8; margin: 10px 0; list-style: none; padding: 0;">
+              <li><strong>📧 Email:</strong> ${userEmail}</li>
+              <li><strong>🆔 User ID:</strong> ${userId}</li>
+              <li><strong>📅 Registration:</strong> ${new Date().toLocaleString()}</li>
+              <li><strong>✅ Status:</strong> Email Verified, Pending Approval</li>
+            </ul>
+          </div>
+          
+          <div style="margin: 25px 0; text-align: center;">
+            <a href="${emailConfig.baseUrl}/admin/users" 
+               style="display: inline-block; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); transition: all 0.3s ease; margin-right: 10px;">
+              👥 Manage Users
+            </a>
+            <a href="${emailConfig.baseUrl}/admin/users?user=${userId}" 
+               style="display: inline-block; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); transition: all 0.3s ease;">
+              👤 View User
+            </a>
+          </div>
+          
+          <p style="color: #7f8c8d; font-size: 14px; margin-top: 25px; text-align: center; font-style: italic;">
+            Please review and approve this user to grant them access to the application.
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 14px;">
+          <p>This is an automated notification from AlwaysCurious User Management System.</p>
+          <p>
+            <a href="${emailConfig.baseUrl}/admin" style="color: #6c757d; text-decoration: underline;">
+              Admin Dashboard
+            </a>
+          </p>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+🔔 New User Registration - Admin Action Required
+
+A new user has verified their email and is awaiting admin approval to access the application.
+
+User Details:
+• Email: ${userEmail}
+• User ID: ${userId}
+• Registration: ${new Date().toLocaleString()}
+• Status: Email Verified, Pending Approval
+
+To approve this user, visit the admin dashboard:
+${emailConfig.baseUrl}/admin/users
+
+Direct link to user: ${emailConfig.baseUrl}/admin/users?user=${userId}
+
+Please review and approve this user to grant them access to the application.
+
+---
+This is an automated notification from AlwaysCurious User Management System.
+    `
+  }),
+
+  userApprovalNotification: (userEmail: string, userName?: string) => ({
+    subject: '🎉 Account Approved - Welcome to AlwaysCurious!',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Approved</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 35px; border-radius: 12px; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(46, 204, 113, 0.3);">
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">🎉 Account Approved!</h1>
+          <div style="background: rgba(255,255,255,0.2); height: 2px; width: 60px; margin: 15px auto; border-radius: 1px;"></div>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
+          <h2 style="color: #2c3e50; margin-top: 0; font-size: 22px; font-weight: 600; line-height: 1.3;">Welcome to AlwaysCurious${userName ? `, ${userName}` : ''}!</h2>
+          
+          <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6; margin: 15px 0;">
+            Great news! Your account has been approved by our admin team. You now have full access to the AlwaysCurious platform.
+          </p>
+          
+          <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #27ae60; margin: 20px 0;">
+            <h3 style="color: #27ae60; margin-top: 0; font-size: 18px;">✅ What you can do now:</h3>
+            <ul style="color: #2c3e50; font-size: 16px; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
+              <li>📝 Access the full blog and content management system</li>
+              <li>💬 Use the AI-powered chat and RAG features</li>
+              <li>📚 Upload and process documents</li>
+              <li>🔧 Access advanced tools and features</li>
+            </ul>
+          </div>
+          
+          <div style="margin: 25px 0; text-align: center;">
+            <a href="${emailConfig.baseUrl}/auth/signin" 
+               style="display: inline-block; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); transition: all 0.3s ease;">
+              🚀 Sign In Now
+            </a>
+          </div>
+          
+          <p style="color: #7f8c8d; font-size: 14px; margin-top: 25px; text-align: center; font-style: italic;">
+            "Stay curious, keep learning, always growing" ✨
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 14px;">
+          <p>Thank you for being part of our journey of continuous learning and discovery!</p>
+          <p>
+            <a href="${emailConfig.baseUrl}" style="color: #6c757d; text-decoration: underline;">
+              Visit AlwaysCurious
+            </a>
+          </p>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+🎉 Account Approved - Welcome to AlwaysCurious!
+
+Welcome to AlwaysCurious${userName ? `, ${userName}` : ''}!
+
+Great news! Your account has been approved by our admin team. You now have full access to the AlwaysCurious platform.
+
+✅ What you can do now:
+• Access the full blog and content management system
+• Use the AI-powered chat and RAG features  
+• Upload and process documents
+• Access advanced tools and features
+
+Sign in now: ${emailConfig.baseUrl}/auth/signin
+
+"Stay curious, keep learning, always growing"
+
+Thank you for being part of our journey of continuous learning and discovery!
+
+Visit AlwaysCurious: ${emailConfig.baseUrl}
+    `
   })
 };
 
@@ -323,6 +485,16 @@ export async function sendEmail(to: string, template: keyof typeof emailTemplate
       text = templateResult.text;
     } else if (template === 'postNotification') {
       const templateResult = emailTemplates[template](data, data.unsubscribeUrl);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else if (template === 'adminNewUserNotification') {
+      const templateResult = emailTemplates[template](data.userEmail, data.userId);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      text = templateResult.text;
+    } else if (template === 'userApprovalNotification') {
+      const templateResult = emailTemplates[template](data.userEmail, data.userName);
       subject = templateResult.subject;
       html = templateResult.html;
       text = templateResult.text;
@@ -456,6 +628,24 @@ export async function sendAuthEmailVerification(userEmail: string, verificationT
 export async function sendWelcomeEmail(subscriberEmail: string, subscriberName?: string) {
   return await sendEmail(subscriberEmail, 'welcomeEmail', {
     subscriberName
+  });
+}
+
+// Send admin notification when a new user verifies their email
+export async function sendAdminNewUserNotification(userEmail: string, userId: string) {
+  const adminEmail = 'phil.cannata@yahoo.com';
+  
+  return await sendEmail(adminEmail, 'adminNewUserNotification', {
+    userEmail,
+    userId
+  });
+}
+
+// Send user approval notification
+export async function sendUserApprovalNotification(userEmail: string, userName?: string) {
+  return await sendEmail(userEmail, 'userApprovalNotification', {
+    userEmail,
+    userName
   });
 }
 

@@ -80,7 +80,7 @@ export default function SignUp() {
                 <p className="text-sm text-blue-800">
                   📧 <strong>Check your email!</strong><br/>
                   We've sent a verification link to <strong>{email}</strong>.
-                  Click the link to verify your account before signing in.
+                  After verifying your email, your account will need admin approval before you can sign in.
                 </p>
                 <div className="mt-3">
                   <Link 

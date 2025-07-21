@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyUserEmail, findUserByVerificationToken } from '../../../../lib/users'
-import { sendWelcomeEmail } from '../../../lib/email'
+import { sendWelcomeEmail, sendAdminNewUserNotification } from '../../../lib/email'
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,8 +41,16 @@ export async function GET(request: NextRequest) {
       // Don't fail the verification if welcome email fails
     }
 
+    // Send admin notification for new user approval
+    try {
+      await sendAdminNewUserNotification(user.email, user.id)
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError)
+      // Don't fail the verification if admin notification fails
+    }
+
     return NextResponse.json(
-      { message: 'Email verified successfully! You can now sign in.' },
+      { message: 'Email verified successfully! Your account is pending admin approval. You will receive an email once approved.' },
       { status: 200 }
     )
   } catch (error) {

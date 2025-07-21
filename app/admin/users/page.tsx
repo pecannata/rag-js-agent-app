@@ -9,6 +9,7 @@ interface User {
   email: string
   createdAt: string
   emailVerified: boolean
+  approved: boolean
 }
 
 export default function UserManagement() {
@@ -105,6 +106,60 @@ export default function UserManagement() {
     }
   }
 
+  const approveUser = async (email: string) => {
+    if (!confirm(`Are you sure you want to approve user: ${email}?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, action: 'approve' })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        setSuccess(`User ${email} approved successfully`)
+        fetchUsers() // Refresh the list
+      } else {
+        setError(data.message || 'Failed to approve user')
+      }
+    } catch (_error) {
+      setError('Failed to approve user')
+    }
+  }
+
+  const unapproveUser = async (email: string) => {
+    if (!confirm(`Are you sure you want to revoke approval for user: ${email}?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, action: 'unapprove' })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        setSuccess(`User ${email} approval revoked`)
+        fetchUsers() // Refresh the list
+      } else {
+        setError(data.message || 'Failed to revoke approval')
+      }
+    } catch (_error) {
+      setError('Failed to revoke approval')
+    }
+  }
+
   // Show loading state
   if (status === 'loading' || !session) {
     return (
@@ -169,6 +224,9 @@ export default function UserManagement() {
                         Verified
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Approved
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -194,7 +252,32 @@ export default function UserManagement() {
                             {user.emailVerified ? 'Yes' : 'No'}
                           </span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            user.approved 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {user.approved ? 'Approved' : 'Pending'}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          {!user.approved && (
+                            <button
+                              onClick={() => approveUser(user.email)}
+                              className="text-green-600 hover:text-green-900"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {user.approved && user.email !== 'phil.cannata@yahoo.com' && (
+                            <button
+                              onClick={() => unapproveUser(user.email)}
+                              className="text-yellow-600 hover:text-yellow-900"
+                            >
+                              Revoke
+                            </button>
+                          )}
                           <button
                             onClick={() => resetPassword(user.email)}
                             className="text-blue-600 hover:text-blue-900"

@@ -24,6 +24,11 @@ const handler = NextAuth({
             throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
           }
           
+          // Check if user is approved (admin users are always approved)
+          if (!user.approved && user.email !== 'phil.cannata@yahoo.com') {
+            throw new Error('Your account is pending admin approval. You will receive an email once approved.')
+          }
+          
           return {
             id: user.id,
             email: user.email,

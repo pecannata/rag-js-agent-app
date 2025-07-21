@@ -10,6 +10,7 @@ interface User {
   emailVerified: boolean
   emailVerificationToken?: string
   emailVerificationExpires?: string
+  approved: boolean
 }
 
 const USERS_FILE = path.join(process.cwd(), 'data', 'users.json')
@@ -34,14 +35,16 @@ function loadUsers(): User[] {
         email: 'test@example.com',
         password: '$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi', // 'password123'
         createdAt: new Date().toISOString(),
-        emailVerified: true // Pre-verified test user
+        emailVerified: true, // Pre-verified test user
+        approved: true // Pre-approved for testing
       },
       {
         id: '2',
         email: 'phil.cannata@yahoo.com',
         password: '$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi', // 'password123'
         createdAt: new Date().toISOString(),
-        emailVerified: true // Pre-verified admin user
+        emailVerified: true, // Pre-verified admin user
+        approved: true // Admin is always approved
       }
     ]
     saveUsers(initialUsers)
@@ -100,7 +103,7 @@ export async function createUser(email: string, password: string): Promise<User 
   const verificationToken = generateVerificationToken()
   const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
   
-  // Create new user (unverified)
+  // Create new user (unverified and unapproved)
   const newUser: User = {
     id: Date.now().toString(),
     email,
@@ -108,7 +111,8 @@ export async function createUser(email: string, password: string): Promise<User 
     createdAt: new Date().toISOString(),
     emailVerified: false,
     emailVerificationToken: verificationToken,
-    emailVerificationExpires: verificationExpires.toISOString()
+    emailVerificationExpires: verificationExpires.toISOString(),
+    approved: false // New users need admin approval
   }
   
   users.push(newUser)
@@ -234,4 +238,54 @@ export function regenerateVerificationToken(email: string): string | null {
 export function isEmailVerified(email: string): boolean {
   const user = findUserByEmail(email)
   return user?.emailVerified || false
+}
+
+// Check if user is approved
+export function isUserApproved(email: string): boolean {
+  const user = findUserByEmail(email)
+  return user?.approved || false
+}
+
+// Approve user
+export function approveUser(email: string): boolean {
+  const users = loadUsers()
+  const userIndex = users.findIndex(user => user.email === email)
+  
+  if (userIndex === -1) {
+    return false // User not found
+  }
+  
+  const user = users[userIndex]
+  if (!user) {
+    return false
+  }
+  
+  user.approved = true
+  saveUsers(users)
+  return true
+}
+
+// Unapprove user (revoke approval)
+export function unapproveUser(email: string): boolean {
+  const users = loadUsers()
+  const userIndex = users.findIndex(user => user.email === email)
+  
+  if (userIndex === -1) {
+    return false // User not found
+  }
+  
+  const user = users[userIndex]
+  if (!user) {
+    return false
+  }
+  
+  user.approved = false
+  saveUsers(users)
+  return true
+}
+
+// Find user by ID
+export function findUserById(id: string): User | null {
+  const users = loadUsers()
+  return users.find(user => user.id === id) || null
 }
