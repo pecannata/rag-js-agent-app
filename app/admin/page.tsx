@@ -90,6 +90,13 @@ export default function SystemInfoPage() {
                 User Management
               </button>
               <button
+                onClick={() => window.location.href = '/admin/subscribers'}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
+              >
+                <span className="mr-1">📧</span>
+                Subscribers
+              </button>
+              <button
                 onClick={() => window.location.href = '/'}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
               >

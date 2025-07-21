@@ -212,12 +212,26 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
               Welcome, {session.user?.email}
             </span>
             {session.user?.email === 'phil.cannata@yahoo.com' && (
-              <button
-                onClick={() => router.push('/admin/users')}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
-              >
-                Manage Users
-              </button>
+              <>
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                >
+                  Admin Dashboard
+                </button>
+                <button
+                  onClick={() => router.push('/admin/subscribers')}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                >
+                  Subscribers
+                </button>
+                <button
+                  onClick={() => router.push('/admin/users')}
+                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                >
+                  Manage Users
+                </button>
+              </>
             )}
             <button
               onClick={() => signOut({ callbackUrl: '/auth/signin' })}
