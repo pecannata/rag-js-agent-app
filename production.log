@@ -127,3 +127,116 @@ Error starting at line : 11 in command -
       
 ✅ Successfully parsed as JSON
 ✅ Extracted Oracle items: 4 rows
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 186 rows
+📊 Blog query result structure: object true 186
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows

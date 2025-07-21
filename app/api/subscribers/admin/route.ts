@@ -2,7 +2,70 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { verifyUser } from '../../../../lib/users';
+
+// NextAuth configuration options
+const authOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        // Verify user using shared user storage
+        const user = await verifyUser(credentials.email, credentials.password)
+        
+        if (user) {
+          // Check if email is verified
+          if (!user.emailVerified) {
+            throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
+          }
+          
+          // Check if user is approved (admin users are always approved)
+          if (!user.approved && user.email !== 'phil.cannata@yahoo.com') {
+            throw new Error('Your account is pending admin approval. You will receive an email once approved.')
+          }
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.email.split('@')[0] ?? 'User'
+          }
+        }
+
+        return null
+      }
+    })
+  ],
+  pages: {
+    signIn: '/auth/signin'
+  },
+  session: {
+    strategy: 'jwt' as const
+  },
+  callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }: any) {
+      if (token && session.user) {
+        session.user.id = token.id as string
+      }
+      return session
+    }
+  },
+  secret: process.env.NEXTAUTH_SECRET ?? 'development-secret-change-in-production'
+};
 
 const execAsync = promisify(exec);
 
@@ -90,7 +153,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
 }
 
 // Check if user is admin
-async function isAdminUser(request: NextRequest): Promise<boolean> {
+async function isAdminUser(): Promise<boolean> {
   try {
     const session = await getServerSession(authOptions);
     return session?.user?.email === 'phil.cannata@yahoo.com';
@@ -104,7 +167,7 @@ async function isAdminUser(request: NextRequest): Promise<boolean> {
 export async function PATCH(request: NextRequest) {
   try {
     // Check admin authorization
-    const isAdmin = await isAdminUser(request);
+    const isAdmin = await isAdminUser();
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
@@ -163,7 +226,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check admin authorization
-    const isAdmin = await isAdminUser(request);
+    const isAdmin = await isAdminUser();
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },

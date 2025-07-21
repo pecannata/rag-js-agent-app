@@ -1,17 +1,17 @@
 {
-  "version": "1.0.231",
+  "version": "1.0.234",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-21T01:29:49.065Z",
+  "buildTime": "2025-07-21T02:01:55.765Z",
   "buildDate": "Jul 20, 2025",
-  "sourceVersion": "v1.0.230.072025",
+  "sourceVersion": "v1.0.233.072025",
   "git": {
     "branch": "main",
-    "commit": "50b94043f55a34b2f5a9c2fb3f554230393181bf",
-    "shortCommit": "50b94043",
-    "commitDate": "2025-07-20 20:18:53 -0500",
-    "commitMessage": "Fixed feedback to nse users when creating a new accunt."
+    "commit": "5547337791134ec3dd1e5bd00a05dbb7ddb8d4a0",
+    "shortCommit": "55473377",
+    "commitDate": "2025-07-20 20:49:34 -0500",
+    "commitMessage": "On the main app ui can you add buttons for /admin and /admin/subscribers similar to what's show in the attached image."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.230-50b94043-20250721-012949"
+  "buildSignature": "1.0.233-55473377-20250721-020155"
 }

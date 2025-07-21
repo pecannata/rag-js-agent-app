@@ -194,9 +194,9 @@ const BlogSubscriberContent: React.FC = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar - Blog List */}
-          <aside className="w-1/3 bg-white rounded-lg shadow-sm border border-gray-200">
+          <aside className="w-full lg:w-1/3 xl:w-1/4 bg-white rounded-lg shadow-sm border border-gray-200 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto">
             <div className="p-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">📝 Published Blogs</h2>
               <p className="text-sm text-gray-600 mt-1">Click any blog to view it</p>
