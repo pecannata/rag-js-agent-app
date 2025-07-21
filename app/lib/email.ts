@@ -401,6 +401,8 @@ This is an automated notification from AlwaysCurious User Management System.
         <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
           <h2 style="color: #2c3e50; margin-top: 0; font-size: 22px; font-weight: 600; line-height: 1.3;">Welcome to AlwaysCurious${userName ? `, ${userName}` : ''}!</h2>
           
+          <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0; text-align: center;">Account: ${userEmail}</p>
+          
           <p style="color: #5a6c7d; font-size: 16px; line-height: 1.6; margin: 15px 0;">
             Great news! Your account has been approved by our admin team. You now have full access to the AlwaysCurious platform.
           </p>
@@ -443,6 +445,8 @@ This is an automated notification from AlwaysCurious User Management System.
 
 Welcome to AlwaysCurious${userName ? `, ${userName}` : ''}!
 
+Account: ${userEmail}
+|
 Great news! Your account has been approved by our admin team. You now have full access to the AlwaysCurious platform.
 
 ✅ What you can do now:
