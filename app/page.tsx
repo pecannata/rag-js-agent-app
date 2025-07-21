@@ -234,6 +234,12 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
               </>
             )}
             <button
+              onClick={() => router.push('/blogs')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+            >
+              📚 Blogs
+            </button>
+            <button
               onClick={() => signOut({ callbackUrl: '/auth/signin' })}
               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
             >

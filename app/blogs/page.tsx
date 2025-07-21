@@ -17,7 +17,7 @@ interface BlogPost {
   publishedAt?: string;
 }
 
-const BlogSubscriberContent: React.FC = () => {
+const BlogsContent: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,7 +182,7 @@ const BlogSubscriberContent: React.FC = () => {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">📚 Blog Subscriber Portal</h1>
+            <h1 className="text-2xl font-bold text-gray-900">📚 Blogs</h1>
             <a 
               href="/" 
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -353,12 +353,12 @@ const BlogSubscriberContent: React.FC = () => {
   );
 };
 
-const BlogSubscriberPage: React.FC = () => {
+const BlogsPage: React.FC = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <BlogSubscriberContent />
+      <BlogsContent />
     </Suspense>
   );
 };
 
-export default BlogSubscriberPage;
+export default BlogsPage;
