@@ -1,17 +1,17 @@
 {
-  "version": "1.0.236",
+  "version": "1.0.237",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-21T02:12:28.943Z",
+  "buildTime": "2025-07-21T02:19:39.523Z",
   "buildDate": "Jul 20, 2025",
-  "sourceVersion": "v1.0.235.072025",
+  "sourceVersion": "v1.0.236.072025",
   "git": {
     "branch": "main",
-    "commit": "db0aa821bebcb06646d6c93cf93575459adf9a0c",
-    "shortCommit": "db0aa821",
-    "commitDate": "2025-07-20 21:08:46 -0500",
-    "commitMessage": "Now for something different. The blog tab on the main app isn't reposnive w.r.t device. For instance, my wife has a iPAD but the blog page reqiures unaccpetable horizontal scrolling."
+    "commit": "789bc4311b6c2a508ac72f7eff581287bb7f45cf",
+    "shortCommit": "789bc431",
+    "commitDate": "2025-07-20 21:16:52 -0500",
+    "commitMessage": "Can you move /blog/subscriber to /blogs"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.235-db0aa821-20250721-021228"
+  "buildSignature": "1.0.236-789bc431-20250721-021939"
 }

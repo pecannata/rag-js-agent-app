@@ -22,6 +22,7 @@ const BlogsContent: React.FC = () => {
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingContent, setLoadingContent] = useState(false);
+  const [loadingPostSelection, setLoadingPostSelection] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const blogId = searchParams.get('id');
@@ -139,6 +140,13 @@ const BlogsContent: React.FC = () => {
     // Find the post from already loaded posts
     const selectedPost = posts.find(p => p.id === postId);
     if (selectedPost) {
+      // Show loading immediately
+      setLoadingPostSelection(true);
+      setError(null);
+      
+      // Add a small delay to show the spinner even for preloaded content
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       if (!selectedPost.content) {
         setLoadingContent(true);
         try {
@@ -154,11 +162,13 @@ const BlogsContent: React.FC = () => {
         } catch (error) {
           console.error('Error loading blog post content:', error);
           setError('Error fetching blog post content');
+          setLoadingPostSelection(false);
           return;
         } finally {
           setLoadingContent(false);
         }
       }
+      
       console.log('📖 Selected post:', {
         id: selectedPost.id,
         title: selectedPost.title,
@@ -167,9 +177,9 @@ const BlogsContent: React.FC = () => {
         contentPreview: selectedPost.content?.substring(0, 100) || 'No content'
       });
       
-      // Use the cached post data - it should already have content
+      // Set the post and hide loading
       setCurrentPost(selectedPost);
-      setError(null);
+      setLoadingPostSelection(false);
     } else {
       console.error('❌ Post not found in cached posts:', postId);
       setError(`Blog post with ID ${postId} not found`);
@@ -261,7 +271,14 @@ const BlogsContent: React.FC = () => {
 
           {/* Main Content */}
           <main className="flex-1">
-            {currentPost ? (
+            {loadingPostSelection ? (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
+                  <span className="text-lg text-gray-600">Loading blog post...</span>
+                </div>
+              </div>
+            ) : currentPost ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 {/* Blog Header */}
                 <div className="p-6 border-b border-gray-200">
