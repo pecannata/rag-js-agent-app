@@ -3,6 +3,71 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 
+// CACHING SYSTEM FOR CATEGORIZED BLOG POSTS
+// Since categorized posts are even more static than regular blog posts, we can cache aggressively
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  ttl: number; // Time to live in milliseconds
+}
+
+class CategorizedPostsCache {
+  private cache = new Map<string, CacheEntry>();
+  
+  // Categorized posts are very static - cache for 30 minutes
+  private static readonly TTL = 30 * 60 * 1000; // 30 minutes
+  
+  set(key: string, data: any, ttl: number = CategorizedPostsCache.TTL): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+    
+    console.log(`🗄️ Cached categorized posts: ${key} (TTL: ${ttl/1000}s)`);
+  }
+  
+  get(key: string): any | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      console.log(`🚫 Categorized cache miss: ${key}`);
+      return null;
+    }
+    
+    const age = Date.now() - entry.timestamp;
+    if (age > entry.ttl) {
+      console.log(`⏰ Categorized cache expired: ${key} (age: ${Math.round(age/1000)}s)`);
+      this.cache.delete(key);
+      return null;
+    }
+    
+    console.log(`✅ Categorized cache hit: ${key} (age: ${Math.round(age/1000)}s)`);
+    return entry.data;
+  }
+  
+  invalidate(): void {
+    console.log('🧹 Clearing categorized posts cache');
+    this.cache.clear();
+  }
+  
+  getStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
+    };
+  }
+}
+
+// Global cache instance
+const categorizedCache = new CategorizedPostsCache();
+
+// Expose cache invalidation function globally
+global.invalidateCategorizedCache = () => {
+  categorizedCache.invalidate();
+  console.log('🧹 Categorized posts cache invalidated via global function');
+};
+
 const execPromise = promisify(exec);
 
 interface CategoryPost {
@@ -21,6 +86,19 @@ interface CategorizedPosts {
 export async function GET() {
   try {
     console.log('🔍 Fetching categorized blog posts...');
+
+    // CACHING: Check cache first
+    const cacheKey = 'categorized_blog_posts';
+    const cachedResult = categorizedCache.get(cacheKey);
+    if (cachedResult) {
+      console.log('🚀 Serving categorized posts from cache');
+      
+      // Set appropriate cache headers for browser/CDN caching
+      const response = NextResponse.json(cachedResult);
+      response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+      response.headers.set('X-Cache-Status', 'HIT');
+      return response;
+    }
 
     const scriptPath = path.join(process.cwd(), 'SQLclScript.sh');
     
@@ -67,10 +145,21 @@ export async function GET() {
     
     console.log(`✅ Categorized posts optimized: AI=${categorizedPosts.ai.length}, CS=${categorizedPosts.cs.length}, Science=${categorizedPosts.science.length}`);
     
-    return NextResponse.json({
+    const responseData = {
       success: true,
       categories: categorizedPosts
-    });
+    };
+    
+    // CACHING: Store result in cache with 30-minute TTL
+    categorizedCache.set(cacheKey, responseData);
+    console.log('🗄️ Stored categorized posts in cache');
+    
+    // Set HTTP cache headers for browser/CDN caching
+    const response = NextResponse.json(responseData);
+    response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+    response.headers.set('X-Cache-Status', 'MISS');
+    
+    return response;
     
   } catch (error) {
     console.error('❌ Error in optimized categorized posts:', error);
@@ -350,3 +439,4 @@ const parseResults = (output: string, queryType: string): CategoryPost[] => {
     return [];
   }
 };
+

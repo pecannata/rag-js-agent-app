@@ -3,7 +3,95 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { queueEmailJob } from '../../lib/background-jobs';
 
+// Declare global type for categorized cache invalidation
+declare global {
+  var invalidateCategorizedCache: (() => void) | undefined;
+}
+
 const execAsync = promisify(exec);
+
+// CACHING SYSTEM FOR BLOG POSTS
+// Since blog posts rarely change, we can cache aggressively
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  ttl: number; // Time to live in milliseconds
+}
+
+class BlogCache {
+  private cache = new Map<string, CacheEntry>();
+  
+  // Different TTL for different types of data
+  private static readonly TTL = {
+    RECENT_POSTS: 5 * 60 * 1000,      // 5 minutes for recent posts (most dynamic)
+    ALL_POSTS: 15 * 60 * 1000,       // 15 minutes for all posts
+    CATEGORIZED: 30 * 60 * 1000,     // 30 minutes for categorized posts (least dynamic)
+    INDIVIDUAL: 60 * 60 * 1000       // 1 hour for individual posts (very static)
+  };
+  
+  set(key: string, data: any, ttl: number): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+    
+    console.log(`🗄️ Cached: ${key} (TTL: ${ttl/1000}s)`);
+  }
+  
+  get(key: string): any | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      console.log(`🚫 Cache miss: ${key}`);
+      return null;
+    }
+    
+    const age = Date.now() - entry.timestamp;
+    if (age > entry.ttl) {
+      console.log(`⏰ Cache expired: ${key} (age: ${Math.round(age/1000)}s)`);
+      this.cache.delete(key);
+      return null;
+    }
+    
+    console.log(`✅ Cache hit: ${key} (age: ${Math.round(age/1000)}s)`);
+    return entry.data;
+  }
+  
+  invalidate(pattern?: string): void {
+    if (!pattern) {
+      console.log('🧹 Clearing entire blog cache');
+      this.cache.clear();
+      return;
+    }
+    
+    const keysToDelete: string[] = [];
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => {
+      this.cache.delete(key);
+      console.log(`🗑️ Invalidated cache: ${key}`);
+    });
+  }
+  
+  getStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
+    };
+  }
+  
+  static getTTL() {
+    return BlogCache.TTL;
+  }
+}
+
+// Global cache instance
+const blogCache = new BlogCache();
 
 // Utility function to escape strings for SQL and shell
 function escapeSqlString(str: string): string {
@@ -424,7 +512,7 @@ function generateSlug(title: string, id?: number): string {
   return slug;
 }
 
-// GET /api/blog - Get all blog posts with lazy loading support
+// GET /api/blog - Get all blog posts with lazy loading support + caching
 export async function GET(request: NextRequest) {
   try {
     // Table already exists, skip initialization for debugging
@@ -435,6 +523,21 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const includeContent = searchParams.get('includeContent') === 'true'; // Include full content flag - lazy loading by default
+    
+    // CACHING: Generate cache key based on query parameters
+    const cacheKey = `blog_posts_${status || 'all'}_${limit || 'nolimit'}_${offset || '0'}_${includeContent ? 'withcontent' : 'nocontent'}`;
+    
+    // Try to get from cache first
+    const cachedResult = blogCache.get(cacheKey);
+    if (cachedResult) {
+      console.log('🚀 Serving blog posts from cache');
+      
+      // Set appropriate cache headers for browser/CDN caching
+      const response = NextResponse.json(cachedResult);
+      response.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60'); // 5min CDN, 1min browser
+      response.headers.set('X-Cache-Status', 'HIT');
+      return response;
+    }
     
     // Build the query - by default exclude content column to avoid loading large CLOBs (true lazy loading)
     // Only include content if explicitly requested via includeContent=true
@@ -511,7 +614,28 @@ export async function GET(request: NextRequest) {
       isScheduled: post.is_scheduled === 1
     }));
     
-    return NextResponse.json({ success: true, posts });
+    const responseData = { success: true, posts };
+    
+    // CACHING: Store result in cache with appropriate TTL
+    const getTTL = () => {
+      if (limit === '3' && status === 'published') {
+        return BlogCache.getTTL().RECENT_POSTS; // 5 minutes for recent posts
+      } else if (includeContent) {
+        return BlogCache.getTTL().INDIVIDUAL; // 1 hour for full content
+      } else {
+        return BlogCache.getTTL().ALL_POSTS; // 15 minutes for other queries
+      }
+    };
+    
+    blogCache.set(cacheKey, responseData, getTTL());
+    console.log('🗄️ Stored blog posts in cache');
+    
+    // Set HTTP cache headers for browser/CDN caching
+    const response = NextResponse.json(responseData);
+    response.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60'); // 5min CDN, 1min browser
+    response.headers.set('X-Cache-Status', 'MISS');
+    
+    return response;
     
   } catch (error) {
     console.error('Error in blog GET API:', error);
@@ -671,6 +795,16 @@ export async function POST(request: NextRequest) {
           console.error('❌ Error queuing email notifications:', emailError);
           // Don't fail the post creation if email queuing fails
         }
+      }
+      
+      // CACHING: Invalidate all blog-related cache entries when new post is created
+      blogCache.invalidate('blog_posts');
+      console.log('🧹 Blog cache invalidated after post creation');
+      
+      // Also invalidate categorized posts cache since categories may have changed
+      if (global.invalidateCategorizedCache) {
+        global.invalidateCategorizedCache();
+        console.log('🧹 Categorized posts cache invalidated after post creation');
       }
       
       return NextResponse.json({ success: true, post: formattedPost });
@@ -851,6 +985,16 @@ export async function PUT(request: NextRequest) {
         }
       }
       
+      // CACHING: Invalidate all blog-related cache entries when post is updated
+      blogCache.invalidate('blog_posts');
+      console.log('🧹 Blog cache invalidated after post update');
+      
+      // Also invalidate categorized posts cache since categories may have changed
+      if (global.invalidateCategorizedCache) {
+        global.invalidateCategorizedCache();
+        console.log('🧹 Categorized posts cache invalidated after post update');
+      }
+      
       return NextResponse.json({ success: true, post: formattedPost });
     }
     
@@ -913,6 +1057,16 @@ export async function DELETE(request: NextRequest) {
         { error: errorMessage },
         { status: 500 }
       );
+    }
+    
+    // CACHING: Invalidate all blog-related cache entries when post is deleted
+    blogCache.invalidate('blog_posts');
+    console.log('🧹 Blog cache invalidated after post deletion');
+    
+    // Also invalidate categorized posts cache since categories may have changed
+    if (global.invalidateCategorizedCache) {
+      global.invalidateCategorizedCache();
+      console.log('🧹 Categorized posts cache invalidated after post deletion');
     }
     
     return NextResponse.json({ success: true, message: 'Blog post deleted successfully' });
