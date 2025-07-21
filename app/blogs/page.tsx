@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface BlogPost {
   id: number;
@@ -30,6 +31,8 @@ interface CategorizedPosts {
 }
 
 const BlogsContent: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [categorizedPosts, setCategorizedPosts] = useState<CategorizedPosts | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -38,7 +41,38 @@ const BlogsContent: React.FC = () => {
   const [loadingModalContent, setLoadingModalContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const isLoadingFromUrl = useRef(false);
 
+
+  // Function to open modal without updating URL (for URL-triggered opening)
+  const openPostModal = async (post: BlogPost) => {
+    console.log('🔵 openPostModal called for post:', post.id);
+    setSelectedPost(post);
+    setShowModal(true);
+    setLoadingModalContent(true);
+    
+    try {
+      // Always fetch full content for individual post view
+      const response = await fetch(`/api/blog/${post.id}`);
+      if (response.ok) {
+        const fullPost = await response.json();
+        // Update the post in the posts array with full content
+        setPosts(prevPosts => 
+          prevPosts.map(p => p.id === post.id ? { ...p, content: fullPost.content } : p)
+        );
+        // Update selected post with full content
+        setSelectedPost({ ...post, content: fullPost.content });
+      } else {
+        console.error('Failed to fetch post content:', response.status);
+        setError('Failed to load blog post content');
+      }
+    } catch (error) {
+      console.error('Error fetching post content:', error);
+      setError('Error loading blog post content');
+    } finally {
+      setLoadingModalContent(false);
+    }
+  };
 
   useEffect(() => {
     const fetchAllBlogs = async () => {
@@ -87,8 +121,37 @@ const BlogsContent: React.FC = () => {
     fetchCategorizedPostsOnLoad();
   }, []);
 
-
-
+  // Check for URL parameter on page load to open specific post
+  useEffect(() => {
+    const postId = searchParams.get('id');
+    console.log('🔍 URL Effect triggered:', { 
+      postId, 
+      postsLength: posts.length, 
+      isLoadingFromUrl: isLoadingFromUrl.current,
+      showModal,
+      selectedPostId: selectedPost?.id
+    });
+    
+    if (postId && posts.length > 0 && !isLoadingFromUrl.current && !showModal) {
+      const post = posts.find(p => p.id === parseInt(postId));
+      if (post && (!selectedPost || selectedPost.id !== post.id)) {
+        console.log('🟢 Opening post from URL:', post.id);
+        isLoadingFromUrl.current = true;
+        // Open modal directly without updating URL (it's already set)
+        openPostModal(post);
+      }
+    } else if (!postId && showModal) {
+      // If URL has no ID but modal is still open, close it
+      console.log('🟡 No post ID in URL but modal is open, closing modal');
+      setShowModal(false);
+      setSelectedPost(null);
+      isLoadingFromUrl.current = false;
+    } else if (!postId) {
+      // Reset the ref when there's no ID parameter
+      console.log('🟡 No post ID in URL, resetting ref');
+      isLoadingFromUrl.current = false;
+    }
+  }, [posts, searchParams, showModal, selectedPost]);
 
   const handleCategoryPostClick = async (categoryPost: CategoryPost) => {
     // Convert CategoryPost to BlogPost structure and fetch full content
@@ -110,6 +173,10 @@ const BlogsContent: React.FC = () => {
   };
 
   const handlePostClick = async (post: BlogPost) => {
+    console.log('🟠 handlePostClick called for post:', post.id);
+    // Update URL with post ID
+    router.push(`/blogs?id=${post.id}`, { scroll: false });
+    
     setSelectedPost(post);
     setShowModal(true);
     setLoadingModalContent(true);
@@ -140,8 +207,13 @@ const BlogsContent: React.FC = () => {
   };
 
   const closeModal = () => {
+    // First, reset states to prevent re-opening
     setShowModal(false);
     setSelectedPost(null);
+    isLoadingFromUrl.current = false;
+    
+    // Use replace instead of push to clear URL parameter without adding to history
+    router.replace('/blogs', { scroll: false });
   };
 
   const Modal = ({ post }: { post: BlogPost }) => (
