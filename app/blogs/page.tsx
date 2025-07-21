@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 interface BlogPost {
   id: number;
@@ -17,23 +16,31 @@ interface BlogPost {
   publishedAt?: string;
 }
 
+interface CategoryPost {
+  id: number;
+  title: string;
+  author: string;
+  publishedAt: string;
+}
+
+interface CategorizedPosts {
+  ai: CategoryPost[];
+  cs: CategoryPost[];
+  science: CategoryPost[];
+}
+
 const BlogsContent: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
+  const [categorizedPosts, setCategorizedPosts] = useState<CategorizedPosts | null>(null);
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [loadingPostSelection, setLoadingPostSelection] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingModalContent, setLoadingModalContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const blogId = searchParams.get('id');
+  const [showModal, setShowModal] = useState(false);
 
-  // Process HTML content for preview (similar to BlogManager)
-  const processHtmlContent = (html: string): string => {
-    return html; // Keep HTML as is
-  };
 
   useEffect(() => {
-    // Fetch all blog posts with full content
     const fetchAllBlogs = async () => {
       try {
         setLoading(true);
@@ -43,44 +50,8 @@ const BlogsContent: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           
-            console.log('📊 API Response:', { 
-            success: data.success, 
-            postsCount: data.posts?.length, 
-            preloadedPosts: data.posts?.slice(0, 5).length || 0,
-            firstPost: data.posts?.[0] ? {
-              id: data.posts[0].id,
-              title: data.posts[0].title,
-              hasContent: !!data.posts[0].content,
-              contentLength: data.posts[0].content?.length || 0
-            } : null
-          });
-          
           if (data.success && data.posts) {
-            // Create display list with basic info for sidebar
-            const displayPosts = data.posts.map((post: BlogPost, index: number) => ({
-              id: post.id,
-              title: post.title,
-              slug: post.slug,
-              excerpt: post.excerpt,
-              author: post.author,
-              publishedAt: post.publishedAt,
-              content: index < 5 ? post.content : '', // Preload first 5 posts' content
-              status: post.status,
-              tags: post.tags,
-              createdAt: post.createdAt,
-              updatedAt: post.updatedAt
-            }));
-            setPosts(displayPosts);
-            
-            // If a specific blog ID is requested, show it immediately
-            if (blogId) {
-              const requestedPost = data.posts.find((p: BlogPost) => p.id === parseInt(blogId));
-              if (requestedPost) {
-                setCurrentPost(requestedPost);
-              } else {
-                setError(`Blog post with ID ${blogId} not found`);
-              }
-            }
+            setPosts(data.posts);
           } else {
             setError('No published blogs found');
           }
@@ -95,277 +66,316 @@ const BlogsContent: React.FC = () => {
       }
     };
 
-    fetchAllBlogs();
-  }, [blogId]);
-
-
-  const handleDownload = () => {
-    if (!currentPost) return;
-    
-    // Create HTML content for download
-    const htmlStart = '<!DOCTYPE html><html><head><title>' + currentPost.title + '</title><meta charset="UTF-8">';
-    const styles = '<style>body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }h1, h2, h3, h4, h5, h6 { color: #333; }code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; }pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }blockquote { border-left: 4px solid #ddd; padding-left: 16px; margin-left: 0; }</style>';
-    const bodyStart = '</head><body><h1>' + currentPost.title + '</h1>';
-    const meta = '<p><em>By ' + currentPost.author + ' • Published ' + new Date(currentPost.publishedAt || '').toLocaleDateString() + '</em></p>';
-    const htmlEnd = '</body></html>';
-    const htmlTemplate = htmlStart + styles + bodyStart + meta + currentPost.content + htmlEnd;
-    
-    const blob = new Blob([htmlTemplate], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentPost.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handlePrint = () => {
-    if (!currentPost) return;
-    
-    // Create a new window with the blog content for printing
-    const printWindow = window.open('', '_blank');
-    const printStart = '<!DOCTYPE html><html><head><title>' + currentPost.title + '</title>';
-    const printStyles = '<style>body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }h1, h2, h3, h4, h5, h6 { color: #333; }code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; }pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; }blockquote { border-left: 4px solid #ddd; padding-left: 16px; margin-left: 0; }@media print { body { padding: 0; }.no-print { display: none; }}</style>';
-    const printBodyStart = '</head><body><h1>' + currentPost.title + '</h1>';
-    const printMeta = '<p><em>By ' + currentPost.author + ' • Published ' + new Date(currentPost.publishedAt || '').toLocaleDateString() + '</em></p>';
-    const printScript = '<script>window.onload = function() { window.print(); };</script>';
-    const printEnd = '</body></html>';
-    const printTemplate = printStart + printStyles + printBodyStart + printMeta + currentPost.content + printScript + printEnd;
-    
-    printWindow?.document.write(printTemplate);
-    printWindow?.document.close();
-  };
-
-  const handleSelectPost = async (postId: number) => {
-    // Find the post from already loaded posts
-    const selectedPost = posts.find(p => p.id === postId);
-    if (selectedPost) {
-      // Show loading immediately
-      setLoadingPostSelection(true);
-      setError(null);
-      
-      // Add a small delay to show the spinner even for preloaded content
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      if (!selectedPost.content) {
-        setLoadingContent(true);
-        try {
-          console.log('🔄 Lazy loading content for post:', postId);
-          const response = await fetch(`/api/blog/${postId}`);
-          if (response.ok) {
-            const post = await response.json();
-            selectedPost.content = post.content;
-            console.log('✅ Content loaded for post:', postId, 'Length:', post.content?.length || 0);
-          } else {
-            throw new Error(`HTTP ${response.status}`);
+    const fetchCategorizedPostsOnLoad = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await fetch('/api/blog/categories');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.categories) {
+            setCategorizedPosts(data.categories);
           }
-        } catch (error) {
-          console.error('Error loading blog post content:', error);
-          setError('Error fetching blog post content');
-          setLoadingPostSelection(false);
-          return;
-        } finally {
-          setLoadingContent(false);
         }
+      } catch (error) {
+        console.error('Error fetching categorized posts:', error);
+      } finally {
+        setLoadingCategories(false);
       }
-      
-      console.log('📖 Selected post:', {
-        id: selectedPost.id,
-        title: selectedPost.title,
-        hasContent: !!selectedPost.content,
-        contentLength: selectedPost.content?.length || 0,
-        contentPreview: selectedPost.content?.substring(0, 100) || 'No content'
-      });
-      
-      // Set the post and hide loading
-      setCurrentPost(selectedPost);
-      setLoadingPostSelection(false);
-    } else {
-      console.error('❌ Post not found in cached posts:', postId);
-      setError(`Blog post with ID ${postId} not found`);
+    };
+
+    fetchAllBlogs();
+    fetchCategorizedPostsOnLoad();
+  }, []);
+
+
+
+
+  const handleCategoryPostClick = async (categoryPost: CategoryPost) => {
+    // Convert CategoryPost to BlogPost structure and fetch full content
+    const tempPost: BlogPost = {
+      id: categoryPost.id,
+      title: categoryPost.title,
+      slug: '',
+      content: '',
+      excerpt: '',
+      author: categoryPost.author,
+      status: 'published',
+      tags: [],
+      createdAt: categoryPost.publishedAt,
+      updatedAt: categoryPost.publishedAt,
+      publishedAt: categoryPost.publishedAt
+    };
+    
+    await handlePostClick(tempPost);
+  };
+
+  const handlePostClick = async (post: BlogPost) => {
+    setSelectedPost(post);
+    setShowModal(true);
+    setLoadingModalContent(true);
+    
+    try {
+      // Always fetch full content for individual post view
+      console.log('🔄 Loading full content for post:', post.id);
+      const response = await fetch(`/api/blog/${post.id}`);
+      if (response.ok) {
+        const fullPost = await response.json();
+        // Update the post in the posts array with full content
+        setPosts(prevPosts => 
+          prevPosts.map(p => p.id === post.id ? { ...p, content: fullPost.content } : p)
+        );
+        // Update selected post with full content
+        setSelectedPost({ ...post, content: fullPost.content });
+        console.log('✅ Full content loaded for post:', post.id);
+      } else {
+        console.error('Failed to fetch post content:', response.status);
+        setError('Failed to load blog post content');
+      }
+    } catch (error) {
+      console.error('Error fetching post content:', error);
+      setError('Error loading blog post content');
+    } finally {
+      setLoadingModalContent(false);
     }
   };
 
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedPost(null);
+  };
+
+  const Modal = ({ post }: { post: BlogPost }) => (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <div className="flex items-center gap-4">
+            <span className="text-gray-600 italic">Alwayscurious</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-600">Informationals Series</span>
+            <span className="text-gray-600">Enigma Book</span>
+            <span className="text-gray-600">Podcast</span>
+            <span className="text-gray-600">About</span>
+          </div>
+          <button 
+            onClick={closeModal}
+            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+        
+        {/* Modal Content */}
+        <div className="flex-1 overflow-y-auto p-8">
+          <h1 className="text-4xl font-light text-gray-800 mb-8 text-center">
+            {post.title}
+          </h1>
+          <div className="w-24 h-px bg-gray-400 mx-auto mb-12"></div>
+          
+          {loadingModalContent ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading blog content...</p>
+              </div>
+            </div>
+          ) : (
+            <div 
+              className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: post.content || 'Content not available' }}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">📚 Blogs</h1>
-            <a 
-              href="/" 
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ← Back to Main App
-            </a>
+      {/* Header with Navigation */}
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            {/* Logo/Images Section */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-900 to-purple-900 rounded-lg"></div>
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg"></div>
+              <div className="w-16 h-16 bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg"></div>
+            </div>
+            
+            {/* Navigation Links */}
+            <nav className="flex items-center gap-8">
+              <span className="text-gray-600 italic">Alwayscurious</span>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Informationals Series</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Enigma Book</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">Podcast</a>
+              <a href="#" className="text-gray-600 hover:text-gray-800">About</a>
+            </nav>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Blog List */}
-          <aside className="w-full lg:w-1/3 xl:w-1/4 bg-white rounded-lg shadow-sm border border-gray-200 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">📝 Published Blogs</h2>
-              <p className="text-sm text-gray-600 mt-1">Click any blog to view it</p>
+      {/* Hero Section */}
+      <div 
+        className="relative h-64 bg-cover bg-center"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, #374151 0%, #4B5563 100%)',
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="border-2 border-white px-8 py-4 inline-block">
+              <h1 className="text-2xl font-light">
+                Life is a Privilege. Always be Curious about Its Mysteries.
+              </h1>
             </div>
-            
-            <div className="p-4">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : error ? (
-                <div className="text-red-600 text-center py-8">
-                  <p>❌ {error}</p>
-                </div>
-              ) : posts.length === 0 ? (
-                <div className="text-gray-500 text-center py-8">
-                  <p>📭 No published blogs found</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {posts.map((post, index) => (
-                    <div 
-                      key={post.id} 
-                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
-                        currentPost?.id === post.id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleSelectPost(post.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-gray-900 text-sm leading-tight flex-1">
-                          {post.title}
-                        </h3>
-                        {index < 5 && (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2 flex-shrink-0" title="Content preloaded">
-                            ⚡
-                          </span>
-                        )}
-                      </div>
-                      {post.excerpt && (
-                        <p className="text-xs text-gray-600 mt-1 overflow-hidden" style={{ 
-                          display: '-webkit-box', 
-                          WebkitLineClamp: 2, 
-                          WebkitBoxOrient: 'vertical' 
-                        }}>
-                          {post.excerpt}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                        <span>{post.author}</span>
-                        {post.publishedAt && (
-                          <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1">
-            {loadingPostSelection ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
-                  <span className="text-lg text-gray-600">Loading blog post...</span>
-                </div>
-              </div>
-            ) : currentPost ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                {/* Blog Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{currentPost.title}</h1>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        👤 {currentPost.author}
-                      </span>
-                      {currentPost.publishedAt && (
-                        <span className="flex items-center gap-1">
-                          📅 {new Date(currentPost.publishedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                      {currentPost.tags && currentPost.tags.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          🏷️ 
-                          <div className="flex gap-1">
-                            {currentPost.tags.map((tag, index) => (
-                              <span 
-                                key={index} 
-                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handlePrint} 
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                        title="Print this blog"
-                      >
-                        🖨️ Print
-                      </button>
-                      <button 
-                        onClick={handleDownload} 
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                        title="Download as HTML file"
-                      >
-                        📥 Download
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Blog Content */}
-                <div className="p-6">
-                  {loadingContent ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                      <span className="ml-3 text-gray-600">Loading content...</span>
-                    </div>
-                  ) : (
-                    <div 
-                      className="text-gray-800 leading-relaxed"
-                      style={{
-                        fontSize: '16px',
-                        lineHeight: '1.7'
-                      }}
-                      dangerouslySetInnerHTML={{ __html: processHtmlContent(currentPost.content) }} 
-                    />
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                <div className="text-gray-400 mb-4">
-                  <div className="text-6xl mb-4">📖</div>
-                </div>
-                <h2 className="text-xl font-medium text-gray-700 mb-2">Welcome to the Blog Portal</h2>
-                <p className="text-gray-500">
-                  {blogId ? 
-                    'Loading blog content...' : 
-                    'Select a blog from the sidebar to start reading'
-                  }
-                </p>
-              </div>
-            )}
-          </main>
+          </div>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-wide">
+            LATEST POSTS ON ARTIFICIAL INTELLIGENCE, COMPUTER SCIENCE, AND GENERAL SCIENCE
+          </h2>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-600 py-8">
+            <p>❌ {error}</p>
+          </div>
+        ) : (
+          <>
+            {/* Latest 3 Posts */}
+            <div className="grid md:grid-cols-3 gap-8 mb-16">
+              {posts.slice(0, 3).map((post) => (
+                <div key={post.id} className="group">
+                  <h3 
+                    className="text-xl font-light text-blue-600 hover:text-blue-800 cursor-pointer mb-4 leading-relaxed"
+                    onClick={() => handlePostClick(post)}
+                  >
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    {post.excerpt}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {post.publishedAt && new Date(post.publishedAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long', 
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* All Posts Section */}
+            <div className="text-center mb-8">
+              <h2 className="text-lg font-bold text-gray-900 border-b-2 border-gray-900 pb-1 inline-block">
+                ALL POSTS
+              </h2>
+            </div>
+
+            {/* Categorized Posts Section */}
+            <div className="mt-8">
+                {loadingCategories ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading categorized posts...</p>
+                    </div>
+                  </div>
+                ) : categorizedPosts ? (
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {/* AI Posts Column */}
+                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center border-b pb-3">
+                        AI Posts ({categorizedPosts.ai.length})
+                      </h3>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {categorizedPosts.ai.map((post) => (
+                          <div key={post.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                            <h4 
+                              className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
+                              onClick={() => handleCategoryPostClick(post)}
+                            >
+                              {post.title}
+                            </h4>
+                            <div className="text-xs text-gray-500 flex justify-between">
+                              <span>{post.author}</span>
+                              <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Computer Science Posts Column */}
+                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center border-b pb-3">
+                        Computer Science ({categorizedPosts.cs.length})
+                      </h3>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {categorizedPosts.cs.map((post) => (
+                          <div key={post.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                            <h4 
+                              className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
+                              onClick={() => handleCategoryPostClick(post)}
+                            >
+                              {post.title}
+                            </h4>
+                            <div className="text-xs text-gray-500 flex justify-between">
+                              <span>{post.author}</span>
+                              <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Science Posts Column */}
+                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center border-b pb-3">
+                        Science Posts ({categorizedPosts.science.length})
+                      </h3>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {categorizedPosts.science.map((post) => (
+                          <div key={post.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                            <h4 
+                              className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
+                              onClick={() => handleCategoryPostClick(post)}
+                            >
+                              {post.title}
+                            </h4>
+                            <div className="text-xs text-gray-500 flex justify-between">
+                              <span>{post.author}</span>
+                              <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-600 py-8">
+                    <p>Unable to load categorized posts</p>
+                  </div>
+                )}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Modal */}
+      {showModal && selectedPost && (
+        <Modal post={selectedPost} />
+      )}
     </div>
   );
 };

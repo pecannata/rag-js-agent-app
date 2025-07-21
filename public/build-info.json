@@ -1,17 +1,17 @@
 {
-  "version": "1.0.237",
+  "version": "1.0.246",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-21T02:19:39.523Z",
-  "buildDate": "Jul 20, 2025",
-  "sourceVersion": "v1.0.236.072025",
+  "buildTime": "2025-07-21T18:09:34.224Z",
+  "buildDate": "Jul 21, 2025",
+  "sourceVersion": "v1.0.245.072125",
   "git": {
     "branch": "main",
-    "commit": "789bc4311b6c2a508ac72f7eff581287bb7f45cf",
-    "shortCommit": "789bc431",
-    "commitDate": "2025-07-20 21:16:52 -0500",
-    "commitMessage": "Can you move /blog/subscriber to /blogs"
+    "commit": "5b2872aa19f7e40d4043d1c4f7f25a6d9c61e6c9",
+    "shortCommit": "5b2872aa",
+    "commitDate": "2025-07-21 11:59:52 -0500",
+    "commitMessage": "Is there anyway to make loading a post faster. What kind of a search do you do to find the post json once it's selected? Are you searching all blog metadata or are you doing an indexed search."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.236-789bc431-20250721-021939"
+  "buildSignature": "1.0.245-5b2872aa-20250721-180934"
 }
