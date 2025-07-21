@@ -465,7 +465,13 @@ export async function GET(request: NextRequest) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
     
-    query += ' ORDER BY updated_at DESC';
+    // For published posts, order by published_at to get most recently published
+    // For other statuses, fall back to updated_at
+    if (status === 'published') {
+      query += ' ORDER BY published_at DESC';
+    } else {
+      query += ' ORDER BY updated_at DESC';
+    }
     
     if (limit) {
       query += ` FETCH FIRST ${parseInt(limit)} ROWS ONLY`;

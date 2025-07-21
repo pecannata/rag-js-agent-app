@@ -36,8 +36,8 @@ const BlogsContent: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [categorizedPosts, setCategorizedPosts] = useState<CategorizedPosts | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingRecent, setLoadingRecent] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingModalContent, setLoadingModalContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -75,16 +75,21 @@ const BlogsContent: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchAllBlogs = async () => {
+    // Function to fetch just the 3 most recent posts immediately
+    const fetchRecentPosts = async () => {
       try {
-        setLoading(true);
+        console.log('🚀 Fetching recent posts (top 3) for immediate display...');
+        setLoadingRecent(true);
         setError(null);
         
-        const response = await fetch('/api/blog?status=published');
+        // OPTION 1: Single optimized query (CURRENT - MORE EFFICIENT)
+        const response = await fetch('/api/blog?status=published&limit=3&includeContent=false');
         if (response.ok) {
           const data = await response.json();
           
           if (data.success && data.posts) {
+            console.log('✅ Recent posts loaded:', data.posts.length);
+            // Set these as the posts (will be updated by full fetch if needed)
             setPosts(data.posts);
           } else {
             setError('No published blogs found');
@@ -92,21 +97,67 @@ const BlogsContent: React.FC = () => {
         } else {
           setError(`Failed to load blog posts (HTTP ${response.status})`);
         }
+        
+        /* OPTION 2: Parallel individual queries (LESS EFFICIENT)
+        // First get list of recent post IDs
+        const listResponse = await fetch('/api/blog?status=published&limit=3&includeContent=false');
+        if (listResponse.ok) {
+          const listData = await listResponse.json();
+          if (listData.success && listData.posts) {
+            console.log('🔄 Fetching individual posts in parallel...');
+            
+            // Fetch each post individually in parallel
+            const postPromises = listData.posts.slice(0, 3).map(post => 
+              fetch(`/api/blog/${post.id}`).then(res => res.json())
+            );
+            
+            const postResults = await Promise.all(postPromises);
+            const fullPosts = postResults.filter(result => result.success).map(result => result.post);
+            
+            console.log('✅ Parallel posts loaded:', fullPosts.length);
+            setPosts(fullPosts);
+          }
+        }
+        */
       } catch (error) {
-        setError('Error loading blog posts');
-        console.error('Error loading blog posts:', error);
+        setError('Error loading recent blog posts');
+        console.error('Error loading recent blog posts:', error);
       } finally {
-        setLoading(false);
+        setLoadingRecent(false);
       }
     };
 
-    const fetchCategorizedPostsOnLoad = async () => {
+    // Function to fetch all blog posts (runs in background after recent posts)
+    const fetchAllBlogs = async () => {
       try {
+        console.log('🔄 Fetching all blog posts in background...');
+        
+        const response = await fetch('/api/blog?status=published&includeContent=false');
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.posts) {
+            console.log('✅ All blog posts loaded:', data.posts.length);
+            setPosts(data.posts);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading all blog posts:', error);
+        // Don't set error here since recent posts already loaded
+      }
+    };
+
+    // Function to fetch categorized posts (runs in parallel with all posts)
+    const fetchCategorizedPosts = async () => {
+      try {
+        console.log('🔄 Fetching categorized posts in background...');
         setLoadingCategories(true);
+        
         const response = await fetch('/api/blog/categories');
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.categories) {
+            console.log('✅ Categorized posts loaded');
             setCategorizedPosts(data.categories);
           }
         }
@@ -117,8 +168,21 @@ const BlogsContent: React.FC = () => {
       }
     };
 
-    fetchAllBlogs();
-    fetchCategorizedPostsOnLoad();
+    // Execute in optimal order for performance:
+    // 1. Fetch recent posts immediately (shows content fast)
+    // 2. Fetch full posts and categorized posts in parallel (background)
+    const loadContent = async () => {
+      // Step 1: Get recent posts immediately
+      await fetchRecentPosts();
+      
+      // Step 2: Load everything else in parallel
+      Promise.all([
+        fetchAllBlogs(),
+        fetchCategorizedPosts()
+      ]);
+    };
+
+    loadContent();
   }, []);
 
   // Check for URL parameter on page load to open specific post
@@ -313,9 +377,12 @@ const BlogsContent: React.FC = () => {
           </h2>
         </div>
 
-        {loading ? (
+        {loadingRecent ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading latest posts...</p>
+            </div>
           </div>
         ) : error ? (
           <div className="text-center text-red-600 py-8">
