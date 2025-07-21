@@ -596,6 +596,57 @@ function test_deployment() {
     fi
 }
 
+function prime_cache() {
+    print_step "Priming application cache..."
+    
+    SSH_CMD="ssh"
+    if [[ -n "$SSH_KEY" ]]; then
+        SSH_CMD="ssh -i $SSH_KEY"
+    fi
+    
+    # Wait a bit longer to ensure app is fully ready
+    sleep 10
+    
+    # Determine the base URL to use for cache priming
+    local BASE_URL
+    if [[ -n "$DOMAIN_NAME" ]]; then
+        BASE_URL="https://$DOMAIN_NAME"
+    else
+        BASE_URL="http://localhost:3000"
+    fi
+    
+    print_step "Warming up cache with initial requests..."
+    
+    # Prime the categorized blog posts cache (main cached endpoint)
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog/categories' >/dev/null 2>&1"; then
+        print_success "✅ Blog categories cache primed"
+    else
+        print_warning "⚠️ Could not prime blog categories cache"
+    fi
+    
+    # Make a few more requests to build up cache stats
+    for i in {1..3}; do
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog/categories' >/dev/null 2>&1" || true
+    done
+    
+    # Prime other potential cacheable endpoints
+    $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/cache/stats' >/dev/null 2>&1" || true
+    
+    # Show final cache stats
+    print_step "📊 Final cache statistics:"
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/cache/stats' 2>/dev/null" | grep -q '"success":true'; then
+        CACHE_STATS=$($SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/cache/stats' 2>/dev/null" | grep -o '"hitRate":"[^"]*"\|"cacheHits":[0-9]*\|"totalKeys":[0-9]*' || echo "")
+        if [[ -n "$CACHE_STATS" ]]; then
+            echo "$CACHE_STATS" | sed 's/",/\n/g; s/"//g; s/:/: /g'
+            print_success "🔥 Cache is warm and ready!"
+        else
+            print_success "🔥 Cache priming completed"
+        fi
+    else
+        print_warning "Could not retrieve final cache stats, but priming completed"
+    fi
+}
+
 function cleanup() {
     print_step "Cleaning up temporary files..."
     rm -f /tmp/remote_install.sh
@@ -620,6 +671,7 @@ function main() {
     transfer_files
     remote_install
     test_deployment
+    prime_cache
     cleanup
     
     echo -e "${GREEN}"
