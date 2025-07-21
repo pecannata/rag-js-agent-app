@@ -93,21 +93,24 @@ export async function GET() {
         .replace(/\$/g, '\\$');  // Escape dollar signs to prevent variable expansion
     };
     
-    // Execute all three queries with increased buffer for large outputs
-    console.log('🔄 Executing AI posts query...');
-    const { stdout: aiOutput, stderr: aiError } = await execPromise(`bash "${scriptPath}" "${escapeForShell(aiQuery)}"`, {
-      maxBuffer: 50 * 1024 * 1024 // 50MB buffer
-    });
-    
-    console.log('🔄 Executing CS posts query...');
-    const { stdout: csOutput, stderr: csError } = await execPromise(`bash "${scriptPath}" "${escapeForShell(csQuery)}"`, {
-      maxBuffer: 50 * 1024 * 1024 // 50MB buffer
-    });
-    
-    console.log('🔄 Executing Science posts query...');
-    const { stdout: scienceOutput, stderr: scienceError } = await execPromise(`bash "${scriptPath}" "${escapeForShell(scienceQuery)}"`, {
-      maxBuffer: 50 * 1024 * 1024 // 50MB buffer
-    });
+    // Execute all three queries in parallel for better performance
+    console.log('🔄 Executing all category queries in parallel...');
+    const [
+      { stdout: aiOutput, stderr: aiError },
+      { stdout: csOutput, stderr: csError },
+      { stdout: scienceOutput, stderr: scienceError }
+    ] = await Promise.all([
+      execPromise(`bash "${scriptPath}" "${escapeForShell(aiQuery)}"`, {
+        maxBuffer: 50 * 1024 * 1024 // 50MB buffer
+      }),
+      execPromise(`bash "${scriptPath}" "${escapeForShell(csQuery)}"`, {
+        maxBuffer: 50 * 1024 * 1024 // 50MB buffer
+      }),
+      execPromise(`bash "${scriptPath}" "${escapeForShell(scienceQuery)}"`, {
+        maxBuffer: 50 * 1024 * 1024 // 50MB buffer
+      })
+    ]);
+    console.log('✅ All category queries completed');
 
     // Check for stderr errors first
     if (aiError) {
