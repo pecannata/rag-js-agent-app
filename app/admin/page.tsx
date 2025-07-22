@@ -104,6 +104,13 @@ export default function SystemInfoPage() {
                 Cache Admin
               </button>
               <button
+                onClick={() => window.location.href = '/admin/deployments'}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
+              >
+                <span className="mr-1">🚀</span>
+                Deployments
+              </button>
+              <button
                 onClick={() => window.location.href = '/'}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
               >

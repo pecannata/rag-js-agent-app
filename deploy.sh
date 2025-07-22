@@ -196,10 +196,69 @@ else
     echo "✅ Port 3000 is free"
 fi
 
+# Create backup directory structure
+BACKUP_DIR="/opt/backups/rag-js-agent"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_PATH="$BACKUP_DIR/backup_$TIMESTAMP"
+
 # Backup existing data files if they exist
 if [ -d "$DEPLOY_PATH/data" ]; then
     echo "Backing up existing data directory..."
     sudo cp -r "$DEPLOY_PATH/data" "/tmp/data_backup" || true
+fi
+
+# Create full application backup before deployment
+if [ -d "$DEPLOY_PATH" ]; then
+    echo "Creating full application backup: backup_$TIMESTAMP"
+    sudo mkdir -p "$BACKUP_PATH"
+    
+    # Backup the entire application (excluding node_modules and .next for space)
+    sudo cp -r "$DEPLOY_PATH" "$BACKUP_PATH/" 2>/dev/null || true
+    if [ -d "$BACKUP_PATH/$(basename $DEPLOY_PATH)/node_modules" ]; then
+        sudo rm -rf "$BACKUP_PATH/$(basename $DEPLOY_PATH)/node_modules"
+    fi
+    if [ -d "$BACKUP_PATH/$(basename $DEPLOY_PATH)/.next" ]; then
+        sudo rm -rf "$BACKUP_PATH/$(basename $DEPLOY_PATH)/.next"
+    fi
+    
+    # Backup systemd service file if it exists
+    if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
+        sudo mkdir -p "$BACKUP_PATH/system"
+        sudo cp "/etc/systemd/system/$SERVICE_NAME.service" "$BACKUP_PATH/system/"
+    fi
+    
+    # Backup nginx config if it exists
+    if [ -n "$DOMAIN_NAME" ]; then
+        if [ -f "/etc/nginx/conf.d/$DOMAIN_NAME.conf" ]; then
+            sudo mkdir -p "$BACKUP_PATH/nginx"
+            sudo cp "/etc/nginx/conf.d/$DOMAIN_NAME.conf" "$BACKUP_PATH/nginx/"
+        elif [ -f "/etc/nginx/sites-available/$DOMAIN_NAME" ]; then
+            sudo mkdir -p "$BACKUP_PATH/nginx"
+            sudo cp "/etc/nginx/sites-available/$DOMAIN_NAME" "$BACKUP_PATH/nginx/"
+        fi
+    fi
+    
+    # Create backup info file
+    sudo tee "$BACKUP_PATH/backup_info.txt" > /dev/null << EOF
+Backup created: $(date)
+Application version: $(cat "$DEPLOY_PATH/package.json" 2>/dev/null | grep '"version"' | head -1 | cut -d'"' -f4 || echo "unknown")
+Service: $SERVICE_NAME
+Domain: ${DOMAIN_NAME:-"none"}
+Deployment path: $DEPLOY_PATH
+Backup path: $BACKUP_PATH
+EOF
+    
+    echo "✅ Application backup created successfully"
+    
+    # Cleanup old backups (keep only last 3)
+    echo "Cleaning up old backups (keeping last 3)..."
+    BACKUP_COUNT=$(sudo ls -dt $BACKUP_DIR/backup_* 2>/dev/null | wc -l || echo 0)
+    if [ "$BACKUP_COUNT" -gt 3 ]; then
+        sudo ls -dt $BACKUP_DIR/backup_* | tail -n +4 | sudo xargs rm -rf
+        echo "✅ Old backups cleaned up"
+    fi
+else
+    echo "📝 No existing application found - fresh installation"
 fi
 
 # Remove existing application directory for clean deployment
