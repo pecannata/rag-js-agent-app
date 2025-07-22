@@ -93,11 +93,16 @@ const BlogsContent: React.FC = () => {
         
         // OPTION 1: Single optimized query (CURRENT - MORE EFFICIENT)
         const response = await fetch('/api/blog?status=published&limit=3&includeContent=false');
+        
+        // Log cache status from response headers
+        const cacheStatus = response.headers.get('X-Cache-Status');
+        console.log('📋 Recent posts API cache status:', cacheStatus);
+        
         if (response.ok) {
           const data = await response.json();
           
           if (data.success && data.posts) {
-            console.log('✅ Recent posts loaded:', data.posts.length);
+            console.log('✅ Recent posts loaded:', data.posts.length, '- Cache:', cacheStatus);
             // Posts come without content from the server (lazy loaded)
             const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
               ...post,
@@ -156,7 +161,18 @@ const BlogsContent: React.FC = () => {
               ...post,
               hasFullContent: false // No posts have full content initially
             }));
-            setPosts(lazyPosts);
+            
+            // Only update if we got more posts than what we already have (recent posts)
+            // This prevents overwriting the cached recent posts with a redundant full fetch
+            setPosts(currentPosts => {
+              if (lazyPosts.length > currentPosts.length) {
+                console.log('🔄 Updating posts: had', currentPosts.length, 'posts, now have', lazyPosts.length);
+                return lazyPosts;
+              } else {
+                console.log('📋 Keeping existing posts: same or fewer posts returned from full fetch');
+                return currentPosts;
+              }
+            });
           }
         }
       } catch (error) {

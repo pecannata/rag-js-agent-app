@@ -23,10 +23,10 @@ class BlogCache {
   
   // Different TTL for different types of data
   private static readonly TTL = {
-    RECENT_POSTS: 5 * 60 * 1000,      // 5 minutes for recent posts (most dynamic)
-    ALL_POSTS: 15 * 60 * 1000,       // 15 minutes for all posts
-    CATEGORIZED: 30 * 60 * 1000,     // 30 minutes for categorized posts (least dynamic)
-    INDIVIDUAL: 60 * 60 * 1000       // 1 hour for individual posts (very static)
+    RECENT_POSTS: 12 * 60 * 60 * 1000,  // 12 hours for recent posts (blog posts rarely change)
+    ALL_POSTS: 12 * 60 * 60 * 1000,     // 12 hours for all posts
+    CATEGORIZED: 12 * 60 * 60 * 1000,   // 12 hours for categorized posts
+    INDIVIDUAL: 24 * 60 * 60 * 1000     // 24 hours for individual posts (very static)
   };
   
   set(key: string, data: any, ttl: number): void {
@@ -619,11 +619,11 @@ export async function GET(request: NextRequest) {
     // CACHING: Store result in cache with appropriate TTL
     const getTTL = () => {
       if (limit === '3' && status === 'published') {
-        return BlogCache.getTTL().RECENT_POSTS; // 5 minutes for recent posts
+        return BlogCache.getTTL().RECENT_POSTS; // 12 hours for recent posts
       } else if (includeContent) {
-        return BlogCache.getTTL().INDIVIDUAL; // 1 hour for full content
+        return BlogCache.getTTL().INDIVIDUAL; // 24 hours for full content
       } else {
-        return BlogCache.getTTL().ALL_POSTS; // 15 minutes for other queries
+        return BlogCache.getTTL().ALL_POSTS; // 12 hours for other queries
       }
     };
     
