@@ -236,26 +236,59 @@ const BlogsContent: React.FC = () => {
   }, [posts, searchParams, showModal, selectedPost]);
 
   const handleCategoryPostClick = async (categoryPost: CategoryPost) => {
-    // Convert CategoryPost to BlogPost structure and fetch full content
-    const tempPost: BlogPost = {
-      id: categoryPost.id,
-      title: categoryPost.title,
-      slug: '',
-      content: '',
-      excerpt: '',
-      author: categoryPost.author,
-      status: 'published',
-      tags: [],
-      createdAt: categoryPost.publishedAt,
-      updatedAt: categoryPost.publishedAt,
-      publishedAt: categoryPost.publishedAt
-    };
+    // First, try to find the full post in our cached posts array
+    const cachedPost = posts.find(p => p.id === categoryPost.id);
     
-    await handlePostClick(tempPost);
+    if (cachedPost) {
+      console.log('📋 Found cached post for category click:', cachedPost.id, 'Has full content:', !!cachedPost.hasFullContent);
+      // Use the cached post which might already have content loaded
+      await handlePostClick(cachedPost);
+    } else {
+      console.log('📋 No cached post found, creating temporary post for category click:', categoryPost.id);
+      // Convert CategoryPost to BlogPost structure and fetch full content
+      const tempPost: BlogPost = {
+        id: categoryPost.id,
+        title: categoryPost.title,
+        slug: '',
+        content: '',
+        excerpt: '',
+        author: categoryPost.author,
+        status: 'published',
+        tags: [],
+        createdAt: categoryPost.publishedAt,
+        updatedAt: categoryPost.publishedAt,
+        publishedAt: categoryPost.publishedAt,
+        hasFullContent: false // Explicitly set to false for non-cached posts
+      };
+      
+      await handlePostClick(tempPost);
+    }
   };
 
   const handlePostClick = async (post: BlogPost) => {
     console.log('🟠 handlePostClick called for post:', post.id, 'Has full content:', !!post.hasFullContent);
+    
+    // Check if post already has full content (cached) - if so, open immediately
+    if (post.hasFullContent && post.content) {
+      console.log('✅ Post is cached, opening immediately:', post.id);
+      // Set flag to prevent URL effect from triggering duplicate logic
+      isLoadingFromUrl.current = true;
+      
+      // Update URL with post ID
+      router.push(`/blogs?id=${post.id}`, { scroll: false });
+      
+      // Use the simplified modal opening logic
+      await openPostModal(post);
+      
+      // Reset flag after opening
+      setTimeout(() => {
+        isLoadingFromUrl.current = false;
+      }, 100);
+      return;
+    }
+    
+    // For non-cached posts, use the existing flow
+    console.log('🔄 Post not cached, using normal flow:', post.id);
     
     // Set flag to prevent URL effect from triggering duplicate logic
     isLoadingFromUrl.current = true;
