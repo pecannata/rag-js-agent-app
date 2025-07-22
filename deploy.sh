@@ -683,12 +683,43 @@ function prime_cache() {
         print_warning "⚠️ Could not prime blog categories cache"
     fi
     
-    # Make a few more requests to build up cache stats
-    for i in {1..3}; do
+    # Prime the 3 main blog post queries
+    print_step "Priming blog post caches..."
+    
+    # 1. BlogManager (Admin) cache: ?lazy=true
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1"; then
+        print_success "✅ BlogManager (lazy=true) cache primed"
+    else
+        print_warning "⚠️ Could not prime BlogManager cache"
+    fi
+    
+    # 2. Public blogs page cache: ?status=published&includeContent=false
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1"; then
+        print_success "✅ Public blogs page cache primed"
+    else
+        print_warning "⚠️ Could not prime public blogs cache"
+    fi
+    
+    # 3. Recent posts cache: ?status=published&limit=3&includeContent=false
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&limit=3&includeContent=false' >/dev/null 2>&1"; then
+        print_success "✅ Recent posts cache primed"
+    else
+        print_warning "⚠️ Could not prime recent posts cache"
+    fi
+    
+    # Make additional requests to build up cache hit statistics for all endpoints
+    print_step "Building cache hit statistics..."
+    
+    for i in {1..2}; do
+        # Categories cache hits
         $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog/categories' >/dev/null 2>&1" || true
+        # Blog post cache hits
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1" || true
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1" || true
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&limit=3&includeContent=false' >/dev/null 2>&1" || true
     done
     
-    # Prime other potential cacheable endpoints
+    # Prime cache stats endpoint
     $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/cache/stats' >/dev/null 2>&1" || true
     
     # Show final cache stats

@@ -299,6 +299,121 @@ export default function CacheAdminPage() {
               </div>
             </div>
 
+            {/* Cache Priming Endpoints */}
+            <div className="bg-white rounded-lg shadow mb-6">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">🚀 Cache Priming Endpoints</h2>
+                <p className="text-gray-600 text-sm mt-1">Endpoints used for automatic cache priming during deployment and TTL expiry</p>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Deployment Priming */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">📦 Deployment Priming</h3>
+                    <p className="text-sm text-gray-600 mb-4">These endpoints are called during <code className="bg-gray-100 px-1 rounded">./deploy.sh</code> to warm the cache immediately after deployment:</p>
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm text-blue-800">/api/blog/categories</span>
+                          <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">30min TTL</span>
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">Categorized posts (AI, CS, Science)</p>
+                      </div>
+                      
+                      <div className="bg-green-50 border border-green-200 rounded p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm text-green-800">/api/blog?lazy=true</span>
+                          <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">10min TTL</span>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">BlogManager (Admin) - all posts without content</p>
+                      </div>
+                      
+                      <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm text-purple-800">/api/blog?status=published&includeContent=false</span>
+                          <span className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">30min TTL</span>
+                        </div>
+                        <p className="text-xs text-purple-600 mt-1">Public blogs page - published posts only</p>
+                      </div>
+                      
+                      <div className="bg-orange-50 border border-orange-200 rounded p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm text-orange-800">/api/blog?status=published&limit=3&includeContent=false</span>
+                          <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded">5min TTL</span>
+                        </div>
+                        <p className="text-xs text-orange-600 mt-1">Recent posts - latest 3 published posts</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Auto Re-prime System */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">⏰ Auto Re-prime System</h3>
+                    <p className="text-sm text-gray-600 mb-4">Automatic background refresh when TTL expires (every 2 minutes check):</p>
+                    <div className="space-y-3">
+                      <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                        <h4 className="font-medium text-gray-800 text-sm">🔄 TTL-Based Re-priming</h4>
+                        <ul className="text-xs text-gray-600 mt-2 space-y-1">
+                          <li>• <strong>Recent posts (5min):</strong> High frequency refresh</li>
+                          <li>• <strong>Admin posts (10min):</strong> Medium frequency</li>
+                          <li>• <strong>Published posts (30min):</strong> Standard refresh</li>
+                          <li>• <strong>Categories (30min):</strong> Standard refresh</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                        <h4 className="font-medium text-gray-800 text-sm">🎯 Cache Key Intelligence</h4>
+                        <ul className="text-xs text-gray-600 mt-2 space-y-1">
+                          <li>• Parses cache keys to reconstruct queries</li>
+                          <li>• Generates appropriate Oracle SQL automatically</li>
+                          <li>• Maintains same query parameters as original</li>
+                          <li>• Handles all parameter combinations</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-green-50 border border-green-200 rounded p-3">
+                        <h4 className="font-medium text-green-800 text-sm">✅ Zero Cold Cache</h4>
+                        <p className="text-xs text-green-600 mt-1">
+                          Users never experience cache miss delays. All main queries stay warm through automatic background refresh.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Priming Status */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h4 className="font-medium text-gray-800 mb-3">📊 Current Priming Status</h4>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {stats.keys.map((key, index) => {
+                      const isPrimed = key.hasData && key.remainingMinutes > 0;
+                      const isExpiringSoon = key.remainingMinutes > 0 && key.remainingMinutes < 5;
+                      
+                      return (
+                        <div key={index} className={`p-3 rounded border ${
+                          isPrimed ? (isExpiringSoon ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200') : 'bg-red-50 border-red-200'
+                        }`}>
+                          <div className={`text-sm font-medium ${
+                            isPrimed ? (isExpiringSoon ? 'text-yellow-800' : 'text-green-800') : 'text-red-800'
+                          }`}>
+                            {isPrimed ? (isExpiringSoon ? '⚠️ Expiring Soon' : '✅ Primed') : '❌ Cold'}
+                          </div>
+                          <div className="text-xs text-gray-600 mt-1 font-mono">
+                            {key.key.length > 25 ? key.key.substring(0, 25) + '...' : key.key}
+                          </div>
+                          <div className={`text-xs mt-1 ${
+                            isPrimed ? (isExpiringSoon ? 'text-yellow-600' : 'text-green-600') : 'text-red-600'
+                          }`}>
+                            {key.remainingMinutes > 0 ? `${key.remainingMinutes}min left` : 'Expired'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Cache Keys Detail */}
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-200">
