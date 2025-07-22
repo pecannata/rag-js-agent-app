@@ -1,5 +1,5 @@
 
-> rag-js-agent-app@1.0.246 start
+> rag-js-agent-app@1.0.257 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -7,7 +7,623 @@
    - Network:      http://192.168.1.149:3000
 
  ✓ Starting...
- ✓ Ready in 343ms
+ ✓ Ready in 344ms
 📧 Background job processor initialized
-(node:87367) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+✅ Cache auto re-prime system initialized
+(node:87720) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
+🚫 Cache miss: blog_posts_all_nolimit_0_nocontent
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 186 rows
+📊 Blog query result structure: object true 186
+🗄️ Cached: blog_posts_all_nolimit_0_nocontent (TTL: 900s)
+🗄️ Stored blog posts in cache
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+✅ Cache hit: blog_posts_all_nolimit_0_nocontent (age: 407s)
+🚀 Serving blog posts from cache
+🚫 Cache miss: blog_posts_published_3_0_nocontent
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 3 rows
+📊 Blog query result structure: object true 3
+🗄️ Cached: blog_posts_published_3_0_nocontent (TTL: 300s)
+🗄️ Stored blog posts in cache
+🚫 Cache miss: blog_posts_published_nolimit_0_nocontent
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+🔍 Fetching categorized blog posts...
+🚀 Executing single optimized categorized query...
+✅ Optimized categorized query completed
+📤 Optimized Raw Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Optimized Successfully parsed as JSON
+🔍 Optimized Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Optimized Extracted 186 posts
+✅ Optimized Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Categorized posts optimized: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🗄️ Stored categorized posts in node-cache
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 186 rows
+📊 Blog query result structure: object true 186
+🗄️ Cached: blog_posts_published_nolimit_0_nocontent (TTL: 900s)
+🗄️ Stored blog posts in cache
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+✅ Cache hit: blog_posts_published_3_0_nocontent (age: 214s)
+🚀 Serving blog posts from cache
+✅ Cache hit: blog_posts_published_nolimit_0_nocontent (age: 209s)
+🚀 Serving blog posts from cache
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows

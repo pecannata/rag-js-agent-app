@@ -1,17 +1,17 @@
 {
-  "version": "1.0.256",
+  "version": "1.0.257",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-21T22:48:01.691Z",
+  "buildTime": "2025-07-22T00:16:07.335Z",
   "buildDate": "Jul 21, 2025",
-  "sourceVersion": "v1.0.255.072125",
+  "sourceVersion": "v1.0.256.072125",
   "git": {
     "branch": "main",
-    "commit": "9ba8590538a5eeb9bffe7e2d3bf139167680488b",
-    "shortCommit": "9ba85905",
-    "commitDate": "2025-07-21 17:22:47 -0500",
-    "commitMessage": "Can some kind of caching be used because the blog posts are rarely going to change. And MP2 was implemented, see below."
+    "commit": "d46e3183411f7d629dd95233ec68a99a26545863",
+    "shortCommit": "d46e3183",
+    "commitDate": "2025-07-21 19:14:13 -0500",
+    "commitMessage": "Backup/Rollback System Features and can you make an admin/deploy page to show history of deployments and what backups are available."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.255-9ba85905-20250721-224801"
+  "buildSignature": "1.0.256-d46e3183-20250722-001607"
 }

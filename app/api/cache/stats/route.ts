@@ -22,6 +22,30 @@ export async function GET() {
       };
     });
     
+    // Calculate more accurate memory usage
+    const calculateMemoryUsage = () => {
+      let totalMemory = 0;
+      const keys = appCache.keys();
+      
+      keys.forEach(key => {
+        const value = appCache.get(key);
+        if (value) {
+          // Estimate memory usage by JSON string length
+          const jsonString = JSON.stringify(value);
+          totalMemory += Buffer.byteLength(jsonString, 'utf8');
+          totalMemory += Buffer.byteLength(key, 'utf8'); // Add key size
+        }
+      });
+      
+      return {
+        estimatedBytes: totalMemory,
+        keyCount: keys.length,
+        nodeCacheStats: { ksize: stats.ksize, vsize: stats.vsize }
+      };
+    };
+    
+    const memoryInfo = calculateMemoryUsage();
+    
     const cacheStats = {
       // Basic stats
       totalKeys: stats.keys,
@@ -29,10 +53,12 @@ export async function GET() {
       cacheMisses: stats.misses,
       hitRate: stats.hits > 0 ? ((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(2) + '%' : '0%',
       
-      // Memory usage (approximate)
+      // Memory usage (more accurate estimate)
       keySize: stats.ksize,
       valueSize: stats.vsize,
-      totalMemory: stats.ksize + stats.vsize,
+      nodeCacheMemory: stats.ksize + stats.vsize, // Original NodeCache calculation
+      estimatedMemory: memoryInfo.estimatedBytes,  // More accurate calculation
+      totalMemory: memoryInfo.estimatedBytes,      // Use the better estimate
       
       // Key details
       keys: keyDetails,

@@ -12,6 +12,8 @@ interface CacheStats {
   keySize: number;
   valueSize: number;
   totalMemory: number;
+  nodeCacheMemory?: number;
+  estimatedMemory?: number;
   keys: Array<{
     key: string;
     ttl: string | null;
@@ -216,6 +218,9 @@ export default function CacheAdminPage() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Memory Usage</p>
                     <p className="text-2xl font-bold text-purple-600">{formatMemory(stats.totalMemory)}</p>
+                    {stats.nodeCacheMemory && stats.nodeCacheMemory !== stats.totalMemory && (
+                      <p className="text-xs text-gray-500">NodeCache: {formatMemory(stats.nodeCacheMemory)}</p>
+                    )}
                   </div>
                 </div>
               </div>
