@@ -731,3 +731,1555 @@
 ✅ Fresh data fetched: AI=56, CS=11, Science=119
 💾 Cache SET: categorized_blog_posts
 🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+⏰ Cache expired: blog_posts_all_nolimit_0_nocontent (age: 48938s)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 186 rows
+📊 Blog query result structure: object true 186
+🗄️ Cached: blog_posts_all_nolimit_0_nocontent (TTL: 900s)
+🗄️ Stored blog posts in cache
+⏰ Cache expired: blog_posts_published_3_0_nocontent (age: 48407s)
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR...
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 3 rows
+📊 Blog query result structure: object true 3
+🗄️ Cached: blog_posts_published_3_0_nocontent (TTL: 300s)
+🗄️ Stored blog posts in cache
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!
+🗑️ Cache DELETE: categorized_blog_posts
+⏰ Cache expired: categorized_blog_posts - starting automatic re-prime...
+🔄 Auto re-priming categorized blog posts...
+🚀 Fetching fresh categorized blog data for cache...
+📤 Parsing results (first 500 chars): 
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 3
+✅ Successfully parsed as JSON
+🔍 Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Extracted 186 posts
+✅ Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Fresh data fetched: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🔥 Auto re-prime completed - cache is warm!

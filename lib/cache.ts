@@ -5,8 +5,8 @@ import path from 'path';
 
 // Create single cache instance for entire app
 const appCache = new NodeCache({
-  stdTTL: 1800,      // 30 minutes default TTL
-  checkperiod: 120,  // Check for expired keys every 2 minutes
+  stdTTL: 43200,     // 12 hours default TTL
+  checkperiod: 720,  // Check for expired keys every 12 minutes
   useClones: false   // Better performance
 });
 
@@ -19,7 +19,7 @@ appCache.on('expired', async (key, _value) => {
     if (key === 'categorized_blog_posts') {
       console.log('🔄 Auto re-priming categorized blog posts...');
       const freshData = await fetchCategorizedBlogPosts();
-      appCache.set(key, freshData, 1800); // Re-cache for 30 minutes
+      appCache.set(key, freshData, 43200); // Re-cache for 12 hours
       console.log('🔥 Auto re-prime completed - categorized posts cache is warm!');
     }
     // Auto-reprime blog posts queries
@@ -62,13 +62,13 @@ const execPromise = promisify(exec);
 function getTTLForCacheKey(cacheKey: string): number {
   // Parse cache key format: blog_posts_{status}_{limit}_{offset}_{includeContent}
   if (cacheKey.includes('_published_3_')) {
-    return 300; // 5 minutes for recent posts (limit=3)
+    return 21600; // 6 hours for recent posts (limit=3)
   } else if (cacheKey.includes('_published_nolimit_')) {
-    return 1800; // 30 minutes for published posts
+    return 43200; // 12 hours for published posts
   } else if (cacheKey.includes('_all_nolimit_')) {
-    return 600; // 10 minutes for all posts (admin)
+    return 28800; // 8 hours for all posts (admin)
   }
-  return 1800; // Default 30 minutes
+  return 43200; // Default 12 hours
 }
 
 // Helper function to parse cache key and generate query parameters
@@ -401,7 +401,7 @@ global.invalidateAndReprimeCategorizedCache = async () => {
   try {
     console.log('🔄 Starting immediate cache re-prime...');
     const freshData = await fetchCategorizedBlogPosts();
-    appCache.set(cacheKey, freshData, 1800); // 30 minutes TTL
+    appCache.set(cacheKey, freshData, 43200); // 12 hours TTL
     console.log('🔥 Cache re-primed with fresh data immediately');
     return { success: true, message: 'Cache invalidated and re-primed successfully' };
   } catch (error) {

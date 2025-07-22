@@ -7,6 +7,16 @@ export async function GET() {
     const stats = appCache.getStats();
     const keys = appCache.keys();
     
+    // Get blog post cache stats if available
+    let blogPostStats = null;
+    if (global.getBlogPostCacheStats) {
+      try {
+        blogPostStats = global.getBlogPostCacheStats();
+      } catch (error) {
+        console.error('Error getting blog post cache stats:', error);
+      }
+    }
+    
     // Get TTL info for each key
     const keyDetails = keys.map(key => {
       const ttl = appCache.getTtl(key);
@@ -63,10 +73,18 @@ export async function GET() {
       // Key details
       keys: keyDetails,
       
+      // Blog post LRU cache stats
+      blogPostCache: blogPostStats ? {
+        size: blogPostStats.size,
+        maxSize: blogPostStats.maxSize,
+        utilization: blogPostStats.maxSize > 0 ? Math.round((blogPostStats.size / blogPostStats.maxSize) * 100) + '%' : '0%',
+        keys: blogPostStats.keys
+      } : null,
+      
       // Auto re-prime status
       autoReprimeEnabled: true,
-      checkPeriod: '2 minutes',
-      defaultTTL: '30 minutes'
+      checkPeriod: '12 minutes',
+      defaultTTL: '12 hours'
     };
     
     console.log('📊 Cache stats requested:', {

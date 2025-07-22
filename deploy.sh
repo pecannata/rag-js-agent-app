@@ -719,6 +719,14 @@ function prime_cache() {
         $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&limit=3&includeContent=false' >/dev/null 2>&1" || true
     done
     
+    # Prime blog post cache with 10 most recent published posts
+    print_step "Priming blog post cache with recent posts..."
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s -X POST '$BASE_URL/api/blog/prime-cache' >/dev/null 2>&1"; then
+        print_success "✅ Blog post cache primed with recent posts"
+    else
+        print_warning "⚠️ Could not prime blog post cache"
+    fi
+    
     # Prime cache stats endpoint
     $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/cache/stats' >/dev/null 2>&1" || true
     

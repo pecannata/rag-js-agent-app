@@ -15,6 +15,7 @@ interface BlogPost {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  hasFullContent?: boolean; // Track if content is fully loaded
 }
 
 interface CategoryPost {
@@ -44,32 +45,40 @@ const BlogsContent: React.FC = () => {
   const isLoadingFromUrl = useRef(false);
 
 
-  // Function to open modal without updating URL (for URL-triggered opening)
+  // Function to open modal - simplified like BlogManager
   const openPostModal = async (post: BlogPost) => {
-    console.log('🔵 openPostModal called for post:', post.id);
+    console.log('🔵 openPostModal called for post:', post.id, 'Has full content:', !!post.hasFullContent);
     setSelectedPost(post);
     setShowModal(true);
-    setLoadingModalContent(true);
     
-    try {
-      // Always fetch full content for individual post view
-      const response = await fetch(`/api/blog/${post.id}`);
-      if (response.ok) {
-        const fullPost = await response.json();
-        // Update the post in the posts array with full content
-        setPosts(prevPosts => 
-          prevPosts.map(p => p.id === post.id ? { ...p, content: fullPost.content } : p)
-        );
-        // Update selected post with full content
-        setSelectedPost({ ...post, content: fullPost.content });
-      } else {
-        console.error('Failed to fetch post content:', response.status);
-        setError('Failed to load blog post content');
+    // If post doesn't have full content loaded, fetch it first
+    if (!post.hasFullContent && !post.content) {
+      setLoadingModalContent(true);
+      try {
+        console.log('🔄 Lazy loading content for post:', post.id);
+        const response = await fetch(`/api/blog/${post.id}`);
+        if (response.ok) {
+          const fullPost = await response.json();
+          // Update the post in our local state with the full content
+          const updatedPosts = posts.map(p => 
+            p.id === post.id ? { ...p, content: fullPost.content, hasFullContent: true } : p
+          );
+          setPosts(updatedPosts);
+          const updatedPost = { ...post, content: fullPost.content, hasFullContent: true };
+          setSelectedPost(updatedPost);
+          console.log('✅ Content loaded for post:', post.id, 'Length:', fullPost.content?.length || 0);
+        } else {
+          setError('Failed to load post content');
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading post content:', error);
+        setError('Error loading post content');
+        return;
+      } finally {
+        setLoadingModalContent(false);
       }
-    } catch (error) {
-      console.error('Error fetching post content:', error);
-      setError('Error loading blog post content');
-    } finally {
+    } else {
       setLoadingModalContent(false);
     }
   };
@@ -89,8 +98,12 @@ const BlogsContent: React.FC = () => {
           
           if (data.success && data.posts) {
             console.log('✅ Recent posts loaded:', data.posts.length);
-            // Set these as the posts (will be updated by full fetch if needed)
-            setPosts(data.posts);
+            // Posts come without content from the server (lazy loaded)
+            const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
+              ...post,
+              hasFullContent: false // No posts have full content initially
+            }));
+            setPosts(lazyPosts);
           } else {
             setError('No published blogs found');
           }
@@ -138,7 +151,12 @@ const BlogsContent: React.FC = () => {
           
           if (data.success && data.posts) {
             console.log('✅ All blog posts loaded:', data.posts.length);
-            setPosts(data.posts);
+            // Posts come without content from the server (lazy loaded)
+            const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
+              ...post,
+              hasFullContent: false // No posts have full content initially
+            }));
+            setPosts(lazyPosts);
           }
         }
       } catch (error) {
@@ -237,37 +255,21 @@ const BlogsContent: React.FC = () => {
   };
 
   const handlePostClick = async (post: BlogPost) => {
-    console.log('🟠 handlePostClick called for post:', post.id);
+    console.log('🟠 handlePostClick called for post:', post.id, 'Has full content:', !!post.hasFullContent);
+    
+    // Set flag to prevent URL effect from triggering duplicate logic
+    isLoadingFromUrl.current = true;
+    
     // Update URL with post ID
     router.push(`/blogs?id=${post.id}`, { scroll: false });
     
-    setSelectedPost(post);
-    setShowModal(true);
-    setLoadingModalContent(true);
+    // Use the simplified modal opening logic
+    await openPostModal(post);
     
-    try {
-      // Always fetch full content for individual post view
-      console.log('🔄 Loading full content for post:', post.id);
-      const response = await fetch(`/api/blog/${post.id}`);
-      if (response.ok) {
-        const fullPost = await response.json();
-        // Update the post in the posts array with full content
-        setPosts(prevPosts => 
-          prevPosts.map(p => p.id === post.id ? { ...p, content: fullPost.content } : p)
-        );
-        // Update selected post with full content
-        setSelectedPost({ ...post, content: fullPost.content });
-        console.log('✅ Full content loaded for post:', post.id);
-      } else {
-        console.error('Failed to fetch post content:', response.status);
-        setError('Failed to load blog post content');
-      }
-    } catch (error) {
-      console.error('Error fetching post content:', error);
-      setError('Error loading blog post content');
-    } finally {
-      setLoadingModalContent(false);
-    }
+    // Reset flag after opening
+    setTimeout(() => {
+      isLoadingFromUrl.current = false;
+    }, 100);
   };
 
   const closeModal = () => {

@@ -20,6 +20,12 @@ interface CacheStats {
     remainingMinutes: number;
     hasData: boolean;
   }>;
+  blogPostCache?: {
+    size: number;
+    maxSize: number;
+    utilization: string;
+    keys: string[];
+  } | null;
   autoReprimeEnabled: boolean;
   checkPeriod: string;
   defaultTTL: string;
@@ -298,6 +304,99 @@ export default function CacheAdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Blog Post LRU Cache */}
+            {stats.blogPostCache && (
+              <div className="bg-white rounded-lg shadow mb-6">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">💾 Blog Post LRU Cache</h2>
+                  <p className="text-gray-600 text-sm mt-1">Individual blog posts with CLOB content (max 20 entries, 30min TTL)</p>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    {/* Utilization */}
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-indigo-800">Cache Utilization</p>
+                          <p className="text-2xl font-bold text-indigo-900">{stats.blogPostCache.utilization}</p>
+                        </div>
+                        <div className="text-3xl text-indigo-600">📊</div>
+                      </div>
+                      <div className="mt-2">
+                        <div className="bg-indigo-200 rounded-full h-2">
+                          <div 
+                            className="bg-indigo-600 rounded-full h-2" 
+                            style={{ width: stats.blogPostCache.utilization }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Size */}
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-emerald-800">Current Size</p>
+                          <p className="text-2xl font-bold text-emerald-900">{stats.blogPostCache.size}</p>
+                        </div>
+                        <div className="text-3xl text-emerald-600">📋</div>
+                      </div>
+                      <p className="text-xs text-emerald-600 mt-2">out of {stats.blogPostCache.maxSize} max</p>
+                    </div>
+                    
+                    {/* LRU Info */}
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-amber-800">LRU Policy</p>
+                          <p className="text-sm font-bold text-amber-900">Auto Eviction</p>
+                        </div>
+                        <div className="text-3xl text-amber-600">🔄</div>
+                      </div>
+                      <p className="text-xs text-amber-600 mt-2">Least recently used posts evicted first</p>
+                    </div>
+                  </div>
+                  
+                  {/* Cached Posts */}
+                  {stats.blogPostCache.keys.length > 0 ? (
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-3">🗺 Cached Blog Posts</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {stats.blogPostCache.keys.map((key, index) => {
+                          const postId = key.replace('blog_post_', '');
+                          const isRecent = index < 5; // First 5 are most recent
+                          
+                          return (
+                            <div key={key} className={`p-3 rounded-lg border ${
+                              isRecent ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                            }`}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-mono text-gray-700">ID: {postId}</span>
+                                {isRecent && (
+                                  <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">
+                                    Recent
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Position: {index + 1}/{stats.blogPostCache?.maxSize}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-6xl text-gray-300 mb-4">💭</div>
+                      <p className="text-gray-500">No blog posts cached yet</p>
+                      <p className="text-xs text-gray-400 mt-1">Posts will be cached when accessed individually</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Cache Priming Endpoints */}
             <div className="bg-white rounded-lg shadow mb-6">
