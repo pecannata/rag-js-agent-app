@@ -1,17 +1,17 @@
 {
-  "version": "1.0.262",
+  "version": "1.0.264",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-07-22T01:53:01.983Z",
-  "buildDate": "Jul 21, 2025",
-  "sourceVersion": "v1.0.261.072125",
+  "buildTime": "2025-08-12T15:07:53.636Z",
+  "buildDate": "Aug 12, 2025",
+  "sourceVersion": "v1.0.263.081225",
   "git": {
     "branch": "main",
-    "commit": "04c61726b9b7a72a4f6f449bdd67cb4625ef4bdc",
-    "shortCommit": "04c61726",
-    "commitDate": "2025-07-21 19:40:21 -0500",
-    "commitMessage": "The Problem with 182 B"
+    "commit": "750ea15befc28b0fbf5ab5c3ca86ec0cb141de0b",
+    "shortCommit": "750ea15b",
+    "commitDate": "2025-07-22 13:00:31 -0500",
+    "commitMessage": "On the blogs page, the query to get the three most recent posts is not using the cache."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.261-04c61726-20250722-015301"
+  "buildSignature": "1.0.263-750ea15b-20250812-150753"
 }

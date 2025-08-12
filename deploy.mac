@@ -34,7 +34,7 @@ SESSION_NAME="rag-js-agent-app"
 tmux kill-session -t $SESSION_NAME 2>/dev/null || true
 
 # Create new tmux session and start the server
-tmux new-session -d -s $SESSION_NAME -c "$(pwd)" 'npm start 2>&1 | tee production.log'
+tmux new-session -d -s $SESSION_NAME -c "$(pwd)" 'PORT=3020 npm start 2>&1 | tee production.log'
 
 # Wait a moment for server to start
 echo "Waiting for server to initialize..."
@@ -42,11 +42,11 @@ sleep 5
 
 # Check if server is running
 echo "Checking server status..."
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3020)
 
 if [ "$STATUS" = "200" ]; then
     echo "✅ Production server is running successfully!"
-    echo "📍 URL: http://localhost:3000"
+    echo "📍 URL: http://localhost:3020"
     echo "🖥️  tmux session: $SESSION_NAME"
     echo "📝 View logs: tail -f production.log"
     echo "🔍 Check session: tmux ls"
