@@ -1,17 +1,17 @@
 {
-  "version": "1.0.280",
+  "version": "1.0.281",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T19:09:21.034Z",
+  "buildTime": "2025-08-12T19:52:03.247Z",
   "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.279.081225",
+  "sourceVersion": "v1.0.280.081225",
   "git": {
     "branch": "main",
-    "commit": "714c992377e49c6e6f505260ed4dbf3054b7667d",
-    "shortCommit": "714c9923",
-    "commitDate": "2025-08-12 12:57:11 -0500",
-    "commitMessage": "Transition from TinyMCE to Custom Rich Text Editor"
+    "commit": "32ea05bf96c2dc585c313178bb2a4d71da7a5d5f",
+    "shortCommit": "32ea05bf",
+    "commitDate": "2025-08-12 14:37:41 -0500",
+    "commitMessage": "Summary: PowerPoint Processing Fixed"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.279-714c9923-20250812-190921"
+  "buildSignature": "1.0.280-32ea05bf-20250812-195203"
 }

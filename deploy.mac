@@ -22,6 +22,32 @@ fi
 echo "Stopping existing production server..."
 ./stop.mac
 
+# Setup Ollama service and models
+echo "Setting up Ollama for local AI capabilities..."
+if [ -f "./setup-ollama-models.sh" ]; then
+    echo "🔧 Running Ollama setup script..."
+    ./setup-ollama-models.sh
+    echo "✅ Ollama setup completed"
+else
+    echo "⚠️  Ollama setup script not found, using basic service check"
+    # Fallback to basic service check
+    if brew services list | grep -q "ollama.*started"; then
+        echo "✅ Ollama service is already running"
+    else
+        echo "🚀 Starting Ollama service..."
+        brew services start ollama
+        echo "⏳ Waiting for Ollama to initialize..."
+        sleep 10
+        
+        # Verify Ollama is responding
+        if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+            echo "✅ Ollama service is ready"
+        else
+            echo "⚠️  Ollama service may not be fully ready yet"
+        fi
+    fi
+fi
+
 # Build the project
 echo "Building production version..."
 npm run build -- --no-lint
