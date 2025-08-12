@@ -120,6 +120,33 @@ function escapeSqlString(str: string): string {
     // Note: Converting newlines to spaces to prevent SQL statement termination
 }
 
+// Function to format JavaScript Date or ISO string to Oracle TIMESTAMP format
+function formatOracleTimestamp(dateValue: string | Date | null): string | null {
+  if (!dateValue) return null;
+  
+  let date: Date;
+  if (typeof dateValue === 'string') {
+    date = new Date(dateValue);
+  } else {
+    date = dateValue;
+  }
+  
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date provided to formatOracleTimestamp:', dateValue);
+    return null;
+  }
+  
+  // Format: YYYY-MM-DD HH24:MI:SS (Oracle TIMESTAMP format without milliseconds)
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 
 // Function to handle CLOB content insertion with chunking for large content
 async function insertBlogPostSafely(postData: {
@@ -753,8 +780,8 @@ export async function POST(request: NextRequest) {
       author: author,
       status: postData.status,
       tags: postData.tags.join(', '),
-      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null,
-      scheduledDate: scheduledDate ? scheduledDate.replace('T', ' ').replace('Z', '') : null,
+      publishedAt: formatOracleTimestamp(publishedAt),
+      scheduledDate: formatOracleTimestamp(scheduledDate),
       isScheduled: isScheduled
     });
     
@@ -941,8 +968,8 @@ export async function PUT(request: NextRequest) {
       excerpt: excerpt,
       status: postData.status,
       tags: postData.tags ? postData.tags.join(', ') : '',
-      publishedAt: publishedAt ? publishedAt.replace('T', ' ').replace('Z', '') : null,
-      scheduledDate: scheduledDate ? scheduledDate.replace('T', ' ').replace('Z', '') : null,
+      publishedAt: formatOracleTimestamp(publishedAt),
+      scheduledDate: formatOracleTimestamp(scheduledDate),
       isScheduled: isScheduled
     });
     

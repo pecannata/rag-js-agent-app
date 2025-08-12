@@ -1,17 +1,17 @@
 {
-  "version": "1.0.269",
+  "version": "1.0.270",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T15:49:14.402Z",
+  "buildTime": "2025-08-12T15:55:50.656Z",
   "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.268.081225",
+  "sourceVersion": "v1.0.269.081225",
   "git": {
     "branch": "main",
-    "commit": "76906bb116af472949dc23b0b4263c045fd3ce7b",
-    "shortCommit": "76906bb1",
-    "commitDate": "2025-08-12 10:45:21 -0500",
-    "commitMessage": "I implemented a robust JSON cleaning mechanism in all three files that handle Oracle database queries:"
+    "commit": "2623f45428680fb255b9d69c8a084424f5ca5a8c",
+    "shortCommit": "2623f454",
+    "commitDate": "2025-08-12 10:53:27 -0500",
+    "commitMessage": "he individual blog post API is now working correctly."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.268-76906bb1-20250812-154914"
+  "buildSignature": "1.0.269-2623f454-20250812-155550"
 }

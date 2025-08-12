@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import RichTextEditor from '../components/RichTextEditor';
 
 interface BlogPost {
   id: number;
@@ -32,6 +34,7 @@ interface CategorizedPosts {
 }
 
 const BlogsContent: React.FC = () => {
+  const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -43,6 +46,25 @@ const BlogsContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
+  
+  // Blog editing states
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Form data for editing
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    tags: '',
+    status: 'draft' as 'draft' | 'published' | 'archived' | 'scheduled',
+    scheduledDate: '',
+    isScheduled: false
+  });
 
 
   // Function to open modal - simplified like BlogManager
@@ -330,6 +352,233 @@ const BlogsContent: React.FC = () => {
     // Use replace instead of push to clear URL parameter without adding to history
     router.replace('/blogs', { scroll: false });
   };
+  
+  // Blog editing functions
+  const handleNewPost = () => {
+    setEditingPost(null);
+    setFormData({
+      title: '',
+      content: '# New Blog Post\n\nWrite an engaging introduction that hooks your readers and introduces the main topic.\n\n## Overview\n\nProvide a brief overview of what readers will learn or discover in this post.\n\n## Key Points\n\n- **Point 1**: Explain your first main point with details and examples\n- **Point 2**: Elaborate on your second key point\n- **Point 3**: Share your third insight or finding\n\n## Implementation\n\nIf applicable, provide practical steps or examples here.\n\n## Conclusion\n\nSummarize the key takeaways and encourage reader engagement.\n\n---\n\n*What are your thoughts on this topic? Share your experience in the comments below!*',
+      excerpt: '',
+      tags: '',
+      status: 'draft',
+      scheduledDate: '',
+      isScheduled: false
+    });
+    setIsCreating(true);
+    setIsEditing(true);
+    setHasUnsavedChanges(false);
+  };
+  
+  const handleEditPost = async (post: BlogPost) => {
+    // If post doesn't have full content, fetch it first
+    if (!post.hasFullContent && !post.content) {
+      try {
+        const response = await fetch(`/api/blog/${post.id}`);
+        if (response.ok) {
+          const fullPost = await response.json();
+          post = { ...post, content: fullPost.content, hasFullContent: true };
+        }
+      } catch (error) {
+        console.error('Error loading post content for editing:', error);
+        setError('Error loading post content for editing');
+        return;
+      }
+    }
+    
+    setEditingPost(post);
+    setFormData({
+      title: post.title || '',
+      content: post.content || '',
+      excerpt: post.excerpt || '',
+      tags: (post.tags || []).join(', '),
+      status: post.status as any || 'draft',
+      scheduledDate: (post as any).scheduledDate || '',
+      isScheduled: (post as any).isScheduled || false
+    });
+    setIsCreating(false);
+    setIsEditing(true);
+    setHasUnsavedChanges(false);
+  };
+  
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+      // Auto-generate excerpt when content changes
+      ...(field === 'content' && { excerpt: generateExcerpt(value) })
+    }));
+  };
+  
+  const handleEditorChange = (content: string) => {
+    if (content !== formData.content) {
+      setFormData(prev => ({
+        ...prev,
+        content,
+        excerpt: generateExcerpt(content)
+      }));
+    }
+  };
+  
+  const generateExcerpt = (content: string) => {
+    const plainText = (content || '')
+      .replace(/<[^>]*>/g, '') // Remove all HTML tags
+      .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
+      .trim();
+    
+    return plainText.length > 200 ? plainText.substring(0, 200) + '...' : plainText;
+  };
+  
+  const handleSave = async (publish: boolean = false) => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      setError('Title and content are required');
+      return;
+    }
+    
+    setSaving(true);
+    setError(null);
+    
+    try {
+      const postData = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        status: publish ? 'published' : formData.status,
+        id: editingPost?.id,
+        // Include originalTitle for updates to help API identify the existing post
+        originalTitle: editingPost?.title
+      };
+      
+      const response = await fetch('/api/blog', {
+        method: isCreating ? 'POST' : 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const savedPost = data.post;
+        
+        // Update the editing post reference
+        setEditingPost(savedPost);
+        setIsCreating(false);
+        
+        // Update form data to match the saved post to prevent "unsaved changes" detection
+        if (savedPost) {
+          setFormData({
+            title: savedPost.title || '',
+            content: savedPost.content || '',
+            excerpt: savedPost.excerpt || '',
+            tags: (savedPost.tags || []).join(', '),
+            status: savedPost.status || 'draft',
+            scheduledDate: (savedPost as any).scheduledDate || '',
+            isScheduled: (savedPost as any).isScheduled || false
+          });
+        }
+        
+        // Clear unsaved changes flag
+        setHasUnsavedChanges(false);
+        
+        // Refresh posts list
+        await refreshPosts();
+        
+        if (publish) {
+          setIsEditing(false);
+        }
+      } else {
+        const errorData = await response.json();
+        setError(`Failed to save blog post: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      setError('Error saving blog post: ' + error);
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const handleDelete = async (postId: number) => {
+    if (!confirm('Are you sure you want to delete this blog post?')) {
+      return;
+    }
+    
+    const postToDelete = posts.find(post => post.id === postId);
+    if (!postToDelete) {
+      setError('Post not found');
+      return;
+    }
+    
+    setSaving(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/blog', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: postToDelete.title }),
+      });
+      
+      if (response.ok) {
+        await refreshPosts();
+        if (editingPost?.id === postId) {
+          setEditingPost(null);
+          setIsEditing(false);
+          setIsCreating(false);
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to delete blog post');
+      }
+    } catch (error) {
+      setError('Error deleting blog post: ' + error);
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const refreshPosts = async () => {
+    try {
+      const response = await fetch('/api/blog?includeContent=false');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.posts) {
+          const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
+            ...post,
+            hasFullContent: false
+          }));
+          setPosts(lazyPosts);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing posts:', error);
+    }
+  };
+  
+  const cancelEditing = () => {
+    if (hasUnsavedChanges && !confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+      return;
+    }
+    setIsEditing(false);
+    setIsCreating(false);
+    setEditingPost(null);
+    setHasUnsavedChanges(false);
+  };
+  
+  // Track unsaved changes
+  useEffect(() => {
+    if (editingPost) {
+      const hasChanges = 
+        formData.title !== editingPost.title ||
+        formData.content !== editingPost.content ||
+        formData.excerpt !== editingPost.excerpt ||
+        formData.tags !== (editingPost.tags || []).join(', ') ||
+        formData.status !== editingPost.status;
+      
+      setHasUnsavedChanges(hasChanges);
+    }
+  }, [formData, editingPost]);
 
   const Modal = ({ post }: { post: BlogPost }) => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50 p-4">
@@ -344,12 +593,38 @@ const BlogsContent: React.FC = () => {
             <span className="text-gray-600">Podcast</span>
             <span className="text-gray-600">About</span>
           </div>
-          <button 
-            onClick={closeModal}
-            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-3">
+            {session && (
+              <>
+                <button
+                  onClick={() => {
+                    closeModal();
+                    handleEditPost(post);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                  title="Edit this post"
+                >
+                  ✏️ Edit Post
+                </button>
+                <button
+                  onClick={() => {
+                    closeModal();
+                    handleDelete(post.id);
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                  title="Delete this post"
+                >
+                  🗑️ Delete
+                </button>
+              </>
+            )}
+            <button 
+              onClick={closeModal}
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
         </div>
         
         {/* Modal Content */}
@@ -427,6 +702,88 @@ const BlogsContent: React.FC = () => {
             LATEST POSTS ON ARTIFICIAL INTELLIGENCE, COMPUTER SCIENCE, AND GENERAL SCIENCE
           </h2>
         </div>
+        
+        {/* Blog Management Toolbar - Only show for authenticated users */}
+        {session && (
+          <div className="mb-8">
+            {!isEditing ? (
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={handleNewPost}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  ✏️ Create New Post
+                </button>
+                <div className="text-sm text-gray-600">
+                  Click on any post title to view, or use the edit button to modify posts
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {isCreating ? '✏️ Create New Blog Post' : `📝 Edit: ${editingPost?.title}`}
+                    </h3>
+                    {hasUnsavedChanges && (
+                      <span className="text-orange-600 text-sm">• Unsaved changes</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleSave(false)}
+                      disabled={saving}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      💾 {saving ? 'Saving...' : 'Save Draft'}
+                    </button>
+                    <button
+                      onClick={() => handleSave(true)}
+                      disabled={saving}
+                      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      🚀 {saving ? 'Publishing...' : 'Publish'}
+                    </button>
+                    <button
+                      onClick={cancelEditing}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Post Metadata Form */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Post title..."
+                    value={formData.title}
+                    onChange={(e) => handleFormChange('title', e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Tags (comma-separated)..."
+                    value={formData.tags}
+                    onChange={(e) => handleFormChange('tags', e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                {/* Rich Text Editor */}
+                <div className="border border-gray-300 rounded-md overflow-hidden">
+                  <RichTextEditor
+                    value={formData.content}
+                    onChange={handleEditorChange}
+                    height={400}
+                    placeholder="Start writing your blog post..."
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {loadingRecent ? (
           <div className="flex justify-center items-center h-64">
@@ -444,9 +801,33 @@ const BlogsContent: React.FC = () => {
             {/* Latest 3 Posts */}
             <div className="grid md:grid-cols-3 gap-8 mb-16">
               {posts.slice(0, 3).map((post) => (
-                <div key={post.id} className="group">
+                <div key={post.id} className="group relative bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                  {session && (
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditPost(post);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md text-sm"
+                        title="Edit Post"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(post.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-2 rounded-md text-sm"
+                        title="Delete Post"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  )}
                   <h3 
-                    className="text-xl font-light text-blue-600 hover:text-blue-800 cursor-pointer mb-4 leading-relaxed"
+                    className="text-xl font-light text-blue-600 hover:text-blue-800 cursor-pointer mb-4 leading-relaxed pr-16"
                     onClick={() => handlePostClick(post)}
                   >
                     {post.title}
@@ -454,13 +835,18 @@ const BlogsContent: React.FC = () => {
                   <p className="text-gray-600 leading-relaxed mb-4">
                     {post.excerpt}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {post.publishedAt && new Date(post.publishedAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long', 
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-500">
+                      {post.publishedAt && new Date(post.publishedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long', 
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                      {post.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
