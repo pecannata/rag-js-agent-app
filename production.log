@@ -1,5 +1,5 @@
 
-> rag-js-agent-app@1.0.268 start
+> rag-js-agent-app@1.0.269 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -7,102 +7,26 @@
    - Network:      http://192.168.1.149:3020
 
  ✓ Starting...
- ✓ Ready in 374ms
+ ✓ Ready in 344ms
 📧 Background job processor initialized
 ✅ Blog post cache auto re-prime system initialized
 ✅ Cache auto re-prime system initialized
-(node:2448) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:6112) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-🔍 Fetching categorized blog posts...
-🚀 Executing single optimized categorized query...
-✅ Optimized categorized query completed
-📤 Optimized Raw Output (first 500 chars): 
-         or must be a 23c compatible instant client
-         Thick driver unavailable for use.
-
-
-{
-  "results" : [
-    {
-      "columns" : [
-        {
-          "name" : "ID",
-          "type" : "NUMBER"
-        },
-        {
-          "name" : "TITLE",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "AUTHOR",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "PUBLISHED_AT",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "CATEGORY"
-🧹 Cleaned optimized output (first 500 chars): {
-  "results" : [
-    {
-      "columns" : [
-        {
-          "name" : "ID",
-          "type" : "NUMBER"
-        },
-        {
-          "name" : "TITLE",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "AUTHOR",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "PUBLISHED_AT",
-          "type" : "VARCHAR2"
-        },
-        {
-          "name" : "CATEGORY",
-          "type" : "VARCHAR2"
-        }
-      ],
-      "items" : [
-        {
-          "id" : 31
-✅ Optimized Successfully parsed as JSON
-🔍 Optimized Items structure: {
-  "id": 314,
-  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
-  "author": "Blog Author",
-  "published_at": "2025-07-20T14:45:17Z",
-  "category": "ai"
-}
-✅ Optimized Extracted 186 posts
-✅ Optimized Sample post: {
-  id: 314,
-  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
-  author: 'Blog Author',
-  publishedAt: '2025-07-20T14:45:17Z',
-  category: 'ai'
-}
-✅ Categorized posts optimized: AI=56, CS=11, Science=119
-💾 Cache SET: categorized_blog_posts
-🗄️ Stored categorized posts in node-cache
-🚫 Cache miss: blog_posts_all_nolimit_0_nocontent
-🔍 Blog Database Query Execution: 
-      SELECT 
-        id,
-        title,
-        slug,
-        '' as content,
-        excerpt,
-        author,
-        status,
-        tags,
-        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
-✅ Blog database query executed successfully
+🔍 Blog post request for ID: 314
+🔍 Blog post cache miss, fetching from database: 314
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
 📤 Raw Oracle Output (first 500 chars): 
          or must be a 23c compatible instant client
          Thick driver unavailable for use.
@@ -126,12 +50,12 @@
         },
         {
           "name" : "CONTENT",
-          "type" : "CHAR"
+          "type" : "CLOB"
         },
         {
           "name" : "EXCERPT",
           ...
-🧹 Cleaned Oracle output (first 500 chars): {
+🧹 Cleaned Oracle output for blog post (first 500 chars): {
   "results" : [
     {
       "columns" : [
@@ -149,7 +73,7 @@
         },
         {
           "name" : "CONTENT",
-          "type" : "CHAR"
+          "type" : "CLOB"
         },
         {
           "name" : "EXCERPT",
@@ -158,36 +82,144 @@
         {
           "name" : "AUTHOR",
           "type" : "VARCHAR2
-✅ Successfully parsed as JSON. Structure: {
-  "results": [
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Query result: { success: true, dataLength: 1, error: undefined }
+🔍 Raw post data: [
+  'id',           'title',
+  'slug',         'content',
+  'excerpt',      'author',
+  'status',       'tags',
+  'created_at',   'updated_at',
+  'published_at'
+]
+✅ Blog post constructed: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  slug: 'ai-sql-query-processing-through-rag-path-alwayscurious',
+  content: '<div class="wp-block-group is-layout-constrained wp-block-group-is-layout-constrained"><h1 style="ma...',
+  excerpt: `In (AI) Agentic RAG Chat App - Phase 2 - with RAG and Oracle, we demonstrated how to build an Agentic RAG Chat app without writing any code, simply by providing natural language specifications to WARP 2.0. Additionally, WARP can explain parts of the generated code, making it an excellent tool for documentation. For example, when asked, "Can you draw a diagram with detailed descriptions of how an SQL query is processed through the RAG path?", here's what WARP produced:`,
+  author: 'Blog Author',
+  status: 'published',
+  tags: [ 'imported', 'url-import' ],
+  createdAt: '2025-07-20T09:45:20Z',
+  updatedAt: '2025-07-20T09:45:20Z',
+  publishedAt: '2025-07-20T14:45:17Z'
+}
+💾 Blog post cached: blog_post_314 (1/20)
+💾 Cached blog post in LRU: 314
+🔍 Blog post request for ID: 314
+🚀 Serving blog post from LRU cache: 314
+🔍 Cached post structure: [
+  'id',          'title',
+  'slug',        'content',
+  'excerpt',     'author',
+  'status',      'tags',
+  'createdAt',   'updatedAt',
+  'publishedAt'
+]
+🔍 Blog post request for ID: 314
+🚀 Serving blog post from LRU cache: 314
+🔍 Cached post structure: [
+  'id',          'title',
+  'slug',        'content',
+  'excerpt',     'author',
+  'status',      'tags',
+  'createdAt',   'updatedAt',
+  'publishedAt'
+]
+🔍 Blog post request for ID: 313
+🔍 Blog post cache miss, fetching from database: 313
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
     {
-      "columns": [
+      "columns" : [
         {
-          "name": "ID",
-          "type": "NUMBER"
+          "name" : "ID",
+          "type" : "NUMBER"
         },
         {
-          "name": "TITLE",
-          "type": "VARCHAR2"
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
         },
         {
-          "name": "SLUG",
-          "type": "VARCHAR2"
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
         },
         {
-          "name": "CONTENT",
-          "type": "CHAR"
+          "name" : "CONTENT",
+          "type" : "CLOB"
         },
         {
-          "name": "EXCERPT",
-          "type": "VARCHAR2"
+          "name" : "EXCERPT",
+          ...
+🧹 Cleaned Oracle output for blog post (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
         },
         {
-          "name": "AUTHOR",
-          "type": "VARCHAR2"
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
         },
- 
-✅ Extracted Oracle items: 187 rows
-📊 Blog query result structure: object true 187
-🗄️ Cached: blog_posts_all_nolimit_0_nocontent (TTL: 43200s)
-🗄️ Stored blog posts in cache
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Query result: { success: true, dataLength: 1, error: undefined }
+🔍 Raw post data: [
+  'id',           'title',
+  'slug',         'content',
+  'excerpt',      'author',
+  'status',       'tags',
+  'created_at',   'updated_at',
+  'published_at'
+]
+✅ Blog post constructed: {
+  id: 313,
+  title: '(Sci) Science and Cartography - Alwayscurious',
+  slug: 'sci-science-and-cartography-alwayscurious',
+  content: '<div class="wp-block-group is-layout-constrained wp-block-group-is-layout-constrained"><h1 style="ma...',
+  excerpt: "Science, at its core, is humanity's quest to understand the universe--to uncover the deepest truths about reality and our place within it. Most of us who entered the field of physics or take an interest in it did so because we believed (or did believe) it would reveal fundamental truths about nature--what is truly and essentially real.",
+  author: 'Blog Author',
+  status: 'published',
+  tags: [ 'imported', 'url-import' ],
+  createdAt: '2025-07-20T09:26:43Z',
+  updatedAt: '2025-07-20T09:26:43Z',
+  publishedAt: '2025-07-20T14:26:40Z'
+}
+💾 Blog post cached: blog_post_313 (2/20)
+💾 Cached blog post in LRU: 313

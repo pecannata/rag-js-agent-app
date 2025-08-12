@@ -1,17 +1,17 @@
 {
-  "version": "1.0.268",
+  "version": "1.0.269",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T15:44:08.233Z",
+  "buildTime": "2025-08-12T15:49:14.402Z",
   "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.267.081225",
+  "sourceVersion": "v1.0.268.081225",
   "git": {
     "branch": "main",
-    "commit": "da046b4a19d3530c76adbc7e7e6a0ec961486523",
-    "shortCommit": "da046b4a",
-    "commitDate": "2025-08-12 10:20:19 -0500",
-    "commitMessage": "Updated the port in ./deploy.mac from 3000 to 3020"
+    "commit": "76906bb116af472949dc23b0b4263c045fd3ce7b",
+    "shortCommit": "76906bb1",
+    "commitDate": "2025-08-12 10:45:21 -0500",
+    "commitMessage": "I implemented a robust JSON cleaning mechanism in all three files that handle Oracle database queries:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.267-da046b4a-20250812-154408"
+  "buildSignature": "1.0.268-76906bb1-20250812-154914"
 }
