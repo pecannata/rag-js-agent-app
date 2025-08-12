@@ -124,7 +124,38 @@ function parseOptimizedResults(output: string): (CategoryPost & { category: stri
   try {
     console.log('📤 Optimized Raw Output (first 500 chars):', output.substring(0, 500));
     
-    const trimmedOutput = output.trim();
+    // Clean Oracle output by removing warning messages that interfere with JSON parsing
+    let cleanOutput = output;
+    
+    // Remove Oracle warning messages that appear at the beginning of output
+    const oracleWarnings = [
+      'or must be a 23c compatible instant client',
+      'Thick driver unavailable for use.',
+      'Warning:',
+      'It is recommended'
+    ];
+    
+    // Split output into lines and filter out warning lines
+    const lines = cleanOutput.split('\n');
+    const cleanLines = lines.filter(line => {
+      const trimmedLine = line.trim();
+      return !oracleWarnings.some(warning => trimmedLine.includes(warning));
+    });
+    
+    // Find where JSON actually starts (look for opening brace)
+    let jsonStartIndex = 0;
+    for (let i = 0; i < cleanLines.length; i++) {
+      if (cleanLines[i] && cleanLines[i]?.trim().startsWith('{')) {
+        jsonStartIndex = i;
+        break;
+      }
+    }
+    
+    // Reconstruct clean JSON output
+    cleanOutput = cleanLines.slice(jsonStartIndex).join('\n').trim();
+    console.log('🧹 Cleaned optimized output (first 500 chars):', cleanOutput.substring(0, 500));
+    
+    const trimmedOutput = cleanOutput.trim();
     
     // Check if output contains Oracle errors
     if (trimmedOutput.includes('Error starting at line') || 
@@ -144,7 +175,7 @@ function parseOptimizedResults(output: string): (CategoryPost & { category: stri
     }
     
     // Parse JSON response
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(cleanOutput);
     console.log('✅ Optimized Successfully parsed as JSON');
     
     // Handle Oracle's specific JSON format: {results: [{items: [...]}]}

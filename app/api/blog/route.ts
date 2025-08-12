@@ -394,7 +394,38 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
     
     // Parse JSON response for SELECT queries
     try {
-      const jsonData = JSON.parse(stdout);
+      // Clean Oracle output by removing warning messages that interfere with JSON parsing
+      let cleanOutput = stdout;
+      
+      // Remove Oracle warning messages that appear at the beginning of output
+      const oracleWarnings = [
+        'or must be a 23c compatible instant client',
+        'Thick driver unavailable for use.',
+        'Warning:',
+        'It is recommended'
+      ];
+      
+      // Split output into lines and filter out warning lines
+      const lines = cleanOutput.split('\n');
+      const cleanLines = lines.filter(line => {
+        const trimmedLine = line.trim();
+        return !oracleWarnings.some(warning => trimmedLine.includes(warning));
+      });
+      
+      // Find where JSON actually starts (look for opening brace)
+      let jsonStartIndex = 0;
+      for (let i = 0; i < cleanLines.length; i++) {
+        if (cleanLines[i] && cleanLines[i]?.trim().startsWith('{')) {
+          jsonStartIndex = i;
+          break;
+        }
+      }
+      
+      // Reconstruct clean JSON output
+      cleanOutput = cleanLines.slice(jsonStartIndex).join('\n').trim();
+      console.log('🧹 Cleaned Oracle output (first 500 chars):', cleanOutput.substring(0, 500));
+      
+      const jsonData = JSON.parse(cleanOutput);
       console.log('✅ Successfully parsed as JSON. Structure:', JSON.stringify(jsonData, null, 2).substring(0, 500));
       
       // Handle Oracle's specific JSON format: {results: [{items: [...]}]}

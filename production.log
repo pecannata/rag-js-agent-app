@@ -1,5 +1,5 @@
 
-> rag-js-agent-app@1.0.264 start
+> rag-js-agent-app@1.0.268 start
 > next start
 
    ▲ Next.js 15.3.4
@@ -7,12 +7,89 @@
    - Network:      http://192.168.1.149:3020
 
  ✓ Starting...
- ✓ Ready in 348ms
-✅ Blog post cache auto re-prime system initialized
+ ✓ Ready in 374ms
 📧 Background job processor initialized
+✅ Blog post cache auto re-prime system initialized
 ✅ Cache auto re-prime system initialized
-(node:78122) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:2448) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
+🔍 Fetching categorized blog posts...
+🚀 Executing single optimized categorized query...
+✅ Optimized categorized query completed
+📤 Optimized Raw Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY"
+🧹 Cleaned optimized output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 31
+✅ Optimized Successfully parsed as JSON
+🔍 Optimized Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Optimized Extracted 186 posts
+✅ Optimized Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Categorized posts optimized: AI=56, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts
+🗄️ Stored categorized posts in node-cache
 🚫 Cache miss: blog_posts_all_nolimit_0_nocontent
 🔍 Blog Database Query Execution: 
       SELECT 
@@ -54,20 +131,63 @@
         {
           "name" : "EXCERPT",
           ...
-⚠️ SELECT query could not parse as JSON. Trimmed output: or must be a 23c compatible instant client
-         Thick driver unavailable for use.
-
-
-{
+🧹 Cleaned Oracle output (first 500 chars): {
   "results" : [
     {
       "columns" : [
         {
           "name" : "ID",
           "type" : "NUMBER"
-     
-ℹ️ Returning raw output as string
-📊 Blog query result structure: string false 151978
-⚠️ Data is not an array, using empty array
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 187 rows
+📊 Blog query result structure: object true 187
 🗄️ Cached: blog_posts_all_nolimit_0_nocontent (TTL: 43200s)
 🗄️ Stored blog posts in cache

@@ -1,17 +1,17 @@
 {
-  "version": "1.0.264",
+  "version": "1.0.268",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T15:07:53.636Z",
+  "buildTime": "2025-08-12T15:44:08.233Z",
   "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.263.081225",
+  "sourceVersion": "v1.0.267.081225",
   "git": {
     "branch": "main",
-    "commit": "750ea15befc28b0fbf5ab5c3ca86ec0cb141de0b",
-    "shortCommit": "750ea15b",
-    "commitDate": "2025-07-22 13:00:31 -0500",
-    "commitMessage": "On the blogs page, the query to get the three most recent posts is not using the cache."
+    "commit": "da046b4a19d3530c76adbc7e7e6a0ec961486523",
+    "shortCommit": "da046b4a",
+    "commitDate": "2025-08-12 10:20:19 -0500",
+    "commitMessage": "Updated the port in ./deploy.mac from 3000 to 3020"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.263-750ea15b-20250812-150753"
+  "buildSignature": "1.0.267-da046b4a-20250812-154408"
 }
