@@ -1,5 +1,17 @@
 [
   {
+    "id": "1755022859162",
+    "message": "Please summarize the customer value for SQLcl MCP.",
+    "timestamp": "2025-08-12T18:20:59.162Z",
+    "usageCount": 1
+  },
+  {
+    "id": "1755022636887",
+    "message": "Please extract the cusomer value for SQLcl MCP",
+    "timestamp": "2025-08-12T18:17:16.887Z",
+    "usageCount": 1
+  },
+  {
     "id": "1751926888700",
     "message": "For each slide summary add the customer value and for each side compare it to similar capabilities on Azure, Google, and Microsoft Cloud. Give as much detail about the competitors as you can with making up anything, also include examples if possible. After the last slide summarize all of the customers values from each slide and all similar capabilities from each slide.",
     "timestamp": "2025-07-07T23:14:21.735Z",

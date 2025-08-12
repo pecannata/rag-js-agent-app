@@ -120,6 +120,7 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   const [isSavingQuery, setIsSavingQuery] = useState<boolean>(false);
   const [useSlideBySlide, setUseSlideBySlide] = useState<boolean>(false);
   const [summaryUserMessage, setSummaryUserMessage] = useState<string>('');
+  const [isSavingExtractedText, setIsSavingExtractedText] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,14 +250,51 @@ export default function Vectorize({ apiKey }: VectorizeProps) {
   };
 
   const handleGenerateSummary = async () => {
-    if (!pdfContent) {
-      setSummaryError('No document content available to summarize');
-      return;
-    }
-
+    console.log('🤖 Generate Summary clicked!');
+    console.log('📄 pdfContent length:', pdfContent?.length || 0);
+    console.log('🔑 apiKey provided:', !!apiKey);
+    console.log('📝 documentName:', documentName);
+    console.log('📁 selectedFile:', selectedFile?.name || 'none');
+    
+    // First check if we have an API key
     if (!apiKey) {
+      console.log('❌ No API key - setting summary error');
       setSummaryError('API key is required for document summarization');
       return;
+    }
+    
+    // Check if we have document content - if not, try to reprocess the document
+    if (!pdfContent) {
+      console.log('❌ No pdfContent found in state');
+      
+      // Check if we have a file selected to reprocess
+      if (!selectedFile) {
+        console.log('❌ No selected file - cannot process document');
+        setSummaryError('No document content available. Please select and process a document first.');
+        return;
+      }
+      
+      console.log('🔄 Attempting to reprocess document to get content...');
+      setSummaryError('Document content not found. Reprocessing document...');
+      
+      try {
+        // Try to reprocess the document to get the content
+        const extractedContent = await handleProcessDocument();
+        
+        if (!extractedContent || extractedContent.trim().length === 0) {
+          console.log('❌ Reprocessing failed - no content extracted');
+          setSummaryError('Failed to extract document content. Please try processing the document again.');
+          return;
+        }
+        
+        console.log('✅ Document reprocessed successfully, content length:', extractedContent.length);
+        // Continue with the extracted content (pdfContent state should be updated by handleProcessDocument)
+        
+      } catch (reprocessError) {
+        console.error('❌ Document reprocessing failed:', reprocessError);
+        setSummaryError('Failed to reprocess document: ' + (reprocessError instanceof Error ? reprocessError.message : 'Unknown error'));
+        return;
+      }
     }
 
     setIsGeneratingSummary(true);
@@ -425,6 +463,44 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
       setQueryTestError(error instanceof Error ? error.message : 'Failed to save query results as DOCX');
     } finally {
       setIsSavingQuery(false);
+    }
+  };
+
+  const handleSaveExtractedText = async () => {
+    if (!pdfContent || !documentName) {
+      console.error('No extracted text content or document name available');
+      return;
+    }
+
+    setIsSavingExtractedText(true);
+    
+    try {
+      console.log('💾 Saving extracted text as plain text file...');
+      console.log('📊 Text length:', pdfContent.length, 'characters');
+      
+      // Create a blob with the extracted text content
+      const blob = new Blob([pdfContent], { type: 'text/plain;charset=utf-8' });
+      
+      // Create a download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${documentName}_extracted_text.txt`;
+      
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Extracted text saved successfully as:', `${documentName}_extracted_text.txt`);
+    } catch (error) {
+      console.error('❌ Failed to save extracted text:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save extracted text');
+    } finally {
+      setIsSavingExtractedText(false);
     }
   };
 
@@ -984,13 +1060,33 @@ FETCH FIRST ${rowCount} ROWS ONLY`;
                       {pdfContent}
                     </pre>
                   </div>
+                  
+                  {/* Save Extracted Text Button */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <button
+                      onClick={handleSaveExtractedText}
+                      disabled={isSavingExtractedText}
+                      className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isSavingExtractedText ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Saving Text...
+                        </>
+                      ) : (
+                        <>
+                          💾 Save Extracted Text
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-      /* AI Document Summarization Section */
-          {pdfContent && (
+      /* AI Document Summarization Section */
+          {selectedFile && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">🤖 AI Document Summarization</h2>
               

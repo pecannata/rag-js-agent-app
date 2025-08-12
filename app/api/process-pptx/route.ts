@@ -66,11 +66,11 @@ export async function POST(request: NextRequest) {
       await writeFile(tempFilePath, buffer);
       
       console.log('Executing Python PowerPoint processor...');
-      // Execute Python script to extract text
+      // Execute Python script to extract text using virtual environment
       const slideBySlideFlag = slideBySlide ? ' --slide-by-slide' : '';
-      const pythonCommand = `python3 scripts/pptx_processor.py "${tempFilePath}"${slideBySlideFlag}`;
+      const pythonCommand = `source venv/bin/activate && python3 scripts/pptx_processor.py "${tempFilePath}"${slideBySlideFlag}`;
       console.log('Python command:', pythonCommand);
-      const { stdout, stderr } = await execAsync(pythonCommand);
+      const { stdout, stderr } = await execAsync(pythonCommand, { shell: '/bin/bash' });
       
       if (stderr) {
         console.error('Python script stderr:', stderr);

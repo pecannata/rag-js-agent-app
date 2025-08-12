@@ -53,7 +53,6 @@ const BlogsContent: React.FC = () => {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Form data for editing
   const [formData, setFormData] = useState({

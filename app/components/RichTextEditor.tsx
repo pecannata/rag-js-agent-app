@@ -82,7 +82,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       for (const pattern of patterns) {
         const match = url.match(pattern);
-        if (match) {
+        if (match && match[1]) {
           videoId = match[1];
           break;
         }
@@ -184,7 +184,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     
     if (imageItems.length > 0) {
       e.preventDefault();
-      const file = imageItems[0].getAsFile();
+      const file = imageItems[0]?.getAsFile();
       if (file) {
         handleImageUpload(file);
       }
