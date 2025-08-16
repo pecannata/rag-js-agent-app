@@ -1,17 +1,17 @@
 {
-  "version": "1.0.281",
+  "version": "1.0.282",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T19:52:03.247Z",
+  "buildTime": "2025-08-12T21:57:11.143Z",
   "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.280.081225",
+  "sourceVersion": "v1.0.281.081225",
   "git": {
     "branch": "main",
-    "commit": "32ea05bf96c2dc585c313178bb2a4d71da7a5d5f",
-    "shortCommit": "32ea05bf",
-    "commitDate": "2025-08-12 14:37:41 -0500",
-    "commitMessage": "Summary: PowerPoint Processing Fixed"
+    "commit": "594c853047de240c128b57c835c42ba638470860",
+    "shortCommit": "594c8530",
+    "commitDate": "2025-08-12 16:50:35 -0500",
+    "commitMessage": "Current Application Architecture"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.280-32ea05bf-20250812-195203"
+  "buildSignature": "1.0.281-594c8530-20250812-215711"
 }

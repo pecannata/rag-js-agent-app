@@ -48,6 +48,18 @@ else
     fi
 fi
 
+# Check and install Python dependencies for document processing
+echo "Checking Python dependencies for document processing..."
+if [ -f "scripts/requirements.txt" ]; then
+    echo "📦 Installing Python dependencies..."
+    pip3 install -r scripts/requirements.txt --quiet
+    echo "✅ Python dependencies installed"
+else
+    echo "⚠️  No requirements.txt found, installing basic dependencies..."
+    pip3 install PyPDF2 python-docx python-pptx langchain pillow pytesseract --quiet
+    echo "✅ Basic Python dependencies installed"
+fi
+
 # Build the project
 echo "Building production version..."
 npm run build -- --no-lint
