@@ -212,6 +212,21 @@ global.primeBlogPostCache = async () => {
   return await primeRecentPostsCache();
 };
 
+// New: Invalidate cache for a specific blog post key base (id or title)
+// This removes both admin and public variants so drafts update immediately for admins
+(global as any).invalidateBlogPostCache = (keyBase: string) => {
+  if (!keyBase) return;
+  const keys = [
+    `blog_post_${keyBase}_admin`,
+    `blog_post_${keyBase}_public`
+  ];
+  keys.forEach(k => {
+    if (blogPostCache.del(k)) {
+      console.log(`🗑️ Blog post cache invalidated: ${k}`);
+    }
+  });
+};
+
 // Oracle database execution function (same as in main blog route)
 async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
@@ -294,15 +309,22 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
     console.log(`🔍 Blog post request for ID: ${id}`);
     
-    // Create cache key
-    const cacheKey = `blog_post_${id}`;
+    // Check if user is admin (can view draft posts)
+    const { searchParams } = new URL(request.url);
+    const userEmail = searchParams.get('userEmail');
+    const isAdmin = userEmail === 'phil.cannata@yahoo.com';
+    
+    console.log(`🔐 Admin access: ${isAdmin} (userEmail: ${userEmail})`);
+    
+    // Create cache key that includes admin status for draft posts
+    const cacheKey = `blog_post_${id}_${isAdmin ? 'admin' : 'public'}`;
     
     // Check LRU cache first
     const cachedPost = blogPostCache.get(cacheKey);
@@ -310,9 +332,13 @@ export async function GET(
       console.log(`🚀 Serving blog post from LRU cache: ${id}`);
       console.log(`🔍 Cached post structure:`, Object.keys(cachedPost));
       
-      // Set cache control headers
+      // Set cache control headers - disable browser cache for admin users viewing drafts
       const response = NextResponse.json(cachedPost);
-      response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+      if (isAdmin && (cachedPost as any).status === 'draft') {
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate'); // No browser cache for admin draft posts
+      } else {
+        response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+      }
       response.headers.set('X-Cache-Status', 'HIT-LRU');
       return response;
     }
@@ -325,6 +351,7 @@ export async function GET(
     
     if (!isNaN(postId)) {
       // Numeric ID - use the old id field (for backward compatibility)
+      const statusCondition = isAdmin ? '' : "AND status = 'published'";
       query = `
         SELECT 
           id,
@@ -339,11 +366,12 @@ export async function GET(
           TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
           TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
         FROM blog_posts 
-        WHERE id = ${postId} AND status = 'published'
+        WHERE id = ${postId} ${statusCondition}
       `;
     } else {
       // Assume it's a title - escape it properly
       const escapedTitle = id.replace(/'/g, "''");
+      const statusCondition = isAdmin ? '' : "AND status = 'published'";
       query = `
         SELECT 
           id,
@@ -358,7 +386,7 @@ export async function GET(
           TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
           TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
         FROM blog_posts 
-        WHERE title = '${escapedTitle}' AND status = 'published'
+        WHERE title = '${escapedTitle}' ${statusCondition}
       `;
     }
 
@@ -407,9 +435,13 @@ export async function GET(
     blogPostCache.set(cacheKey, blogPost);
     console.log(`💾 Cached blog post in LRU: ${id}`);
     
-    // Set cache control headers
+    // Set cache control headers - disable browser cache for admin users viewing drafts
     const response = NextResponse.json(blogPost);
-    response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+    if (isAdmin && blogPost.status === 'draft') {
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate'); // No browser cache for admin draft posts
+    } else {
+      response.headers.set('Cache-Control', 'public, s-maxage=1800, max-age=300'); // 30min CDN, 5min browser
+    }
     response.headers.set('X-Cache-Status', 'MISS');
     return response;
 

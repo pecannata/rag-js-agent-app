@@ -6,6 +6,16 @@ import { appCache } from '../../../../lib/cache';
 
 const execPromise = promisify(exec);
 
+// Global cache invalidation function for categorized posts
+global.invalidateCategorizedCache = () => {
+  // Invalidate all categorized posts cache entries (published, draft, all)
+  ['published', 'draft', 'all'].forEach(status => {
+    const cacheKey = `categorized_blog_posts_${status}`;
+    appCache.del(cacheKey);
+    console.log(`🧹 Invalidated categorized cache: ${cacheKey}`);
+  });
+};
+
 interface CategoryPost {
   id: number;
   title: string;
@@ -19,12 +29,15 @@ interface CategorizedPosts {
   science: CategoryPost[];
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log('🔍 Fetching categorized blog posts...');
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status') || 'published';
+    
+    console.log(`🔍 Fetching categorized blog posts with status: ${status}...`);
 
-    // CACHING: Check cache first (using node-cache)
-    const cacheKey = 'categorized_blog_posts';
+    // CACHING: Check cache first (using node-cache) - include status in cache key
+    const cacheKey = `categorized_blog_posts_${status}`;
     const cachedResult = appCache.get(cacheKey);
     if (cachedResult) {
       console.log('🚀 Serving categorized posts from node-cache');
@@ -41,21 +54,24 @@ export async function GET() {
     // PERFORMANCE OPTIMIZATION: Single query with CASE statements instead of 3 separate queries
     // This reduces database round trips and improves performance significantly
     // Uses SUBSTR for first 4 chars to avoid full title scans
+    const dateField = status === 'published' ? 'published_at' : 'updated_at';
+    const additionalCondition = status === 'published' ? 'AND published_at IS NOT NULL' : '';
+    
     const optimizedCategorizedQuery = `
       SELECT 
         id,
         title,
         author,
-        TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at,
+        TO_CHAR(${dateField}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ${dateField},
         CASE 
           WHEN UPPER(SUBSTR(title, 1, 4)) = '(AI)' THEN 'ai'
           WHEN UPPER(SUBSTR(title, 1, 4)) = '(CS)' THEN 'cs'
           ELSE 'science'
         END as category
       FROM blog_posts
-      WHERE status = 'published' 
-        AND published_at IS NOT NULL
-      ORDER BY published_at DESC`;
+      WHERE status = '${status}' 
+        ${additionalCondition}
+      ORDER BY ${dateField} DESC`;
     
     console.log('🚀 Executing single optimized categorized query...');
     
@@ -104,7 +120,7 @@ export async function GET() {
     console.log('⚠️ Falling back to original 3-query approach...');
     
     try {
-      return await getOriginalCategorizedPosts();
+      return await getOriginalCategorizedPosts(status);
     } catch (fallbackError) {
       console.error('❌ Fallback also failed:', fallbackError);
       return NextResponse.json(
@@ -195,7 +211,7 @@ function parseOptimizedResults(output: string): (CategoryPost & { category: stri
         id: post.id,
         title: post.title,
         author: post.author,
-        publishedAt: post.published_at,
+        publishedAt: post.published_at || post.updated_at,
         category: post.category
       }));
       
@@ -239,8 +255,10 @@ function parseOptimizedResults(output: string): (CategoryPost & { category: stri
 }
 
 // Original approach as fallback
-async function getOriginalCategorizedPosts() {
+async function getOriginalCategorizedPosts(status: string) {
   const scriptPath = path.join(process.cwd(), 'SQLclScript.sh');
+  
+  const dateField = status === 'published' ? 'published_at' : 'updated_at';
   
   // FALLBACK: Original 3 separate queries (more selective to reduce data)
   const aiQuery = `
@@ -248,30 +266,30 @@ async function getOriginalCategorizedPosts() {
       id,
       title,
       author,
-      TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+      TO_CHAR(${dateField}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ${dateField}
     FROM blog_posts
-    WHERE UPPER(SUBSTR(title, 1, 4)) = '(AI)' AND status = 'published'
-    ORDER BY published_at DESC`;
+    WHERE UPPER(SUBSTR(title, 1, 4)) = '(AI)' AND status = '${status}'
+    ORDER BY ${dateField} DESC`;
   
   const csQuery = `
     SELECT 
       id,
       title,
       author,
-      TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+      TO_CHAR(${dateField}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ${dateField}
     FROM blog_posts
-    WHERE UPPER(SUBSTR(title, 1, 4)) = '(CS)' AND status = 'published'
-    ORDER BY published_at DESC`;
+    WHERE UPPER(SUBSTR(title, 1, 4)) = '(CS)' AND status = '${status}'
+    ORDER BY ${dateField} DESC`;
   
   const scienceQuery = `
     SELECT 
       id,
       title,
       author,
-      TO_CHAR(published_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as published_at
+      TO_CHAR(${dateField}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ${dateField}
     FROM blog_posts
-    WHERE UPPER(SUBSTR(title, 1, 4)) NOT IN ('(AI)', '(CS)') AND status = 'published'
-    ORDER BY published_at DESC`;
+    WHERE UPPER(SUBSTR(title, 1, 4)) NOT IN ('(AI)', '(CS)') AND status = '${status}'
+    ORDER BY ${dateField} DESC`;
 
   // Execute all three queries in parallel (fallback performance optimization)
   console.log('🔄 Executing fallback category queries in parallel...');
@@ -366,7 +384,7 @@ const parseResults = (output: string, queryType: string): CategoryPost[] => {
         id: post.id,
         title: post.title,
         author: post.author,
-        publishedAt: post.published_at
+        publishedAt: post.published_at || post.updated_at
       }));
       
       console.log(`✅ ${queryType} Extracted ${categoryPosts.length} items`);

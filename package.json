@@ -1,6 +1,6 @@
 {
   "name": "rag-js-agent-app",
-  "version": "1.0.286",
+  "version": "1.0.293",
   "private": true,
   "scripts": {
     "dev": "next dev",

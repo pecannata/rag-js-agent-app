@@ -923,6 +923,19 @@ export async function POST(request: NextRequest) {
         global.invalidateCategorizedCache();
         console.log('🧹 Categorized posts cache invalidated after post creation');
       }
+
+      // Invalidate individual post cache variants (by id and title) so reads are fresh
+      try {
+        // Ensure the individual post cache utilities are initialized
+        await import('./[id]/route');
+        if ((global as any).invalidateBlogPostCache) {
+          (global as any).invalidateBlogPostCache(String(post.id));
+          (global as any).invalidateBlogPostCache(String(post.title));
+          console.log('🧹 Individual blog post cache invalidated after creation');
+        }
+      } catch (e) {
+        console.log('⚠️ Could not invalidate individual post cache after creation:', (e as Error).message);
+      }
       
       return NextResponse.json({ success: true, post: formattedPost });
     }
@@ -1111,6 +1124,20 @@ export async function PUT(request: NextRequest) {
         global.invalidateCategorizedCache();
         console.log('🧹 Categorized posts cache invalidated after post update');
       }
+
+      // Invalidate individual post cache variants (by id, current title, and original title) so reads are fresh
+      try {
+        // Ensure the individual post cache utilities are initialized
+        await import('./[id]/route');
+        if ((global as any).invalidateBlogPostCache) {
+          if (post.id) (global as any).invalidateBlogPostCache(String(post.id));
+          if (post.title) (global as any).invalidateBlogPostCache(String(post.title));
+          if (titleToFind && titleToFind !== post.title) (global as any).invalidateBlogPostCache(String(titleToFind));
+          console.log('🧹 Individual blog post cache invalidated after update');
+        }
+      } catch (e) {
+        console.log('⚠️ Could not invalidate individual post cache after update:', (e as Error).message);
+      }
       
       return NextResponse.json({ success: true, post: formattedPost });
     }
@@ -1184,6 +1211,17 @@ export async function DELETE(request: NextRequest) {
     if (global.invalidateCategorizedCache) {
       global.invalidateCategorizedCache();
       console.log('🧹 Categorized posts cache invalidated after post deletion');
+    }
+
+    // Invalidate individual post cache variants by title (and attempt by id if retrievable)
+    try {
+      await import('./[id]/route');
+      if ((global as any).invalidateBlogPostCache) {
+        (global as any).invalidateBlogPostCache(String(title));
+        console.log('🧹 Individual blog post cache invalidated after deletion (by title)');
+      }
+    } catch (e) {
+      console.log('⚠️ Could not invalidate individual post cache after deletion:', (e as Error).message);
     }
     
     return NextResponse.json({ success: true, message: 'Blog post deleted successfully' });

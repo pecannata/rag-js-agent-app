@@ -47,6 +47,10 @@ const BlogsContent: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
   
+  // Admin filter state
+  const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | 'all'>('published');
+  const isAdmin = session?.user?.email === 'phil.cannata@yahoo.com';
+  
   // Blog editing states
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -77,7 +81,9 @@ const BlogsContent: React.FC = () => {
       setLoadingModalContent(true);
       try {
         console.log('🔄 Lazy loading content for post:', post.id);
-        const response = await fetch(`/api/blog/${post.id}`);
+        // Pass user email for admin access to draft posts
+        const userEmailParam = session?.user?.email ? `?userEmail=${encodeURIComponent(session.user.email)}` : '';
+        const response = await fetch(`/api/blog/${post.id}${userEmailParam}`);
         if (response.ok) {
           const fullPost = await response.json();
           // Update the post in our local state with the full content
@@ -105,15 +111,20 @@ const BlogsContent: React.FC = () => {
   };
 
   useEffect(() => {
+    // Clear existing posts when filter changes to prevent showing stale data
+    setPosts([]);
+    setCategorizedPosts(null);
+    
     // Function to fetch just the 3 most recent posts immediately
     const fetchRecentPosts = async () => {
       try {
-        console.log('🚀 Fetching recent posts (top 3) for immediate display...');
+        console.log(`🚀 Fetching recent posts (top 3) for immediate display... Status: ${statusFilter}`);
         setLoadingRecent(true);
         setError(null);
         
-        // OPTION 1: Single optimized query (CURRENT - MORE EFFICIENT)
-        const response = await fetch('/api/blog?status=published&limit=3&includeContent=false');
+        // Use status filter for admin, default to published for non-admin
+        const statusParam = isAdmin ? statusFilter : 'published';
+        const response = await fetch(`/api/blog?status=${statusParam}&limit=3&includeContent=false`);
         
         // Log cache status from response headers
         const cacheStatus = response.headers.get('X-Cache-Status');
@@ -123,7 +134,8 @@ const BlogsContent: React.FC = () => {
           const data = await response.json();
           
           if (data.success && data.posts) {
-            console.log('✅ Recent posts loaded:', data.posts.length, '- Cache:', cacheStatus);
+            console.log(`✅ Recent posts loaded for ${statusParam}:`, data.posts.length, '- Cache:', cacheStatus);
+            console.log('📋 First post status:', data.posts[0]?.status, 'Title:', data.posts[0]?.title);
             // Posts come without content from the server (lazy loaded)
             const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
               ...post,
@@ -131,7 +143,9 @@ const BlogsContent: React.FC = () => {
             }));
             setPosts(lazyPosts);
           } else {
-            setError('No published blogs found');
+            const message = statusFilter === 'draft' ? 'No draft blogs found' : 
+                           statusFilter === 'all' ? 'No blogs found' : 'No published blogs found';
+            setError(message);
           }
         } else {
           setError(`Failed to load blog posts (HTTP ${response.status})`);
@@ -169,28 +183,35 @@ const BlogsContent: React.FC = () => {
     // Function to fetch all blog posts (runs in background after recent posts)
     const fetchAllBlogs = async () => {
       try {
-        console.log('🔄 Fetching all blog posts in background...');
+        console.log(`🔄 Fetching all blog posts in background... Status: ${statusFilter}`);
         
-        const response = await fetch('/api/blog?status=published&includeContent=false');
+        // Use status filter for admin, default to published for non-admin
+        const statusParam = isAdmin ? statusFilter : 'published';
+        const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false`);
         if (response.ok) {
           const data = await response.json();
           
           if (data.success && data.posts) {
-            console.log('✅ All blog posts loaded:', data.posts.length);
+            console.log(`✅ All blog posts loaded for ${statusParam}:`, data.posts.length);
+            console.log('📋 Sample posts status:', data.posts.slice(0, 3).map((p: any) => `${p.title} - ${p.status}`));
             // Posts come without content from the server (lazy loaded)
             const lazyPosts = (data.posts || []).map((post: BlogPost) => ({
               ...post,
               hasFullContent: false // No posts have full content initially
             }));
             
-            // Only update if we got more posts than what we already have (recent posts)
-            // This prevents overwriting the cached recent posts with a redundant full fetch
+            // For different status filters, always update the posts since the content type has changed
+            // Only skip update if we're fetching the same status with the same or fewer results
             setPosts(currentPosts => {
-              if (lazyPosts.length > currentPosts.length) {
-                console.log('🔄 Updating posts: had', currentPosts.length, 'posts, now have', lazyPosts.length);
+              // Check if current posts match the expected status filter
+              const currentPostsMatchFilter = currentPosts.length === 0 || 
+                (currentPosts.every(p => statusParam === 'all' || p.status === statusParam));
+              
+              if (!currentPostsMatchFilter || lazyPosts.length > currentPosts.length) {
+                console.log(`🔄 Updating posts for ${statusParam}: had`, currentPosts.length, `posts, now have`, lazyPosts.length);
                 return lazyPosts;
               } else {
-                console.log('📋 Keeping existing posts: same or fewer posts returned from full fetch');
+                console.log(`📋 Keeping existing posts for ${statusParam}: same or fewer posts returned`);
                 return currentPosts;
               }
             });
@@ -205,10 +226,12 @@ const BlogsContent: React.FC = () => {
     // Function to fetch categorized posts (runs in parallel with all posts)
     const fetchCategorizedPosts = async () => {
       try {
-        console.log('🔄 Fetching categorized posts in background...');
+        console.log(`🔄 Fetching categorized posts in background... Status: ${statusFilter}`);
         setLoadingCategories(true);
         
-        const response = await fetch('/api/blog/categories');
+        // For admin users, pass the status filter to categorized posts as well
+        const statusParam = isAdmin && statusFilter !== 'published' ? `?status=${statusFilter}` : '';
+        const response = await fetch(`/api/blog/categories${statusParam}`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.categories) {
@@ -238,7 +261,7 @@ const BlogsContent: React.FC = () => {
     };
 
     loadContent();
-  }, []);
+  }, [statusFilter, isAdmin]); // Re-fetch when status filter changes
 
   // Check for URL parameter on page load to open specific post
   useEffect(() => {
@@ -373,7 +396,9 @@ const BlogsContent: React.FC = () => {
     // If post doesn't have full content, fetch it first
     if (!post.hasFullContent && !post.content) {
       try {
-        const response = await fetch(`/api/blog/${post.id}`);
+        // Pass user email for admin access to draft posts
+        const userEmailParam = session?.user?.email ? `?userEmail=${encodeURIComponent(session.user.email)}` : '';
+        const response = await fetch(`/api/blog/${post.id}${userEmailParam}`);
         if (response.ok) {
           const fullPost = await response.json();
           post = { ...post, content: fullPost.content, hasFullContent: true };
@@ -539,7 +564,9 @@ const BlogsContent: React.FC = () => {
   
   const refreshPosts = async () => {
     try {
-      const response = await fetch('/api/blog?includeContent=false');
+      // Use current filter when refreshing
+      const statusParam = isAdmin ? statusFilter : 'published';
+      const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.posts) {
@@ -706,15 +733,46 @@ const BlogsContent: React.FC = () => {
         {session && (
           <div className="mb-8">
             {!isEditing ? (
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  onClick={handleNewPost}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  ✏️ Create New Post
-                </button>
-                <div className="text-sm text-gray-600">
-                  Click on any post title to view, or use the edit button to modify posts
+              <div className="space-y-4">
+                {/* Admin Status Filter */}
+                {isAdmin && (
+                  <div className="flex justify-center">
+                    <div className="bg-white rounded-lg shadow-sm border p-4 inline-flex items-center gap-4">
+                      <label className="text-sm font-medium text-gray-700">View:</label>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          const newFilter = e.target.value as 'published' | 'draft' | 'all';
+                          console.log(`🔄 Status filter changed from ${statusFilter} to ${newFilter}`);
+                          setStatusFilter(newFilter);
+                        }}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      >
+                        <option value="published">Published Posts</option>
+                        <option value="draft">Draft Posts</option>
+                        <option value="all">All Posts</option>
+                      </select>
+                      <span className="text-xs text-gray-500">
+                        {loadingRecent ? (
+                          <span className="animate-pulse">Loading...</span>
+                        ) : (
+                          `(${posts.length} ${statusFilter === 'all' ? 'total' : statusFilter} post${posts.length !== 1 ? 's' : ''})`
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={handleNewPost}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    ✏️ Create New Post
+                  </button>
+                  <div className="text-sm text-gray-600">
+                    Click on any post title to view, or use the edit button to modify posts
+                  </div>
                 </div>
               </div>
             ) : (
@@ -797,6 +855,16 @@ const BlogsContent: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Latest Posts Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-lg font-bold text-gray-900 border-b-2 border-gray-900 pb-1 inline-block">
+                {isAdmin && statusFilter !== 'published' 
+                  ? `LATEST ${statusFilter.toUpperCase()} POSTS` 
+                  : 'LATEST POSTS'
+                }
+              </h2>
+            </div>
+            
             {/* Latest 3 Posts */}
             <div className="grid md:grid-cols-3 gap-8 mb-16">
               {posts.slice(0, 3).map((post) => (
@@ -834,16 +902,29 @@ const BlogsContent: React.FC = () => {
                   <p className="text-gray-600 leading-relaxed mb-4">
                     {post.excerpt}
                   </p>
-                  <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500">
                       {post.publishedAt && new Date(post.publishedAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long', 
                         day: 'numeric'
                       })}
+                      {!post.publishedAt && post.updatedAt && new Date(post.updatedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long', 
+                        day: 'numeric'
+                      })}
                     </p>
-                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      post.status === 'published' 
+                        ? 'bg-green-100 text-green-700' 
+                        : post.status === 'draft'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
                       {post.status}
+                      {post.status === 'draft' && ' 📋'}
+                      {post.status === 'published' && ' ✓'}
                     </span>
                   </div>
                 </div>
@@ -853,20 +934,24 @@ const BlogsContent: React.FC = () => {
             {/* All Posts Section */}
             <div className="text-center mb-8">
               <h2 className="text-lg font-bold text-gray-900 border-b-2 border-gray-900 pb-1 inline-block">
-                ALL POSTS
+                {isAdmin && statusFilter !== 'published' 
+                  ? `ALL ${statusFilter.toUpperCase()} POSTS` 
+                  : 'ALL POSTS'
+                }
               </h2>
             </div>
 
-            {/* Categorized Posts Section */}
-            <div className="mt-8">
-                {loadingCategories ? (
-                  <div className="flex justify-center items-center h-64">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                      <p className="text-gray-600">Loading categorized posts...</p>
+            {/* Categorized Posts Section - Only show for published posts or when admin viewing all */}
+            {(statusFilter === 'published' || (isAdmin && statusFilter === 'all')) && (
+              <div className="mt-8">
+                  {loadingCategories ? (
+                    <div className="flex justify-center items-center h-64">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading categorized posts...</p>
+                      </div>
                     </div>
-                  </div>
-                ) : categorizedPosts ? (
+                  ) : categorizedPosts ? (
                   <div className="grid md:grid-cols-3 gap-8">
                     {/* AI Posts Column */}
                     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -937,12 +1022,13 @@ const BlogsContent: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center text-gray-600 py-8">
-                    <p>Unable to load categorized posts</p>
-                  </div>
-                )}
-            </div>
+                  ) : (
+                    <div className="text-center text-gray-600 py-8">
+                      <p>Unable to load categorized posts</p>
+                    </div>
+                  )}
+              </div>
+            )}
           </>
         )}
       </div>
