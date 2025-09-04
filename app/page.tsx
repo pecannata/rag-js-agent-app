@@ -46,11 +46,19 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
     contextKeywords: ['Employee']
   });
 
-  // Redirect to sign-in if not authenticated
+  // Redirect to sign-in if not authenticated, or to blogs if not admin
   useEffect(() => {
     if (status === 'loading') return; // Still loading
     if (!session) {
       router.push('/auth/signin');
+      return;
+    }
+    
+    // Redirect non-admin users to blogs page
+    const isAdmin = session?.user?.email === 'phil.cannata@yahoo.com';
+    if (!isAdmin) {
+      router.push('/blogs');
+      return;
     }
   }, [session, status, router]);
 

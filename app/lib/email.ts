@@ -282,6 +282,9 @@ This verification link will expire in 24 hours.
         
         <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 14px;">
           <p>Thanks for joining our community!</p>
+          <p style="margin-top: 15px; font-size: 12px;">
+            Don't want notifications? Every email we send includes an easy unsubscribe link.
+          </p>
         </div>
       </body>
       </html>
@@ -296,6 +299,8 @@ We'll send you an email whenever we publish new content, so you'll never miss an
 Visit our blog: ${emailConfig.baseUrl}
 
 Thanks for joining our community!
+
+Don't want notifications? Every email we send includes an easy unsubscribe link.
     `
   }),
 

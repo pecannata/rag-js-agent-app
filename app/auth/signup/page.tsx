@@ -76,20 +76,35 @@ export default function SignUp() {
             <h2 className="text-3xl font-bold text-gray-900">Account Created!</h2>
             <p className="mt-4 text-gray-600 text-center">{message}</p>
             {message.includes('verify') && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  📧 <strong>Check your email!</strong><br/>
-                  We've sent a verification link to <strong>{email}</strong>.
-                  After verifying your email, your account will need admin approval before you can sign in.
-                </p>
-                <div className="mt-3">
-                  <Link 
-                    href="/auth/signin" 
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                  >
-                    Go to Sign In →
-                  </Link>
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    📧 <strong>Check your email!</strong><br/>
+                    We've sent a verification link to <strong>{email}</strong>.
+                    After verifying your email, your account will need admin approval before you can sign in.
+                  </p>
+                  <div className="mt-3">
+                    <Link 
+                      href="/auth/signin" 
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                      Go to Sign In →
+                    </Link>
+                  </div>
                 </div>
+                
+                {message.includes('blog notifications') && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      🔔 <strong>Blog Notifications Enabled!</strong><br/>
+                      You'll receive email notifications when we publish new blog posts about AI, Computer Science, and General Science.
+                      <br/><br/>
+                      <span className="text-xs text-green-600">
+                        Don't want notifications? You can unsubscribe anytime from any email we send, or manage your preferences once your account is approved.
+                      </span>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

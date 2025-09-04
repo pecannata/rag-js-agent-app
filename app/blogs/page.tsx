@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import RichTextEditor from '../components/RichTextEditor';
 
 interface BlogPost {
@@ -621,7 +621,8 @@ const BlogsContent: React.FC = () => {
             <span className="text-gray-600">About</span>
           </div>
           <div className="flex items-center gap-3">
-            {session && (
+            {/* Admin controls for editing/deleting posts */}
+            {isAdmin && (
               <>
                 <button
                   onClick={() => {
@@ -645,6 +646,44 @@ const BlogsContent: React.FC = () => {
                 </button>
               </>
             )}
+            
+            {/* User authentication controls */}
+            {session ? (
+              <>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      closeModal();
+                      router.push('/');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                    title="Go to Admin Dashboard"
+                  >
+                    🏠 Admin
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    closeModal();
+                    signOut({ callbackUrl: '/auth/signin' });
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  closeModal();
+                  router.push('/auth/signin');
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+              >
+                Sign In
+              </button>
+            )}
+            
             <button 
               onClick={closeModal}
               className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -692,14 +731,57 @@ const BlogsContent: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg"></div>
             </div>
             
-            {/* Navigation Links */}
-            <nav className="flex items-center gap-8">
-              <span className="text-gray-600 italic">Alwayscurious</span>
-              <a href="#" className="text-gray-600 hover:text-gray-800">Informationals Series</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">Enigma Book</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">Podcast</a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">About</a>
-            </nav>
+            {/* Navigation Links and User Controls */}
+            <div className="flex items-center gap-8">
+              <nav className="flex items-center gap-8">
+                <span className="text-gray-600 italic">Alwayscurious</span>
+                <a href="#" className="text-gray-600 hover:text-gray-800">Informationals Series</a>
+                <a href="#" className="text-gray-600 hover:text-gray-800">Enigma Book</a>
+                <a href="#" className="text-gray-600 hover:text-gray-800">Podcast</a>
+                <a href="#" className="text-gray-600 hover:text-gray-800">About</a>
+              </nav>
+              
+              {/* User Authentication Controls */}
+              <div className="flex items-center gap-4">
+                {session ? (
+                  <>
+                    <span className="text-sm text-gray-600">
+                      Welcome, {session.user?.email}
+                    </span>
+                    {isAdmin && (
+                      <button
+                        onClick={() => router.push('/')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                        title="Go to Admin Dashboard"
+                      >
+                        🏠 Admin Dashboard
+                      </button>
+                    )}
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => router.push('/auth/signin')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => router.push('/auth/signup')}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -730,8 +812,8 @@ const BlogsContent: React.FC = () => {
           </h2>
         </div>
         
-        {/* Blog Management Toolbar - Only show for authenticated users */}
-        {session && (
+        {/* Blog Management Toolbar - Only show for admin users */}
+        {isAdmin && (
           <div className="mb-8">
             {!isEditing ? (
               <div className="space-y-4">
@@ -847,6 +929,39 @@ const BlogsContent: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+        
+        {/* Call to Action for Non-Authenticated Users */}
+        {!session && (
+          <div className="mb-12">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-8">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  Stay Updated with Latest Posts
+                </h3>
+                <p className="text-gray-600 mb-6 text-lg">
+                  Join our community to get notified when we publish new articles on AI, Computer Science, and General Science.
+                </p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => router.push('/auth/signin')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    👤 Sign In to Follow
+                  </button>
+                  <button
+                    onClick={() => router.push('/auth/signup')}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    ✨ Create Free Account
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mt-4">
+                  Free account • No spam • Unsubscribe anytime
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
