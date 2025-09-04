@@ -57,6 +57,7 @@ const BlogsContent: React.FC = () => {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isFullScreenEditing, setIsFullScreenEditing] = useState(false);
   
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -776,7 +777,7 @@ const BlogsContent: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+              <div className={`bg-white rounded-lg shadow-sm border p-6 mb-8 ${isFullScreenEditing ? 'fixed inset-0 z-50 overflow-y-auto max-w-none m-0 rounded-none' : ''}`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -787,6 +788,13 @@ const BlogsContent: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setIsFullScreenEditing(!isFullScreenEditing)}
+                      className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                      title={isFullScreenEditing ? 'Exit fullscreen' : 'Enter fullscreen'}
+                    >
+                      {isFullScreenEditing ? '🔲' : '📺'} {isFullScreenEditing ? 'Exit Fullscreen' : 'Fullscreen'}
+                    </button>
                     <button
                       onClick={() => handleSave(false)}
                       disabled={saving}
@@ -833,7 +841,7 @@ const BlogsContent: React.FC = () => {
                   <RichTextEditor
                     value={formData.content}
                     onChange={handleEditorChange}
-                    height={400}
+                    height={isFullScreenEditing ? 'calc(90vh - 200px)' : 400}
                     placeholder="Start writing your blog post..."
                   />
                 </div>
