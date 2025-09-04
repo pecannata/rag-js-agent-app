@@ -1,17 +1,17 @@
 {
-  "version": "1.0.282",
+  "version": "1.0.286",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-08-12T21:57:11.143Z",
-  "buildDate": "Aug 12, 2025",
-  "sourceVersion": "v1.0.281.081225",
+  "buildTime": "2025-09-03T14:40:49.623Z",
+  "buildDate": "Sep 3, 2025",
+  "sourceVersion": "v1.0.285.090325",
   "git": {
     "branch": "main",
-    "commit": "594c853047de240c128b57c835c42ba638470860",
-    "shortCommit": "594c8530",
-    "commitDate": "2025-08-12 16:50:35 -0500",
-    "commitMessage": "Current Application Architecture"
+    "commit": "02c5246b5bf4d3bd8971d368079a57123bb40afa",
+    "shortCommit": "02c5246b",
+    "commitDate": "2025-08-16 13:58:48 -0500",
+    "commitMessage": "The server is running cleanly. Let me provide you with a comprehensive summary of the resolution:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.281-594c8530-20250812-215711"
+  "buildSignature": "1.0.285-02c5246b-20250903-144049"
 }
