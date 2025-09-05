@@ -1,15 +1,2008 @@
 
-> rag-js-agent-app@1.0.286 start
-> next start
+> rag-js-agent-app@1.0.339 dev
+> next dev
 
    ▲ Next.js 15.3.4
    - Local:        http://localhost:3020
    - Network:      http://192.168.1.149:3020
+   - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 335ms
+ ✓ Ready in 1569ms
+ ✓ Compiled /middleware in 391ms (210 modules)
+ ○ Compiling /api/blog/[id]/comments ...
+ ✓ Compiled /api/blog/[id]/comments in 692ms (362 modules)
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 4583ms
+ ✓ Compiled in 358ms (85 modules)
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3429ms
+ ○ Compiling /auth/signin ...
+ ✓ Compiled /auth/signin in 1533ms (842 modules)
+ GET /auth/signin 200 in 1864ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 775ms (1081 modules)
+ GET /auth/signin 200 in 52ms
+ ✓ Compiled /blogs in 148ms (725 modules)
+ GET /api/auth/session 200 in 1548ms
+ ✓ Compiled in 368ms (361 modules)
+ GET /favicon.ico 200 in 701ms
+ GET /api/auth/session 200 in 198ms
+ GET /favicon.ico 200 in 142ms
+ GET /blogs 200 in 787ms
+ GET /blogs 200 in 49ms
+ GET /api/auth/session 200 in 19ms
+ ○ Compiling /api/blog ...
+ ✓ Compiled /api/blog in 777ms (1237 modules)
 📧 Background job processor initialized
-✅ Blog post cache auto re-prime system initialized
+🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE ROWNUM <= 1
+ POST /api/auth/_log 200 in 357ms
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "COUNT",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "count" : 1
+        }
+      ]
+    }
+  ]
+}
+
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "COUNT",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "count" : 1
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "COUNT",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+✅ Blog posts table already exists (verified by query)
+🔍 Blog Database Query Execution: SELECT MAX(id) as max_id FROM blog_posts
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "MAX_ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "max_id" : 502
+        }
+      ]
+    }
+  ]
+}
+
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "MAX_ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "max_id" : 502
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "MAX_ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "max_id": 502
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+📊 Current max ID in blog_posts: 502
+🚫 Cache miss: blog_posts_published_3_0_nocontent
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          ...
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 3 rows
+📊 Blog query result structure: object true 3
+🗄️ Cached: blog_posts_published_3_0_nocontent (TTL: 43200s)
+🗄️ Stored blog posts in cache
+ GET /api/blog?status=published&limit=3&includeContent=false 200 in 10929ms
+ ○ Compiling /api/blog/categories ...
+ ✓ Compiled /api/blog/categories in 537ms (1240 modules)
 ✅ Cache auto re-prime system initialized
-(node:45719) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
+🔍 Fetching categorized blog posts with status: published...
+🚀 Executing single optimized categorized query...
+📧 Background job processor initialized
+🔍 Blog Database Query Execution: SELECT COUNT(*) as count FROM blog_posts WHERE ROWNUM <= 1
+ ✓ Compiled /api/blog/[id] in 256ms (1241 modules)
+ GET /blogs?id=312 200 in 331ms
+✅ Blog post cache auto re-prime system initialized
+ GET /blogs 200 in 71ms
+✅ Blog post cache auto re-prime system initialized
+🔍 Blog post request for ID: 312
+🔐 Admin access: false (userEmail: null)
+🔍 Blog post cache miss, fetching from database: 312
+🔍 Blog ID Database Query Execution: 
+        SELECT 
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          author,
+          status,
+          tags,
+          TO_CHAR(created_at, 'YYYY-MM-DD"T"HH...
+ GET /blogs?id=312 200 in 18ms
+ GET /blogs 200 in 33ms
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "COUNT",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "count" : 1
+        }
+      ]
+    }
+  ]
+}
+
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "COUNT",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "count" : 1
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "COUNT",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+✅ Blog posts table already exists (verified by query)
+🔍 Blog Database Query Execution: SELECT MAX(id) as max_id FROM blog_posts
+✅ Optimized categorized query completed
+📤 Optimized Raw Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY"
+🧹 Cleaned optimized output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "PUBLISHED_AT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CATEGORY",
+          "type" : "VARCHAR2"
+        }
+      ],
+      "items" : [
+        {
+          "id" : 31
+✅ Optimized Successfully parsed as JSON
+🔍 Optimized Items structure: {
+  "id": 314,
+  "title": "(AI) SQL Query Processing Through RAG Path - Alwayscurious",
+  "author": "Blog Author",
+  "published_at": "2025-07-20T14:45:17Z",
+  "category": "ai"
+}
+✅ Optimized Extracted 185 posts
+✅ Optimized Sample post: {
+  id: 314,
+  title: '(AI) SQL Query Processing Through RAG Path - Alwayscurious',
+  author: 'Blog Author',
+  publishedAt: '2025-07-20T14:45:17Z',
+  category: 'ai'
+}
+✅ Categorized posts optimized: AI=55, CS=11, Science=119
+💾 Cache SET: categorized_blog_posts_published
+🗄️ Stored categorized posts in node-cache
+ GET /api/blog/categories 200 in 4371ms
+✅ Blog ID database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          ...
+🧹 Cleaned Oracle output for blog post (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CLOB"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2
+✅ Successfully parsed as JSON
+✅ Extracted Oracle items: 1 rows
+🔍 Query result: { success: true, dataLength: 1, error: undefined }
+🔍 Raw post data: [
+  'id',           'title',
+  'slug',         'content',
+  'excerpt',      'author',
+  'status',       'tags',
+  'created_at',   'updated_at',
+  'published_at'
+]
+✅ Blog post constructed: {
+  id: 312,
+  title: '(AI) Agentic RAG Chat App - Phase 2 - with RAG and Oracle - Alwayscurious',
+  slug: 'ai-agentic-rag-chat-app-phase-2-with-rag-and-oracle-alwayscurious',
+  content: '<div class="wp-block-group is-layout-constrained wp-block-group-is-layout-constrained"><h1 style="ma...',
+  excerpt: 'The key sections of this overview are:',
+  author: 'Blog Author',
+  status: 'published',
+  tags: [ 'imported', 'url-import' ],
+  createdAt: '2025-07-19T21:04:43Z',
+  updatedAt: '2025-07-19T21:04:43Z',
+  publishedAt: '2025-07-20T02:04:39Z'
+}
+💾 Blog post cached: blog_post_312_public (1/20)
+💾 Cached blog post in LRU: 312
+ GET /api/blog/312 200 in 4262ms
+ ✓ Compiled /api/blog/[id]/comments in 326ms (882 modules)
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3799ms
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "MAX_ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "max_id" : 502
+        }
+      ]
+    }
+  ]
+}
+
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "MAX_ID",
+          "type" : "NUMBER"
+        }
+      ],
+      "items" : [
+        {
+          "max_id" : 502
+        }
+      ]
+    }
+  ]
+}
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "MAX_ID",
+          "type": "NUMBER"
+        }
+      ],
+      "items": [
+        {
+          "max_id": 502
+        }
+      ]
+    }
+  ]
+}
+✅ Extracted Oracle items: 1 rows
+📊 Current max ID in blog_posts: 502
+🚫 Cache miss: blog_posts_published_nolimit_0_nocontent
+🔍 Blog Database Query Execution: 
+      SELECT 
+        id,
+        title,
+        slug,
+        '' as content,
+        excerpt,
+        author,
+        status,
+        tags,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') ...
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3280ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3269ms
+✅ Blog database query executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          ...
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "SLUG",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "CONTENT",
+          "type" : "CHAR"
+        },
+        {
+          "name" : "EXCERPT",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR",
+          "type" : "VARCHAR2
+✅ Successfully parsed as JSON. Structure: {
+  "results": [
+    {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TITLE",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "SLUG",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "CONTENT",
+          "type": "CHAR"
+        },
+        {
+          "name": "EXCERPT",
+          "type": "VARCHAR2"
+        },
+        {
+          "name": "AUTHOR",
+          "type": "VARCHAR2"
+        },
+ 
+✅ Extracted Oracle items: 185 rows
+📊 Blog query result structure: object true 185
+🗄️ Cached: blog_posts_published_nolimit_0_nocontent (TTL: 43200s)
+🗄️ Stored blog posts in cache
+ GET /api/blog?status=published&includeContent=false 200 in 17034ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3282ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3330ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3273ms
+ GET /blogs 200 in 65ms
+ GET /blogs 200 in 67ms
+ GET /blogs?id=312 200 in 21ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3384ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3320ms
+ GET /blogs?id=312 200 in 3339ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3240ms
+ GET /blogs?id=312 200 in 3254ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3271ms
+ GET /blogs?id=312 200 in 3285ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3258ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3229ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3245ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3275ms
+ GET /blogs 200 in 3371ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3377ms
+🔍 Fetch Blog Comments: 
+      SELECT 
+        id,
+        blog_post_id,
+        blog_post_title,
+        author_name,
+        author_email,
+        author_website,
+        comment_content,
+        status,
+        TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+        TO_CHAR(approved_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as approved_at,
+        approved_by
+      FROM blog_comments 
+      WHERE blog_post_id = 312 
+      AND status = 'approved'
+      ORDER BY created_at ASC
+    
+✅ Fetch Blog Comments executed successfully
+📤 Raw Oracle Output (first 500 chars): 
+         or must be a 23c compatible instant client
+         Thick driver unavailable for use.
+
+
+{
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name"
+🧹 Cleaned Oracle output (first 500 chars): {
+  "results" : [
+    {
+      "columns" : [
+        {
+          "name" : "ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_ID",
+          "type" : "NUMBER"
+        },
+        {
+          "name" : "BLOG_POST_TITLE",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_NAME",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_EMAIL",
+          "type" : "VARCHAR2"
+        },
+        {
+          "name" : "AUTHOR_W
+✅ Successfully parsed as JSON. Structure: { resultsCount: 1, firstResultColumns: 11, firstResultItems: 1 }
+ GET /api/blog/312/comments 200 in 3306ms

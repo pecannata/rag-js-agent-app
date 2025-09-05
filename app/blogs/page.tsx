@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef, memo, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import RichTextEditor from '../components/RichTextEditor';
@@ -33,6 +33,20 @@ interface CategorizedPosts {
   science: CategoryPost[];
 }
 
+interface Comment {
+  id: number;
+  blog_post_id: number;
+  blog_post_title: string;
+  author_name: string;
+  author_email: string;
+  author_website?: string;
+  comment_content: string;
+  status: 'pending' | 'approved' | 'rejected' | 'spam';
+  created_at: string;
+  approved_at?: string;
+  approved_by?: string;
+}
+
 const BlogsContent: React.FC = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -42,7 +56,6 @@ const BlogsContent: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  const [loadingModalContent, setLoadingModalContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
@@ -71,17 +84,11 @@ const BlogsContent: React.FC = () => {
   });
 
 
-  // Function to open modal - simplified like BlogManager
+  // Function to open modal - simplified
   const openPostModal = async (post: BlogPost) => {
-    console.log('🔵 openPostModal called for post:', post.id, 'Has full content:', !!post.hasFullContent);
-    setSelectedPost(post);
-    setShowModal(true);
-    
     // If post doesn't have full content loaded, fetch it first
     if (!post.hasFullContent && !post.content) {
-      setLoadingModalContent(true);
       try {
-        console.log('🔄 Lazy loading content for post:', post.id);
         // Pass user email for admin access to draft posts
         const userEmailParam = session?.user?.email ? `?userEmail=${encodeURIComponent(session.user.email)}` : '';
         const response = await fetch(`/api/blog/${post.id}${userEmailParam}`);
@@ -94,7 +101,7 @@ const BlogsContent: React.FC = () => {
           setPosts(updatedPosts);
           const updatedPost = { ...post, content: fullPost.content, hasFullContent: true };
           setSelectedPost(updatedPost);
-          console.log('✅ Content loaded for post:', post.id, 'Length:', fullPost.content?.length || 0);
+          setShowModal(true);
         } else {
           setError('Failed to load post content');
           return;
@@ -103,11 +110,10 @@ const BlogsContent: React.FC = () => {
         console.error('Error loading post content:', error);
         setError('Error loading post content');
         return;
-      } finally {
-        setLoadingModalContent(false);
       }
     } else {
-      setLoadingModalContent(false);
+      setSelectedPost(post);
+      setShowModal(true);
     }
   };
 
@@ -267,31 +273,21 @@ const BlogsContent: React.FC = () => {
   // Check for URL parameter on page load to open specific post
   useEffect(() => {
     const postId = searchParams.get('id');
-    console.log('🔍 URL Effect triggered:', { 
-      postId, 
-      postsLength: posts.length, 
-      isLoadingFromUrl: isLoadingFromUrl.current,
-      showModal,
-      selectedPostId: selectedPost?.id
-    });
     
     if (postId && posts.length > 0 && !isLoadingFromUrl.current && !showModal) {
       const post = posts.find(p => p.id === parseInt(postId));
-      if (post && (!selectedPost || selectedPost.id !== post.id)) {
-        console.log('🟢 Opening post from URL:', post.id);
+      if (post) {
         isLoadingFromUrl.current = true;
         // Open modal directly without updating URL (it's already set)
         openPostModal(post);
       }
     } else if (!postId && showModal) {
       // If URL has no ID but modal is still open, close it
-      console.log('🟡 No post ID in URL but modal is open, closing modal');
       setShowModal(false);
       setSelectedPost(null);
       isLoadingFromUrl.current = false;
     } else if (!postId) {
       // Reset the ref when there's no ID parameter
-      console.log('🟡 No post ID in URL, resetting ref');
       isLoadingFromUrl.current = false;
     }
   }, [posts, searchParams, showModal, selectedPost]);
@@ -327,54 +323,40 @@ const BlogsContent: React.FC = () => {
   };
 
   const handlePostClick = async (post: BlogPost) => {
-    console.log('🟠 handlePostClick called for post:', post.id, 'Has full content:', !!post.hasFullContent);
-    
-    // Check if post already has full content (cached) - if so, open immediately
-    if (post.hasFullContent && post.content) {
-      console.log('✅ Post is cached, opening immediately:', post.id);
-      // Set flag to prevent URL effect from triggering duplicate logic
-      isLoadingFromUrl.current = true;
-      
-      // Update URL with post ID
-      router.push(`/blogs?id=${post.id}`, { scroll: false });
-      
-      // Use the simplified modal opening logic
-      await openPostModal(post);
-      
-      // Reset flag after opening
-      setTimeout(() => {
-        isLoadingFromUrl.current = false;
-      }, 100);
-      return;
-    }
-    
-    // For non-cached posts, use the existing flow
-    console.log('🔄 Post not cached, using normal flow:', post.id);
-    
-    // Set flag to prevent URL effect from triggering duplicate logic
+    // Set flag to prevent URL effect from interfering during modal opening
     isLoadingFromUrl.current = true;
     
-    // Update URL with post ID
+    // Update URL first, then open modal (to prevent timing issues)
     router.push(`/blogs?id=${post.id}`, { scroll: false });
     
-    // Use the simplified modal opening logic
+    // Small delay to let URL change propagate
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Open the modal
     await openPostModal(post);
     
-    // Reset flag after opening
+    // Reset flag after modal is open and URL has settled
     setTimeout(() => {
       isLoadingFromUrl.current = false;
-    }, 100);
+    }, 300);
   };
 
-  const closeModal = () => {
-    // First, reset states to prevent re-opening
+  const closeModal = useCallback(() => {
+    // Set flag to prevent URL effect from interfering
+    isLoadingFromUrl.current = true;
+    
+    // Reset states to close modal
     setShowModal(false);
     setSelectedPost(null);
-    isLoadingFromUrl.current = false;
     
     // Use replace instead of push to clear URL parameter without adding to history
     router.replace('/blogs', { scroll: false });
-  };
+    
+    // Reset flag after a short delay to allow URL change to take effect
+    setTimeout(() => {
+      isLoadingFromUrl.current = false;
+    }, 100);
+  }, [router]);
   
   // Blog editing functions
   const handleNewPost = () => {
@@ -607,116 +589,417 @@ const BlogsContent: React.FC = () => {
     }
   }, [formData, editingPost]);
 
-  const Modal = ({ post }: { post: BlogPost }) => (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Modal Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <div className="flex items-center gap-4">
-            <span className="text-gray-600 italic">Alwayscurious</span>
-            <span className="text-gray-400">|</span>
-            <span className="text-gray-600">Informationals Series</span>
-            <span className="text-gray-600">Enigma Book</span>
-            <span className="text-gray-600">Podcast</span>
-            <span className="text-gray-600">About</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Admin controls for editing/deleting posts */}
-            {isAdmin && (
-              <>
-                <button
-                  onClick={() => {
-                    closeModal();
-                    handleEditPost(post);
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
-                  title="Edit this post"
-                >
-                  ✏️ Edit Post
-                </button>
-                <button
-                  onClick={() => {
-                    closeModal();
-                    handleDelete(post.id);
-                  }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
-                  title="Delete this post"
-                >
-                  🗑️ Delete
-                </button>
-              </>
-            )}
-            
-            {/* User authentication controls */}
-            {session ? (
-              <>
-                {isAdmin && (
+  const Modal = memo(({ post, onClose }: { post: BlogPost; onClose: () => void }) => {
+    // Use local state for comments within this modal instance
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [loadingComments, setLoadingComments] = useState(false);
+    const [commentFormData, setCommentFormData] = useState({
+      authorName: '',
+      authorEmail: '',
+      authorWebsite: '',
+      commentContent: '',
+      notifyFollowUp: false,
+      notifyNewPosts: false,
+      saveInfo: false
+    });
+    const [submittingComment, setSubmittingComment] = useState(false);
+    const [commentMessage, setCommentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    // Add keyboard event listener for escape key
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }, [onClose]);
+
+    useEffect(() => {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [handleKeyDown]);
+
+    // Load comments only once when modal opens
+    useEffect(() => {
+      const loadComments = async () => {
+        try {
+          setLoadingComments(true);
+          const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
+          const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
+          const result = await response.json();
+          
+          if (result.success) {
+            setComments(result.comments || []);
+          } else {
+            console.error('Error loading comments:', result.error);
+          }
+        } catch (error) {
+          console.error('Error loading comments:', error);
+        } finally {
+          setLoadingComments(false);
+        }
+      };
+      
+      loadComments();
+    }, [post.id, isAdmin, session?.user?.email]);
+
+    const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      if (!commentFormData.authorName.trim() || !commentFormData.authorEmail.trim() || !commentFormData.commentContent.trim()) {
+        setCommentMessage({ type: 'error', text: 'Name, email, and comment are required.' });
+        return;
+      }
+
+      setSubmittingComment(true);
+      setCommentMessage(null);
+
+      try {
+        const response = await fetch(`/api/blog/${post.id}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(commentFormData)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          setCommentMessage({ type: 'success', text: result.message });
+          setCommentFormData({
+            authorName: commentFormData.saveInfo ? commentFormData.authorName : '',
+            authorEmail: commentFormData.saveInfo ? commentFormData.authorEmail : '',
+            authorWebsite: commentFormData.saveInfo ? commentFormData.authorWebsite : '',
+            commentContent: '',
+            notifyFollowUp: false,
+            notifyNewPosts: false,
+            saveInfo: commentFormData.saveInfo
+          });
+          // Reload comments to show any that might be approved after a slight delay
+          setTimeout(async () => {
+            try {
+              setLoadingComments(true);
+              const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
+              const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
+              const result = await response.json();
+              
+              if (result.success) {
+                setComments(result.comments || []);
+              } else {
+                console.error('Error loading comments:', result.error);
+              }
+            } catch (error) {
+              console.error('Error loading comments:', error);
+            } finally {
+              setLoadingComments(false);
+            }
+          }, 100);
+        } else {
+          setCommentMessage({ type: 'error', text: result.error });
+        }
+      } catch (error) {
+        setCommentMessage({ type: 'error', text: 'Failed to submit comment. Please try again.' });
+      } finally {
+        setSubmittingComment(false);
+      }
+    }, [commentFormData, post.id, isAdmin, session?.user?.email]);
+
+    return (
+      <div 
+        className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50 p-4"
+        onClick={(e) => {
+          // Close modal if clicking on backdrop (but not on modal content)
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600 italic">Alwayscurious</span>
+              <span className="text-gray-400">|</span>
+              <span className="text-gray-600">Informationals Series</span>
+              <span className="text-gray-600">Enigma Book</span>
+              <span className="text-gray-600">Podcast</span>
+              <span className="text-gray-600">About</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Admin controls for editing/deleting posts */}
+              {isAdmin && (
+                <>
                   <button
                     onClick={() => {
-                      closeModal();
-                      router.push('/');
+                      onClose();
+                      handleEditPost(post);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
-                    title="Go to Admin Dashboard"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                    title="Edit this post"
                   >
-                    🏠 Admin
+                    ✏️ Edit Post
                   </button>
-                )}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      handleDelete(post.id);
+                    }}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                    title="Delete this post"
+                  >
+                    🗑️ Delete
+                  </button>
+                </>
+              )}
+              
+              {/* User authentication controls */}
+              {session ? (
+                <>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        onClose();
+                        router.push('/');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                      title="Go to Admin Dashboard"
+                    >
+                      🏠 Admin
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      signOut({ callbackUrl: '/auth/signin' });
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
                 <button
                   onClick={() => {
-                    closeModal();
-                    signOut({ callbackUrl: '/auth/signin' });
+                    onClose();
+                    router.push('/auth/signin');
                   }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
                 >
-                  Sign Out
+                  Sign In
                 </button>
-              </>
-            ) : (
-              <button
-                onClick={() => {
-                  closeModal();
-                  router.push('/auth/signin');
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+              )}
+              
+              <button 
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
               >
-                Sign In
+                ×
               </button>
-            )}
-            
-            <button 
-              onClick={closeModal}
-              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-            >
-              ×
-            </button>
+            </div>
           </div>
-        </div>
-        
-        {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto p-8">
-          <h1 className="text-4xl font-light text-gray-800 mb-8 text-center">
-            {post.title}
-          </h1>
-          <div className="w-24 h-px bg-gray-400 mx-auto mb-12"></div>
           
-          {loadingModalContent ? (
-            <div className="flex justify-center items-center py-16">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading blog content...</p>
+          {/* Modal Content */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Blog Post Content */}
+            <div className="p-8">
+              <h1 className="text-4xl font-light text-gray-800 mb-8 text-center">
+                {post.title}
+              </h1>
+              <div className="w-24 h-px bg-gray-400 mx-auto mb-12"></div>
+              
+              <div 
+                className="prose prose-lg max-w-none text-gray-700 leading-relaxed mb-16"
+                dangerouslySetInnerHTML={{ __html: post.content || 'Content not available' }}
+              />
+            </div>
+
+            {/* Comments Section */}
+            <div className="border-t bg-gray-50 p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-8">
+                Comments ({comments.filter(c => c.status === 'approved').length})
+                {isAdmin && (
+                  <span className="text-sm font-normal text-gray-600 ml-2">
+                    (Total: {comments.length}, Pending: {comments.filter(c => c.status === 'pending').length})
+                  </span>
+                )}
+              </h3>
+              
+              {/* Display Comments */}
+              {loadingComments ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading comments...</p>
+                </div>
+              ) : comments.length > 0 ? (
+                <div className="space-y-6 mb-12">
+                  {comments.map((comment) => {
+                    // Only show approved comments to everyone (admin and non-admin)
+                    if (comment.status !== 'approved') {
+                      return null;
+                    }
+                    
+                    return (
+                      <div key={comment.id} className="bg-white p-6 rounded-lg border">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{comment.author_name}</h4>
+                            <p className="text-sm text-gray-500">
+                              {new Date(comment.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          {isAdmin && (
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              comment.status === 'approved' ? 'bg-green-100 text-green-800' :
+                              comment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              comment.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {comment.status}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-gray-700 leading-relaxed">
+                          {comment.comment_content.split('\n').map((paragraph: string, index: number) => (
+                            <p key={index} className="mb-2">{paragraph}</p>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 mb-12">
+                  <p>No comments yet. Be the first to comment!</p>
+                </div>
+              )}
+
+              {/* Comment Form */}
+              <div className="bg-white p-8 rounded-lg border">
+                <h4 className="text-xl font-semibold text-gray-900 mb-6">Leave a Reply</h4>
+                <p className="text-gray-600 mb-6">
+                  Your email address will not be published. Required fields are marked *
+                </p>
+                
+                {commentMessage && (
+                  <div className={`p-4 rounded-md mb-6 ${
+                    commentMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                  }`}>
+                    {commentMessage.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleCommentSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Comment *
+                    </label>
+                    <textarea
+                      value={commentFormData.commentContent}
+                      onChange={(e) => setCommentFormData({ ...commentFormData, commentContent: e.target.value })}
+                      rows={5}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={commentFormData.authorName}
+                        onChange={(e) => setCommentFormData({ ...commentFormData, authorName: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        value={commentFormData.authorEmail}
+                        onChange={(e) => setCommentFormData({ ...commentFormData, authorEmail: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      value={commentFormData.authorWebsite}
+                      onChange={(e) => setCommentFormData({ ...commentFormData, authorWebsite: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={commentFormData.saveInfo}
+                        onChange={(e) => setCommentFormData({ ...commentFormData, saveInfo: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">
+                        Save my name, email, and website in this browser for the next time I comment.
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={commentFormData.notifyFollowUp}
+                        onChange={(e) => setCommentFormData({ ...commentFormData, notifyFollowUp: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">
+                        Notify me of follow-up comments by email.
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={commentFormData.notifyNewPosts}
+                        onChange={(e) => setCommentFormData({ ...commentFormData, notifyNewPosts: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">
+                        Notify me of new posts by email.
+                      </span>
+                    </label>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={submittingComment}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-50"
+                  >
+                    {submittingComment ? 'Submitting...' : 'Post Comment'}
+                  </button>
+                </form>
               </div>
             </div>
-          ) : (
-            <div 
-              className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: post.content || 'Content not available' }}
-            />
-          )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }, (prevProps, nextProps) => {
+    // Only re-render if the post ID changes
+    return prevProps.post.id === nextProps.post.id;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1158,7 +1441,7 @@ const BlogsContent: React.FC = () => {
 
       {/* Modal */}
       {showModal && selectedPost && (
-        <Modal post={selectedPost} />
+        <Modal post={selectedPost} onClose={closeModal} />
       )}
     </div>
   );

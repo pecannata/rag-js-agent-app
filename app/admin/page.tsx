@@ -97,6 +97,13 @@ export default function SystemInfoPage() {
                 Subscribers
               </button>
               <button
+                onClick={() => window.location.href = '/admin/comments'}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
+              >
+                <span className="mr-1">💬</span>
+                Comments
+              </button>
+              <button
                 onClick={() => window.location.href = '/admin/cache'}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
               >

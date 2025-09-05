@@ -1,17 +1,17 @@
 {
-  "version": "1.0.303",
+  "version": "1.0.339",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-09-04T22:40:17.276Z",
-  "buildDate": "Sep 4, 2025",
-  "sourceVersion": "v1.0.302.090425",
+  "buildTime": "2025-09-05T22:32:52.288Z",
+  "buildDate": "Sep 5, 2025",
+  "sourceVersion": "v1.0.338.090525",
   "git": {
     "branch": "main",
-    "commit": "482bc6cc1b58383edecc616dbeddd729473878a5",
-    "shortCommit": "482bc6cc",
-    "commitDate": "2025-09-04 14:35:12 -0500",
-    "commitMessage": "Open the remote Linux server to be able to play YouTube video iframes."
+    "commit": "9d2581d25e8373f0c57e647a83cdb18cedf4a18d",
+    "shortCommit": "9d2581d2",
+    "commitDate": "2025-09-04 17:50:07 -0500",
+    "commitMessage": "#### What Happens Now When Someone Signs Up:"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.302-482bc6cc-20250904-224017"
+  "buildSignature": "1.0.338-9d2581d2-20250905-223252"
 }
