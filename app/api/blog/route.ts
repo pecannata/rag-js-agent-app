@@ -640,9 +640,13 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const includeContent = searchParams.get('includeContent') === 'true'; // Include full content flag - lazy loading by default
+    const userEmail = searchParams.get('userEmail');
+    const isAdmin = userEmail === 'phil.cannata@yahoo.com';
     
-    // CACHING: Generate cache key based on query parameters
-    const cacheKey = `blog_posts_${status || 'all'}_${limit || 'nolimit'}_${offset || '0'}_${includeContent ? 'withcontent' : 'nocontent'}`;
+    console.log(`🔐 Blog list admin access: ${isAdmin} (userEmail: ${userEmail})`);
+    
+    // CACHING: Generate cache key based on query parameters including admin status
+    const cacheKey = `blog_posts_${status || 'all'}_${limit || 'nolimit'}_${offset || '0'}_${includeContent ? 'withcontent' : 'nocontent'}_${isAdmin ? 'admin' : 'public'}`;
     
     // Try to get from cache first
     const cachedResult = blogCache.get(cacheKey);
@@ -677,8 +681,17 @@ export async function GET(request: NextRequest) {
     `
     
     const conditions = [];
-    if (status && status !== 'all') {
-      conditions.push(`status = '${status}'`);
+    
+    // Admin logic: if admin user, show posts based on status filter
+    // Non-admin logic: always filter to published posts only (unless explicitly requesting drafts)
+    if (isAdmin) {
+      // Admin can see all posts, apply status filter if provided
+      if (status && status !== 'all') {
+        conditions.push(`status = '${status}'`);
+      }
+    } else {
+      // Non-admin users can only see published posts
+      conditions.push("status = 'published'");
     }
     
     if (conditions.length > 0) {

@@ -1,17 +1,17 @@
 {
-  "version": "1.0.339",
+  "version": "1.0.341",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-09-05T22:32:52.288Z",
+  "buildTime": "2025-09-06T01:45:24.436Z",
   "buildDate": "Sep 5, 2025",
-  "sourceVersion": "v1.0.338.090525",
+  "sourceVersion": "v1.0.340.090525",
   "git": {
     "branch": "main",
-    "commit": "9d2581d25e8373f0c57e647a83cdb18cedf4a18d",
-    "shortCommit": "9d2581d2",
-    "commitDate": "2025-09-04 17:50:07 -0500",
-    "commitMessage": "#### What Happens Now When Someone Signs Up:"
+    "commit": "e8dfddfd13ec0f8eb6c82f683f267b10b0bd5eba",
+    "shortCommit": "e8dfddfd",
+    "commitDate": "2025-09-05 19:27:34 -0500",
+    "commitMessage": "Eliminate delays when clicking between posts and add progress bar."
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.338-9d2581d2-20250905-223252"
+  "buildSignature": "1.0.340-e8dfddfd-20250906-014524"
 }

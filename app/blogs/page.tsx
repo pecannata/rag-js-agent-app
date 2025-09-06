@@ -61,9 +61,7 @@ const BlogsContent: React.FC = () => {
   const [openingModal, setOpeningModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
   
-  // Global comments cache to speed up modal opening
-  const [commentsCache, setCommentsCache] = useState<Record<number, Comment[]>>({});
-  const [preloadingComments, setPreloadingComments] = useState<Set<number>>(new Set());
+  // Removed comment caching to reduce upfront cost when opening posts
   
   // Admin filter state
   const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | 'all'>('published');
@@ -89,36 +87,7 @@ const BlogsContent: React.FC = () => {
   });
 
 
-  // Function to preload comments for faster modal opening
-  const preloadComments = async (postId: number) => {
-    // Skip if already cached or currently loading
-    if (commentsCache[postId] || preloadingComments.has(postId)) {
-      return;
-    }
-    
-    setPreloadingComments(prev => new Set([...prev, postId]));
-    
-    try {
-      const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
-      const response = await fetch(`/api/blog/${postId}/comments${userEmailParam}`);
-      const result = await response.json();
-      
-      if (result.success) {
-        setCommentsCache(prev => ({
-          ...prev,
-          [postId]: result.comments || []
-        }));
-      }
-    } catch (error) {
-      console.error('Error preloading comments for post', postId, ':', error);
-    } finally {
-      setPreloadingComments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(postId);
-        return newSet;
-      });
-    }
-  };
+  // Removed comment preloading function to reduce upfront cost
   
   // Function to open modal - simplified
   const openPostModal = async (post: BlogPost) => {
@@ -186,11 +155,7 @@ const BlogsContent: React.FC = () => {
             }));
             setPosts(lazyPosts);
             
-            // Preload comments for the first post only to reduce initial delay
-            if (lazyPosts.length > 0) {
-              // Use longer timeout to not block the UI
-              setTimeout(() => preloadComments(lazyPosts[0].id), 500);
-            }
+            // Removed comment preloading to reduce upfront cost
           } else {
             const message = statusFilter === 'draft' ? 'No draft blogs found' : 
                            statusFilter === 'all' ? 'No blogs found' : 'No published blogs found';
@@ -640,9 +605,9 @@ const BlogsContent: React.FC = () => {
   }, [formData, editingPost]);
 
   const Modal = memo(({ post, onClose }: { post: BlogPost; onClose: () => void }) => {
-    // Use cached comments or empty array, with loading state
-    const [comments, setComments] = useState<Comment[]>(commentsCache[post.id] || []);
-    const [loadingComments, setLoadingComments] = useState(!commentsCache[post.id]);
+    // Load comments normally without caching
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [loadingComments, setLoadingComments] = useState(true);
     const [commentFormData, setCommentFormData] = useState({
       authorName: '',
       authorEmail: '',
@@ -669,42 +634,29 @@ const BlogsContent: React.FC = () => {
       };
     }, [handleKeyDown]);
 
-    // Load comments - use cache if available, otherwise fetch
+    // Load comments normally without caching
     useEffect(() => {
-      if (commentsCache[post.id]) {
-        // Use cached comments immediately
-        setComments(commentsCache[post.id]);
-        setLoadingComments(false);
-      } else {
-        // Fetch comments if not cached
-        const loadComments = async () => {
-          try {
-            setLoadingComments(true);
-            const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
-            const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
-            const result = await response.json();
-            
-            if (result.success) {
-              const newComments = result.comments || [];
-              setComments(newComments);
-              // Update the global cache
-              setCommentsCache(prev => ({
-                ...prev,
-                [post.id]: newComments
-              }));
-            } else {
-              console.error('Error loading comments:', result.error);
-            }
-          } catch (error) {
-            console.error('Error loading comments:', error);
-          } finally {
-            setLoadingComments(false);
+      const loadComments = async () => {
+        try {
+          setLoadingComments(true);
+          const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
+          const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
+          const result = await response.json();
+          
+          if (result.success) {
+            setComments(result.comments || []);
+          } else {
+            console.error('Error loading comments:', result.error);
           }
-        };
-        
-        loadComments();
-      }
-    }, [post.id, isAdmin, session?.user?.email, commentsCache]);
+        } catch (error) {
+          console.error('Error loading comments:', error);
+        } finally {
+          setLoadingComments(false);
+        }
+      };
+      
+      loadComments();
+    }, [post.id, isAdmin, session?.user?.email]);
 
 
     const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
@@ -738,7 +690,7 @@ const BlogsContent: React.FC = () => {
             notifyNewPosts: false,
             saveInfo: commentFormData.saveInfo
           });
-          // Reload comments to show any that might be approved and update cache
+          // Reload comments to show any that might be approved
           setTimeout(async () => {
             try {
               setLoadingComments(true);
@@ -747,13 +699,7 @@ const BlogsContent: React.FC = () => {
               const result = await response.json();
               
               if (result.success) {
-                const updatedComments = result.comments || [];
-                setComments(updatedComments);
-                // Update the global cache
-                setCommentsCache(prev => ({
-                  ...prev,
-                  [post.id]: updatedComments
-                }));
+                setComments(result.comments || []);
               } else {
                 console.error('Error loading comments:', result.error);
               }
@@ -880,12 +826,14 @@ const BlogsContent: React.FC = () => {
                 className="prose prose-lg max-w-none text-gray-700 leading-relaxed mb-16"
                 dangerouslySetInnerHTML={{ 
                   __html: (post.content || 'Content not available')
-                    // Remove WordPress comment sections that interfere with our React components
-                    .replace(/<div class="wp-block-post-comments">.*?<\/div>(?=\s*<\/div>\s*$)/gs, '')
-                    // Remove any leftover comment forms
-                    .replace(/<div id="respond".*?<\/div>(?:\s*<\/div>)*/gs, '')
-                    // Remove comment form elements
-                    .replace(/<form[^>]*id="commentform"[^>]*>.*?<\/form>/gs, '')
+                    // Remove specific WordPress comment sections that interfere with our React components
+                    .replace(/<div\s+class=["']wp-block-post-comments["'][^>]*>.*?<\/div>/gs, '')
+                    // Remove WordPress comment form with specific class patterns
+                    .replace(/<div\s+id=["']respond["'][^>]*class=["'][^"']*comment[^"']*["'][^>]*>.*?<\/div>/gs, '')
+                    // Remove WordPress comment form elements specifically
+                    .replace(/<form[^>]*id=["']commentform["'][^>]*>.*?<\/form>/gs, '')
+                    // Remove WordPress comment list containers
+                    .replace(/<div\s+id=["']comments["'][^>]*>.*?<\/div>/gs, '')
                 }}
               />
             </div>
@@ -1384,7 +1332,6 @@ const BlogsContent: React.FC = () => {
                   <h3 
                     className="text-xl font-light text-blue-600 hover:text-blue-800 cursor-pointer mb-4 leading-relaxed pr-16"
                     onClick={() => handlePostClick(post)}
-                    onMouseEnter={() => preloadComments(post.id)}
                   >
                     {post.title}
                   </h3>
@@ -1453,7 +1400,6 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
-                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
@@ -1477,7 +1423,6 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
-                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
@@ -1501,7 +1446,6 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
-                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
