@@ -683,28 +683,28 @@ function prime_cache() {
         print_warning "⚠️ Could not prime blog categories cache"
     fi
     
-    # Prime the 3 main blog post queries
-    print_step "Priming blog post caches..."
+    # Prime the main blog listing caches (most important for performance)
+    print_step "Priming main blog listing caches..."
     
-    # 1. BlogManager (Admin) cache: ?lazy=true
-    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1"; then
-        print_success "✅ BlogManager (lazy=true) cache primed"
-    else
-        print_warning "⚠️ Could not prime BlogManager cache"
-    fi
-    
-    # 2. Public blogs page cache: ?status=published&includeContent=false
-    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1"; then
-        print_success "✅ Public blogs page cache primed"
-    else
-        print_warning "⚠️ Could not prime public blogs cache"
-    fi
-    
-    # 3. Recent posts cache: ?status=published&limit=3&includeContent=false
+    # 1. Recent posts cache (most critical - used on home page): ?status=published&limit=3&includeContent=false
     if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&limit=3&includeContent=false' >/dev/null 2>&1"; then
-        print_success "✅ Recent posts cache primed"
+        print_success "✅ Recent posts cache primed (most critical)"
     else
         print_warning "⚠️ Could not prime recent posts cache"
+    fi
+    
+    # 2. All published posts cache: ?status=published&includeContent=false
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1"; then
+        print_success "✅ All published posts cache primed"
+    else
+        print_warning "⚠️ Could not prime all published posts cache"
+    fi
+    
+    # 3. BlogManager (Admin) cache: ?lazy=true
+    if $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1"; then
+        print_success "✅ BlogManager (admin) cache primed"
+    else
+        print_warning "⚠️ Could not prime BlogManager cache"
     fi
     
     # Make additional requests to build up cache hit statistics for all endpoints
@@ -713,10 +713,10 @@ function prime_cache() {
     for i in {1..2}; do
         # Categories cache hits
         $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog/categories' >/dev/null 2>&1" || true
-        # Blog post cache hits
-        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1" || true
-        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1" || true
+        # Blog listing cache hits (most important)
         $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&limit=3&includeContent=false' >/dev/null 2>&1" || true
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?status=published&includeContent=false' >/dev/null 2>&1" || true
+        $SSH_CMD "$LINUX_USER@$LINUX_SERVER" "curl -s '$BASE_URL/api/blog?lazy=true' >/dev/null 2>&1" || true
     done
     
     # Prime blog post cache with 10 most recent published posts

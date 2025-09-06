@@ -10,7 +10,7 @@ const blogPostCache = new NodeCache({
   stdTTL: 43200,     // 12 hours TTL
   checkperiod: 720,  // Check for expired keys every 12 minutes
   useClones: false,   // Better performance
-  maxKeys: 20         // LRU with max 20 entries
+  maxKeys: 50         // LRU with max 50 entries (25 posts × 2 versions each)
 });
 
 // Set up auto re-prime event listener for individual blog posts
@@ -18,16 +18,23 @@ blogPostCache.on('expired', async (key: string, _value: any) => {
   console.log(`⏰ Blog post cache expired: ${key} - starting automatic re-prime...`);
   
   try {
-    // Extract blog post ID from cache key (format: blog_post_123)
-    const postId = key.replace('blog_post_', '');
+    // Extract blog post ID from cache key (format: blog_post_123_public or blog_post_123_admin)
+    const match = key.match(/^blog_post_(\d+)_(public|admin)$/);
     
-    if (postId && !isNaN(parseInt(postId))) {
-      console.log(`🔄 Auto re-priming individual blog post: ${postId}...`);
+    if (match && match[1] && match[2]) {
+      const postId = match[1];
+      const accessType = match[2];
+      
+      console.log(`🔄 Auto re-priming individual blog post: ${postId} (${accessType})...`);
       const freshPost = await fetchBlogPostById(postId);
       
       if (freshPost) {
-        blogPostCache.set(key, freshPost, 43200); // Re-cache for 12 hours
-        console.log(`🔥 Auto re-prime completed - blog post ${postId} cache is warm!`);
+        try {
+          blogPostCache.set(key, freshPost, 43200); // Re-cache for 12 hours
+          console.log(`🔥 Auto re-prime completed - blog post ${postId} (${accessType}) cache is warm!`);
+        } catch (cacheError) {
+          console.warn(`⚠️ Failed to re-cache blog post ${postId}:`, cacheError instanceof Error ? cacheError.message : String(cacheError));
+        }
       } else {
         console.log(`⚠️ Blog post ${postId} not found during auto re-prime (may have been unpublished)`);
       }
@@ -43,7 +50,7 @@ blogPostCache.on('expired', async (key: string, _value: any) => {
 // Additional event logging for blog post cache
 blogPostCache.on('set', (key: string, _value: any) => {
   const stats = blogPostCache.getStats();
-  console.log(`💾 Blog post cached: ${key} (${stats.keys}/${20})`);
+  console.log(`💾 Blog post cached: ${key} (${stats.keys}/${50})`);
 });
 
 blogPostCache.on('del', (key: string, _value: any) => {
@@ -76,7 +83,7 @@ async function fetchBlogPostById(postId: string): Promise<any | null> {
       WHERE id = ${parseInt(postId)} AND status = 'published'
     `;
     
-    const result = await executeOracleQuery(query);
+    const result = await executeOracleQueryWithRetry(query, 1); // Use fewer retries for cache priming
     
     if (!result.success || !result.data || result.data.length === 0) {
       return null;
@@ -139,7 +146,7 @@ async function primeRecentPostsCache(): Promise<{ success: boolean, count: numbe
       FETCH FIRST 10 ROWS ONLY
     `;
     
-    const result = await executeOracleQuery(query);
+    const result = await executeOracleQueryWithRetry(query, 1); // Use fewer retries for cache priming
     
     if (!result.success || !result.data) {
       return { success: false, count: 0, error: result.error || 'Unknown error occurred' };
@@ -172,9 +179,18 @@ async function primeRecentPostsCache(): Promise<{ success: boolean, count: numbe
         publishedAt: post.published_at
       };
       
-      const cacheKey = `blog_post_${post.id}`;
-      blogPostCache.set(cacheKey, blogPost);
-      primedCount++;
+      // Cache both admin and public versions since we don't know which will be accessed
+      const publicCacheKey = `blog_post_${post.id}_public`;
+      const adminCacheKey = `blog_post_${post.id}_admin`;
+      
+      try {
+        blogPostCache.set(publicCacheKey, blogPost);
+        blogPostCache.set(adminCacheKey, blogPost);
+        primedCount++;
+      } catch (cacheError) {
+        console.warn(`⚠️ Failed to cache blog post ${post.id}:`, cacheError instanceof Error ? cacheError.message : String(cacheError));
+        // Continue with next post - caching failure shouldn't break priming
+      }
     }
     
     console.log(`✅ Primed ${primedCount} blog posts in LRU cache`);
@@ -191,6 +207,56 @@ declare global {
   var getBlogPostCacheStats: (() => { size: number, maxSize: number, keys: string[] }) | undefined;
   var clearBlogPostCache: (() => void) | undefined;
   var primeBlogPostCache: (() => Promise<{ success: boolean, count: number, error?: string }>) | undefined;
+  var getBlogPostPerformanceStats: (() => {
+    totalQueries: number,
+    slowQueries: number,
+    averageTime: number,
+    timeouts: number,
+    errors: number,
+    errorRate: string,
+    slowQueryRate: string,
+    timeoutRate: string,
+    lastSlowQuery: { postId: string; duration: number; timestamp: string } | null
+  }) | undefined;
+}
+
+// Performance monitoring
+let queryPerformanceStats = {
+  totalQueries: 0,
+  slowQueries: 0,
+  averageTime: 0,
+  timeouts: 0,
+  errors: 0,
+  lastSlowQuery: null as { postId: string; duration: number; timestamp: string } | null
+};
+
+function recordQueryPerformance(postId: string, duration: number, success: boolean, isTimeout: boolean = false) {
+  queryPerformanceStats.totalQueries++;
+  
+  if (isTimeout) {
+    queryPerformanceStats.timeouts++;
+  }
+  
+  if (!success) {
+    queryPerformanceStats.errors++;
+  }
+  
+  if (success) {
+    // Update rolling average (simple moving average)
+    queryPerformanceStats.averageTime = 
+      (queryPerformanceStats.averageTime * (queryPerformanceStats.totalQueries - 1) + duration) / queryPerformanceStats.totalQueries;
+    
+    // Track slow queries (>3 seconds)
+    if (duration > 3000) {
+      queryPerformanceStats.slowQueries++;
+      queryPerformanceStats.lastSlowQuery = {
+        postId,
+        duration,
+        timestamp: new Date().toISOString()
+      };
+      console.warn(`🐌 Slow query detected for post ${postId}: ${duration}ms`);
+    }
+  }
 }
 
 // Global cache management functions
@@ -198,8 +264,20 @@ global.getBlogPostCacheStats = () => {
   const stats = blogPostCache.getStats();
   return {
     size: stats.keys,
-    maxSize: 20,
+    maxSize: 50,
     keys: blogPostCache.keys()
+  };
+};
+
+global.getBlogPostPerformanceStats = () => {
+  return {
+    ...queryPerformanceStats,
+    errorRate: queryPerformanceStats.totalQueries > 0 ? 
+      (queryPerformanceStats.errors / queryPerformanceStats.totalQueries * 100).toFixed(2) + '%' : '0%',
+    slowQueryRate: queryPerformanceStats.totalQueries > 0 ? 
+      (queryPerformanceStats.slowQueries / queryPerformanceStats.totalQueries * 100).toFixed(2) + '%' : '0%',
+    timeoutRate: queryPerformanceStats.totalQueries > 0 ? 
+      (queryPerformanceStats.timeouts / queryPerformanceStats.totalQueries * 100).toFixed(2) + '%' : '0%'
   };
 };
 
@@ -227,18 +305,32 @@ global.primeBlogPostCache = async () => {
   });
 };
 
-// Oracle database execution function (same as in main blog route)
-async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string }> {
+// Oracle database execution function with enhanced error handling and timeout
+async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean; data?: any; error?: string; duration?: number }> {
+  const startTime = Date.now();
+  
   try {
     console.log('🔍 Blog ID Database Query Execution:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
     
-    // Execute the SQLclScript.sh with the SQL query
+    // Execute the SQLclScript.sh with the SQL query with timeout
     const escapedQuery = sqlQuery.replace(/"/g, '\\"');
-    const { stdout, stderr } = await execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`);
+    
+    // Add timeout to the database query (30 seconds)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database query timeout after 30 seconds')), 30000);
+    });
+    
+    const queryPromise = execAsync(`bash ./SQLclScript.sh "${escapedQuery}"`);
+    
+    const { stdout, stderr } = await Promise.race([queryPromise, timeoutPromise]) as any;
+    
+    const duration = Date.now() - startTime;
+    console.log(`⏱️ Database query completed in ${duration}ms`);
     
     if (stderr) {
       console.error('❌ Blog ID database query error:', stderr);
-      return { success: false, error: stderr };
+      console.error('❌ Query duration:', duration + 'ms');
+      return { success: false, error: stderr, duration };
     }
     
     console.log('✅ Blog ID database query executed successfully');
@@ -259,9 +351,9 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
       
       // Split output into lines and filter out warning lines
       const lines = cleanOutput.split('\n');
-      const cleanLines = lines.filter(line => {
+      const cleanLines = lines.filter((line: string) => {
         const trimmedLine = line.trim();
-        return !oracleWarnings.some(warning => trimmedLine.includes(warning));
+        return !oracleWarnings.some((warning: string) => trimmedLine.includes(warning));
       });
       
       // Find where JSON actually starts (look for opening brace)
@@ -300,12 +392,60 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
       if (trimmedOutput === '' || trimmedOutput === 'no rows selected' || trimmedOutput.toLowerCase().includes('no rows')) {
         return { success: true, data: [] };
       }
-      return { success: true, data: trimmedOutput };
+    return { success: true, data: trimmedOutput };
     }
   } catch (error) {
+    const duration = Date.now() - startTime;
     console.error('❌ Blog ID database execution error:', error);
-    return { success: false, error: (error as Error).message };
+    console.error('❌ Query duration before error:', duration + 'ms');
+    console.error('❌ Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    
+    // Check if it's a timeout error
+    const isTimeout = error instanceof Error && error.message.includes('timeout');
+    const errorMessage = isTimeout ? 
+      `Database query timeout after ${duration}ms` : 
+      (error as Error).message;
+    
+    return { success: false, error: errorMessage, duration };
   }
+}
+
+// Enhanced version with retry logic
+async function executeOracleQueryWithRetry(sqlQuery: string, maxRetries: number = 2): Promise<{ success: boolean; data?: any; error?: string; duration?: number; attempts?: number }> {
+  let lastError = null;
+  const totalStartTime = Date.now();
+  
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    console.log(`🔄 Database query attempt ${attempt}/${maxRetries + 1}`);
+    
+    const result = await executeOracleQuery(sqlQuery);
+    
+    if (result.success) {
+      const totalDuration = Date.now() - totalStartTime;
+      console.log(`✅ Database query succeeded on attempt ${attempt} (total: ${totalDuration}ms)`);
+      return { ...result, attempts: attempt, duration: totalDuration };
+    }
+    
+    lastError = result.error;
+    console.error(`❌ Attempt ${attempt} failed:`, result.error);
+    
+    // Don't retry if it's a timeout on the last attempt or if query was syntactically invalid
+    const isTimeout = result.error?.includes('timeout');
+    const isSyntaxError = result.error?.toLowerCase().includes('syntax');
+    
+    if (attempt === maxRetries + 1 || isSyntaxError || isTimeout) {
+      break;
+    }
+    
+    // Wait before retry (exponential backoff: 1s, 2s, 4s...)
+    const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+    console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  const totalDuration = Date.now() - totalStartTime;
+  console.error(`❌ All database query attempts failed after ${totalDuration}ms`);
+  return { success: false, error: lastError || 'Unknown database error', duration: totalDuration, attempts: maxRetries + 1 };
 }
 
 export async function GET(
@@ -390,10 +530,43 @@ export async function GET(
       `;
     }
 
-    const result = await executeOracleQuery(query);
-    console.log(`🔍 Query result:`, { success: result.success, dataLength: result.data?.length, error: result.error });
+    const result = await executeOracleQueryWithRetry(query, 2);
+    console.log(`🔍 Query result:`, { 
+      success: result.success, 
+      dataLength: result.data?.length, 
+      error: result.error,
+      duration: result.duration,
+      attempts: result.attempts
+    });
     
-    if (!result.success || !result.data || result.data.length === 0) {
+    // Record performance metrics
+    const isTimeout = result.error?.includes('timeout') || false;
+    recordQueryPerformance(id, result.duration || 0, result.success, isTimeout);
+    
+    if (!result.success) {
+      console.error(`❌ Database query failed for blog post ${id}:`, {
+        error: result.error,
+        duration: result.duration,
+        attempts: result.attempts
+      });
+      
+      // Return different error codes based on the type of failure
+      const isTimeout = result.error?.includes('timeout');
+      const status = isTimeout ? 504 : 500; // Gateway Timeout vs Internal Server Error
+      const message = isTimeout ? 'Request timeout - please try again' : 'Failed to fetch blog post';
+      
+      return NextResponse.json(
+        { 
+          error: message,
+          details: result.error,
+          duration: result.duration,
+          attempts: result.attempts
+        },
+        { status }
+      );
+    }
+    
+    if (!result.data || result.data.length === 0) {
       console.log(`❌ Blog post not found: ID=${id}, success=${result.success}, dataLength=${result.data?.length}`);
       return NextResponse.json(
         { error: 'Blog post not found' },
@@ -431,9 +604,14 @@ export async function GET(
     
     console.log(`✅ Blog post constructed:`, { ...blogPost, content: blogPost.content?.substring(0, 100) + '...' });
     
-    // Cache the result in LRU cache
-    blogPostCache.set(cacheKey, blogPost);
-    console.log(`💾 Cached blog post in LRU: ${id}`);
+    // Try to cache the result in LRU cache (don't fail if caching fails)
+    try {
+      blogPostCache.set(cacheKey, blogPost);
+      console.log(`💾 Cached blog post in LRU: ${id}`);
+    } catch (cacheError) {
+      console.warn(`⚠️ Failed to cache blog post ${id}:`, cacheError instanceof Error ? cacheError.message : String(cacheError));
+      console.log(`🔄 Continuing without caching - request will still succeed`);
+    }
     
     // Set cache control headers - disable browser cache for admin users viewing drafts
     const response = NextResponse.json(blogPost);
@@ -447,9 +625,23 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching blog post:', error);
+    console.error('Error details:', {
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    // Check if it's a timeout error
+    const isTimeout = error instanceof Error && error.message.includes('timeout');
+    const status = isTimeout ? 504 : 500;
+    const message = isTimeout ? 'Request timeout - please try again' : 'Failed to fetch blog post';
+    
     return NextResponse.json(
-      { error: 'Failed to fetch blog post' },
-      { status: 500 }
+      { 
+        error: message,
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status }
     );
   }
 }
