@@ -274,30 +274,19 @@ const BlogsContent: React.FC = () => {
   useEffect(() => {
     const postId = searchParams.get('id');
     
-    // Debug logging
-    console.log('🔍 URL Effect triggered:', { 
-      postId, 
-      postsLoaded: posts.length > 0, 
-      isLoadingFromUrl: isLoadingFromUrl.current, 
-      showModal,
-      selectedPostId: selectedPost?.id 
-    });
-    
+    // Only handle URL changes that aren't from manual clicks
     if (postId && posts.length > 0 && !isLoadingFromUrl.current && !showModal) {
       const post = posts.find(p => p.id === parseInt(postId));
       if (post) {
         console.log('🚀 Opening modal from URL for post:', post.id);
-        isLoadingFromUrl.current = true;
-        // Open modal directly without updating URL (it's already set)
         openPostModal(post);
       }
     } else if (!postId && showModal && !isLoadingFromUrl.current) {
-      // Only close modal if we're not in the middle of a controlled close operation
-      console.log('❌ Closing modal due to URL change (no postId)');
+      // Close modal if URL is cleared externally (not from our closeModal)
       setShowModal(false);
       setSelectedPost(null);
     }
-  }, [posts, searchParams, showModal]);
+  }, [posts, searchParams]);
 
   const handleCategoryPostClick = async (categoryPost: CategoryPost) => {
     // First, try to find the full post in our cached posts array
@@ -332,44 +321,42 @@ const BlogsContent: React.FC = () => {
   const handlePostClick = async (post: BlogPost) => {
     console.log('👆 Post clicked:', post.id, 'Current modal state:', showModal);
     
-    // Set flag to prevent URL effect from interfering during modal opening
-    isLoadingFromUrl.current = true;
-    
-    // Update URL first, then open modal (to prevent timing issues)
-    router.push(`/blogs?id=${post.id}`, { scroll: false });
-    
-    // Small delay to let URL change propagate
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    // Open the modal
-    await openPostModal(post);
-    
-    // Reset flag after modal is open and URL has settled
-    setTimeout(() => {
-      console.log('🏁 Resetting isLoadingFromUrl flag for post:', post.id);
-      isLoadingFromUrl.current = false;
-    }, 300);
-  };
-
-  const closeModal = useCallback(() => {
-    console.log('❌ Close modal triggered. Current state:', { showModal, selectedPost: selectedPost?.id });
+    // If modal is already open, close it first and wait briefly
+    if (showModal) {
+      setShowModal(false);
+      setSelectedPost(null);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     
     // Set flag to prevent URL effect from interfering
     isLoadingFromUrl.current = true;
     
-    // Reset states to close modal
+    // Update URL and open modal immediately
+    router.push(`/blogs?id=${post.id}`, { scroll: false });
+    await openPostModal(post);
+    
+    // Reset flag after a brief delay
+    setTimeout(() => {
+      isLoadingFromUrl.current = false;
+    }, 100);
+  };
+
+  const closeModal = useCallback(() => {
+    console.log('❌ Close modal triggered');
+    
+    // Set flag to prevent URL effect interference
+    isLoadingFromUrl.current = true;
+    
+    // Close modal and clear URL
     setShowModal(false);
     setSelectedPost(null);
-    
-    // Use replace instead of push to clear URL parameter without adding to history
     router.replace('/blogs', { scroll: false });
     
-    // Reset flag after a longer delay to ensure URL change is processed
+    // Reset flag after brief delay
     setTimeout(() => {
-      console.log('🏁 Resetting isLoadingFromUrl flag after close');
       isLoadingFromUrl.current = false;
-    }, 200);
-  }, [router, showModal, selectedPost]);
+    }, 50);
+  }, [router]);
   
   // Blog editing functions
   const handleNewPost = () => {
