@@ -274,23 +274,30 @@ const BlogsContent: React.FC = () => {
   useEffect(() => {
     const postId = searchParams.get('id');
     
+    // Debug logging
+    console.log('🔍 URL Effect triggered:', { 
+      postId, 
+      postsLoaded: posts.length > 0, 
+      isLoadingFromUrl: isLoadingFromUrl.current, 
+      showModal,
+      selectedPostId: selectedPost?.id 
+    });
+    
     if (postId && posts.length > 0 && !isLoadingFromUrl.current && !showModal) {
       const post = posts.find(p => p.id === parseInt(postId));
       if (post) {
+        console.log('🚀 Opening modal from URL for post:', post.id);
         isLoadingFromUrl.current = true;
         // Open modal directly without updating URL (it's already set)
         openPostModal(post);
       }
-    } else if (!postId && showModal) {
-      // If URL has no ID but modal is still open, close it
+    } else if (!postId && showModal && !isLoadingFromUrl.current) {
+      // Only close modal if we're not in the middle of a controlled close operation
+      console.log('❌ Closing modal due to URL change (no postId)');
       setShowModal(false);
       setSelectedPost(null);
-      isLoadingFromUrl.current = false;
-    } else if (!postId) {
-      // Reset the ref when there's no ID parameter
-      isLoadingFromUrl.current = false;
     }
-  }, [posts, searchParams, showModal, selectedPost]);
+  }, [posts, searchParams, showModal]);
 
   const handleCategoryPostClick = async (categoryPost: CategoryPost) => {
     // First, try to find the full post in our cached posts array
@@ -323,6 +330,8 @@ const BlogsContent: React.FC = () => {
   };
 
   const handlePostClick = async (post: BlogPost) => {
+    console.log('👆 Post clicked:', post.id, 'Current modal state:', showModal);
+    
     // Set flag to prevent URL effect from interfering during modal opening
     isLoadingFromUrl.current = true;
     
@@ -337,11 +346,14 @@ const BlogsContent: React.FC = () => {
     
     // Reset flag after modal is open and URL has settled
     setTimeout(() => {
+      console.log('🏁 Resetting isLoadingFromUrl flag for post:', post.id);
       isLoadingFromUrl.current = false;
     }, 300);
   };
 
   const closeModal = useCallback(() => {
+    console.log('❌ Close modal triggered. Current state:', { showModal, selectedPost: selectedPost?.id });
+    
     // Set flag to prevent URL effect from interfering
     isLoadingFromUrl.current = true;
     
@@ -352,11 +364,12 @@ const BlogsContent: React.FC = () => {
     // Use replace instead of push to clear URL parameter without adding to history
     router.replace('/blogs', { scroll: false });
     
-    // Reset flag after a short delay to allow URL change to take effect
+    // Reset flag after a longer delay to ensure URL change is processed
     setTimeout(() => {
+      console.log('🏁 Resetting isLoadingFromUrl flag after close');
       isLoadingFromUrl.current = false;
-    }, 100);
-  }, [router]);
+    }, 200);
+  }, [router, showModal, selectedPost]);
   
   // Blog editing functions
   const handleNewPost = () => {
@@ -643,6 +656,7 @@ const BlogsContent: React.FC = () => {
       loadComments();
     }, [post.id, isAdmin, session?.user?.email]);
 
+
     const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
       e.preventDefault();
       
@@ -808,78 +822,89 @@ const BlogsContent: React.FC = () => {
               
               <div 
                 className="prose prose-lg max-w-none text-gray-700 leading-relaxed mb-16"
-                dangerouslySetInnerHTML={{ __html: post.content || 'Content not available' }}
+                dangerouslySetInnerHTML={{ 
+                  __html: (post.content || 'Content not available')
+                    // Remove WordPress comment sections that interfere with our React components
+                    .replace(/<div class="wp-block-post-comments">.*?<\/div>(?=\s*<\/div>\s*$)/gs, '')
+                    // Remove any leftover comment forms
+                    .replace(/<div id="respond".*?<\/div>(?:\s*<\/div>)*/gs, '')
+                    // Remove comment form elements
+                    .replace(/<form[^>]*id="commentform"[^>]*>.*?<\/form>/gs, '')
+                }}
               />
             </div>
 
             {/* Comments Section */}
-            <div className="border-t bg-gray-50 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">
-                Comments ({comments.filter(c => c.status === 'approved').length})
-                {isAdmin && (
-                  <span className="text-sm font-normal text-gray-600 ml-2">
-                    (Total: {comments.length}, Pending: {comments.filter(c => c.status === 'pending').length})
-                  </span>
-                )}
-              </h3>
-              
-              {/* Display Comments */}
-              {loadingComments ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading comments...</p>
-                </div>
-              ) : comments.length > 0 ? (
-                <div className="space-y-6 mb-12">
-                  {comments.map((comment) => {
-                    // Only show approved comments to everyone (admin and non-admin)
-                    if (comment.status !== 'approved') {
-                      return null;
-                    }
-                    
-                    return (
-                      <div key={comment.id} className="bg-white p-6 rounded-lg border">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">{comment.author_name}</h4>
-                            <p className="text-sm text-gray-500">
-                              {new Date(comment.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
+            <div className="border-t bg-gray-50">
+              {/* Comments Header and Display */}
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-8">
+                  Comments ({comments.filter(c => c.status === 'approved').length})
+                  {isAdmin && (
+                    <span className="text-sm font-normal text-gray-600 ml-2">
+                      (Total: {comments.length}, Pending: {comments.filter(c => c.status === 'pending').length})
+                    </span>
+                  )}
+                </h3>
+                
+                {/* Display Comments */}
+                {loadingComments ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading comments...</p>
+                  </div>
+                ) : comments.length > 0 ? (
+                  <div className="space-y-6">
+                    {comments.map((comment) => {
+                      // Only show approved comments to everyone (admin and non-admin)
+                      if (comment.status !== 'approved') {
+                        return null;
+                      }
+                      
+                      return (
+                        <div key={comment.id} className="bg-white p-6 rounded-lg border">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{comment.author_name}</h4>
+                              <p className="text-sm text-gray-500">
+                                {new Date(comment.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                            {isAdmin && (
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                comment.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                comment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                comment.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {comment.status}
+                              </span>
+                            )}
                           </div>
-                          {isAdmin && (
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              comment.status === 'approved' ? 'bg-green-100 text-green-800' :
-                              comment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              comment.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {comment.status}
-                            </span>
-                          )}
+                          <div className="text-gray-700 leading-relaxed">
+                            {comment.comment_content.split('\n').map((paragraph: string, index: number) => (
+                              <p key={index} className="mb-2">{paragraph}</p>
+                            ))}
+                          </div>
                         </div>
-                        <div className="text-gray-700 leading-relaxed">
-                          {comment.comment_content.split('\n').map((paragraph: string, index: number) => (
-                            <p key={index} className="mb-2">{paragraph}</p>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 mb-12">
-                  <p>No comments yet. Be the first to comment!</p>
-                </div>
-              )}
-
-              {/* Comment Form */}
-              <div className="bg-white p-8 rounded-lg border">
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No comments yet. Be the first to comment!</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Comment Form Section */}
+              <div className="border-t bg-white p-8">
                 <h4 className="text-xl font-semibold text-gray-900 mb-6">Leave a Reply</h4>
                 <p className="text-gray-600 mb-6">
                   Your email address will not be published. Required fields are marked *
@@ -904,6 +929,7 @@ const BlogsContent: React.FC = () => {
                       rows={5}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
+                      placeholder="Share your thoughts..."
                     />
                   </div>
                   
