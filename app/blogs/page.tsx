@@ -58,7 +58,12 @@ const BlogsContent: React.FC = () => {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [openingModal, setOpeningModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
+  
+  // Global comments cache to speed up modal opening
+  const [commentsCache, setCommentsCache] = useState<Record<number, Comment[]>>({});
+  const [preloadingComments, setPreloadingComments] = useState<Set<number>>(new Set());
   
   // Admin filter state
   const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | 'all'>('published');
@@ -84,6 +89,37 @@ const BlogsContent: React.FC = () => {
   });
 
 
+  // Function to preload comments for faster modal opening
+  const preloadComments = async (postId: number) => {
+    // Skip if already cached or currently loading
+    if (commentsCache[postId] || preloadingComments.has(postId)) {
+      return;
+    }
+    
+    setPreloadingComments(prev => new Set([...prev, postId]));
+    
+    try {
+      const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
+      const response = await fetch(`/api/blog/${postId}/comments${userEmailParam}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setCommentsCache(prev => ({
+          ...prev,
+          [postId]: result.comments || []
+        }));
+      }
+    } catch (error) {
+      console.error('Error preloading comments for post', postId, ':', error);
+    } finally {
+      setPreloadingComments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    }
+  };
+  
   // Function to open modal - simplified
   const openPostModal = async (post: BlogPost) => {
     // If post doesn't have full content loaded, fetch it first
@@ -149,6 +185,12 @@ const BlogsContent: React.FC = () => {
               hasFullContent: false // No posts have full content initially
             }));
             setPosts(lazyPosts);
+            
+            // Preload comments for the first post only to reduce initial delay
+            if (lazyPosts.length > 0) {
+              // Use longer timeout to not block the UI
+              setTimeout(() => preloadComments(lazyPosts[0].id), 500);
+            }
           } else {
             const message = statusFilter === 'draft' ? 'No draft blogs found' : 
                            statusFilter === 'all' ? 'No blogs found' : 'No published blogs found';
@@ -321,24 +363,32 @@ const BlogsContent: React.FC = () => {
   const handlePostClick = async (post: BlogPost) => {
     console.log('👆 Post clicked:', post.id, 'Current modal state:', showModal);
     
-    // If modal is already open, close it first and wait briefly
-    if (showModal) {
-      setShowModal(false);
-      setSelectedPost(null);
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // Show progress immediately
+    setOpeningModal(true);
+    
+    try {
+      // If modal is already open, close it first and wait briefly
+      if (showModal) {
+        setShowModal(false);
+        setSelectedPost(null);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Set flag to prevent URL effect from interfering
+      isLoadingFromUrl.current = true;
+      
+      // Update URL and open modal
+      router.push(`/blogs?id=${post.id}`, { scroll: false });
+      await openPostModal(post);
+      
+      // Reset flag after a brief delay
+      setTimeout(() => {
+        isLoadingFromUrl.current = false;
+      }, 100);
+    } finally {
+      // Hide progress bar
+      setOpeningModal(false);
     }
-    
-    // Set flag to prevent URL effect from interfering
-    isLoadingFromUrl.current = true;
-    
-    // Update URL and open modal immediately
-    router.push(`/blogs?id=${post.id}`, { scroll: false });
-    await openPostModal(post);
-    
-    // Reset flag after a brief delay
-    setTimeout(() => {
-      isLoadingFromUrl.current = false;
-    }, 100);
   };
 
   const closeModal = useCallback(() => {
@@ -590,9 +640,9 @@ const BlogsContent: React.FC = () => {
   }, [formData, editingPost]);
 
   const Modal = memo(({ post, onClose }: { post: BlogPost; onClose: () => void }) => {
-    // Use local state for comments within this modal instance
-    const [comments, setComments] = useState<Comment[]>([]);
-    const [loadingComments, setLoadingComments] = useState(false);
+    // Use cached comments or empty array, with loading state
+    const [comments, setComments] = useState<Comment[]>(commentsCache[post.id] || []);
+    const [loadingComments, setLoadingComments] = useState(!commentsCache[post.id]);
     const [commentFormData, setCommentFormData] = useState({
       authorName: '',
       authorEmail: '',
@@ -619,29 +669,42 @@ const BlogsContent: React.FC = () => {
       };
     }, [handleKeyDown]);
 
-    // Load comments only once when modal opens
+    // Load comments - use cache if available, otherwise fetch
     useEffect(() => {
-      const loadComments = async () => {
-        try {
-          setLoadingComments(true);
-          const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
-          const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
-          const result = await response.json();
-          
-          if (result.success) {
-            setComments(result.comments || []);
-          } else {
-            console.error('Error loading comments:', result.error);
+      if (commentsCache[post.id]) {
+        // Use cached comments immediately
+        setComments(commentsCache[post.id]);
+        setLoadingComments(false);
+      } else {
+        // Fetch comments if not cached
+        const loadComments = async () => {
+          try {
+            setLoadingComments(true);
+            const userEmailParam = isAdmin ? `?includeAll=true&userEmail=${encodeURIComponent(session?.user?.email || '')}` : '';
+            const response = await fetch(`/api/blog/${post.id}/comments${userEmailParam}`);
+            const result = await response.json();
+            
+            if (result.success) {
+              const newComments = result.comments || [];
+              setComments(newComments);
+              // Update the global cache
+              setCommentsCache(prev => ({
+                ...prev,
+                [post.id]: newComments
+              }));
+            } else {
+              console.error('Error loading comments:', result.error);
+            }
+          } catch (error) {
+            console.error('Error loading comments:', error);
+          } finally {
+            setLoadingComments(false);
           }
-        } catch (error) {
-          console.error('Error loading comments:', error);
-        } finally {
-          setLoadingComments(false);
-        }
-      };
-      
-      loadComments();
-    }, [post.id, isAdmin, session?.user?.email]);
+        };
+        
+        loadComments();
+      }
+    }, [post.id, isAdmin, session?.user?.email, commentsCache]);
 
 
     const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
@@ -675,7 +738,7 @@ const BlogsContent: React.FC = () => {
             notifyNewPosts: false,
             saveInfo: commentFormData.saveInfo
           });
-          // Reload comments to show any that might be approved after a slight delay
+          // Reload comments to show any that might be approved and update cache
           setTimeout(async () => {
             try {
               setLoadingComments(true);
@@ -684,7 +747,13 @@ const BlogsContent: React.FC = () => {
               const result = await response.json();
               
               if (result.success) {
-                setComments(result.comments || []);
+                const updatedComments = result.comments || [];
+                setComments(updatedComments);
+                // Update the global cache
+                setCommentsCache(prev => ({
+                  ...prev,
+                  [post.id]: updatedComments
+                }));
               } else {
                 console.error('Error loading comments:', result.error);
               }
@@ -1315,6 +1384,7 @@ const BlogsContent: React.FC = () => {
                   <h3 
                     className="text-xl font-light text-blue-600 hover:text-blue-800 cursor-pointer mb-4 leading-relaxed pr-16"
                     onClick={() => handlePostClick(post)}
+                    onMouseEnter={() => preloadComments(post.id)}
                   >
                     {post.title}
                   </h3>
@@ -1383,6 +1453,7 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
+                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
@@ -1406,6 +1477,7 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
+                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
@@ -1429,6 +1501,7 @@ const BlogsContent: React.FC = () => {
                             <h4 
                               className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer text-sm leading-tight mb-1"
                               onClick={() => handleCategoryPostClick(post)}
+                              onMouseEnter={() => preloadComments(post.id)}
                             >
                               {post.title}
                             </h4>
@@ -1451,6 +1524,53 @@ const BlogsContent: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Loading Progress Bar */}
+      {openingModal && (
+        <>
+          <style jsx>{`
+            @keyframes shimmer {
+              0% { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+            @keyframes fadeInUp {
+              0% { opacity: 0; transform: translate(-50%, 10px); }
+              100% { opacity: 1; transform: translate(-50%, 0); }
+            }
+            @keyframes progressFill {
+              0% { width: 0%; }
+              50% { width: 60%; }
+              100% { width: 90%; }
+            }
+          `}</style>
+          
+          {/* Top progress bar */}
+          <div className="fixed top-0 left-0 right-0 z-[60] bg-gray-200 h-1">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 relative overflow-hidden transition-all duration-1000 ease-out"
+              style={{ animation: 'progressFill 2s ease-out forwards' }}
+            >
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-40 w-1/4"
+                style={{ animation: 'shimmer 1.5s ease-in-out infinite' }}
+              />
+            </div>
+          </div>
+          
+          {/* Floating notification */}
+          <div 
+            className="fixed top-6 left-1/2 z-[61]"
+            style={{ animation: 'fadeInUp 0.3s ease-out forwards', transform: 'translateX(-50%)' }}
+          >
+            <div className="bg-white px-6 py-3 rounded-full shadow-lg border border-gray-200 backdrop-blur-sm bg-white/95">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                <span className="text-sm font-medium text-gray-700">Opening post...</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Modal */}
       {showModal && selectedPost && (
