@@ -48,7 +48,6 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [showDiffViewer, setShowDiffViewer] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'branches' | 'history'>('branches');
   
   // Create branch form
