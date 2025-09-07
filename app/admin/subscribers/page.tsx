@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useAdmin } from '../../lib/useAdmin';
 
 interface Subscriber {
   id: number;
@@ -18,8 +19,9 @@ interface Subscriber {
 }
 
 export default function SubscribersManagement() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [filteredSubscribers, setFilteredSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,16 +33,16 @@ export default function SubscribersManagement() {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
+    if (isLoading) return;
+    if (!isAuthenticated) {
       router.push('/auth/signin');
       return;
     }
-    if (session.user?.email !== 'phil.cannata@yahoo.com') {
+    if (!isAdmin) {
       router.push('/');
       return;
     }
-  }, [session, status, router]);
+  }, [isAuthenticated, isAdmin, isLoading, router]);
 
   // Load subscribers
   useEffect(() => {
@@ -191,7 +193,7 @@ export default function SubscribersManagement() {
   };
 
   // Show loading state
-  if (status === 'loading' || !session) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -199,7 +201,7 @@ export default function SubscribersManagement() {
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (

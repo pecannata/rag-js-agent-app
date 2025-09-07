@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { verifyUser } from '../../../../lib/users'
+import { isAdminEmail } from '../../../../lib/admin-server';
 
 const handler = NextAuth({
   providers: [
@@ -25,7 +26,7 @@ const handler = NextAuth({
           }
           
           // Check if user is approved (admin users are always approved)
-          if (!user.approved && user.email !== 'phil.cannata@yahoo.com') {
+          if (!user.approved && !isAdminEmail(user.email)) {
             throw new Error('Your account is pending admin approval. You will receive an email once approved.')
           }
           

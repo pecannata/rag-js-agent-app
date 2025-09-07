@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { queueEmailJob } from '../../lib/background-jobs';
+import { isAdminEmail } from '../../../lib/admin';
 
 // Declare global type for categorized cache invalidation
 declare global {
@@ -641,7 +642,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset');
     const includeContent = searchParams.get('includeContent') === 'true'; // Include full content flag - lazy loading by default
     const userEmail = searchParams.get('userEmail');
-    const isAdmin = userEmail === 'phil.cannata@yahoo.com';
+    const isAdmin = isAdminEmail(userEmail);
     
     console.log(`🔐 Blog list admin access: ${isAdmin} (userEmail: ${userEmail})`);
     

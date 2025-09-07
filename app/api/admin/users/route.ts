@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { getUsers, deleteUser, updateUserPassword, approveUser, unapproveUser, findUserByEmail } from '../../../../lib/users'
 import { sendUserApprovalNotification } from '../../../lib/email'
+import { isAdmin } from '../../../../lib/admin-server';
 
-// Check if user is admin
-async function isAdmin(_request: NextRequest) {
-  const session = await getServerSession()
-  return session?.user?.email === 'phil.cannata@yahoo.com'
+// Check if user is admin - using centralized admin function
+async function checkIsAdmin(_request: NextRequest) {
+  return await isAdmin()
 }
 
 // GET - List all users
 export async function GET(_request: NextRequest) {
   try {
-    if (!(await isAdmin(_request))) {
+    if (!(await checkIsAdmin(_request))) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 403 }
@@ -43,7 +42,7 @@ export async function GET(_request: NextRequest) {
 // DELETE - Delete a user
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await isAdmin(request))) {
+    if (!(await checkIsAdmin(request))) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 403 }
@@ -82,7 +81,7 @@ export async function DELETE(request: NextRequest) {
 // PUT - Update user password
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await isAdmin(request))) {
+    if (!(await checkIsAdmin(request))) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 403 }
@@ -120,7 +119,7 @@ export async function PUT(request: NextRequest) {
 // PATCH - Approve or unapprove user
 export async function PATCH(request: NextRequest) {
   try {
-    if (!(await isAdmin(request))) {
+    if (!(await checkIsAdmin(request))) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 403 }

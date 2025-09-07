@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { isAdminEmail } from "./lib/admin";
 
 // Define path arrays outside the middleware for better performance
 const publicPaths = [
@@ -9,6 +10,7 @@ const publicPaths = [
   '/blogs',
   '/api/blog'
 ];
+
 
 const adminOnlyPaths = [
   '/',
@@ -60,7 +62,7 @@ export default withAuth(
       // Safely access the token - handle cases where it might be undefined
       const token = req.nextauth?.token;
       const userEmail = token?.email || null;
-      const isAdmin = userEmail === 'phil.cannata@yahoo.com';
+      const isAdmin = isAdminEmail(userEmail);
 
       // If user is not authenticated, redirect to blogs
       if (!userEmail) {

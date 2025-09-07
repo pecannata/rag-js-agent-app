@@ -5,6 +5,7 @@ import { verifyUser } from '../../../../lib/users'
 import { BlogBranchManager } from '../../../../lib/BlogBranchManager';
 import { executeOracleQuery } from '../../../../lib/database-utils';
 import { branchAwareCache } from '../../../../lib/branch-aware-cache';
+import { isAdminEmail } from '../../../../lib/admin-server';
 
 // Auth configuration (matching the main auth config)
 const authOptions = {
@@ -27,7 +28,7 @@ const authOptions = {
             throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
           }
           
-          if (!user.approved && user.email !== 'phil.cannata@yahoo.com') {
+          if (!user.approved && !isAdminEmail(user.email)) {
             throw new Error('Your account is pending admin approval. You will receive an email once approved.')
           }
           

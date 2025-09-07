@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { verifyUser } from '../../../../lib/users';
+import { isAdminEmail } from '../../../../lib/admin-server';
 
 // NextAuth configuration options
 const authOptions = {
@@ -29,7 +30,7 @@ const authOptions = {
           }
           
           // Check if user is approved (admin users are always approved)
-          if (!user.approved && user.email !== 'phil.cannata@yahoo.com') {
+          if (!user.approved && !isAdminEmail(user.email)) {
             throw new Error('Your account is pending admin approval. You will receive an email once approved.')
           }
           
@@ -156,7 +157,7 @@ async function executeOracleQuery(sqlQuery: string): Promise<{ success: boolean;
 async function isAdminUser(): Promise<boolean> {
   try {
     const session = await getServerSession(authOptions);
-    return session?.user?.email === 'phil.cannata@yahoo.com';
+    return isAdminEmail(session?.user?.email);
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;

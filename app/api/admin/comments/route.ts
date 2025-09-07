@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminEmail } from '../../../../lib/admin';
 
 interface CommentAction {
   commentIds: number[];
@@ -56,9 +57,9 @@ async function executeSQLQuery(query: string, errorContext: string = 'SQL Query'
   }
 }
 
-// Check if user is admin
+// Check if user is admin - using centralized admin function
 function isAdmin(email: string | null | undefined): boolean {
-  return email === 'phil.cannata@yahoo.com';
+  return isAdminEmail(email);
 }
 
 // GET: Fetch all comments for admin review

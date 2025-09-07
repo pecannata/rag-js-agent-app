@@ -10,6 +10,7 @@ import Vectorize from './components/Vectorize';
 import MarkdownEditor from './components/MarkdownEditor';
 import StudioManager from './components/StudioManager';
 import { getVersionString, getCompactVersionInfo, VERSION_INFO } from './lib/version';
+import { useAdmin } from './lib/useAdmin';
 
 interface ReActConfig {
   temperature: number;
@@ -26,8 +27,9 @@ interface Message {
 }
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin();
   const [apiKey, setApiKey] = useState('');
   const [isKeyValid, setIsKeyValid] = useState(false);
   const [serpApiKey, setSerpApiKey] = useState('');
@@ -47,19 +49,18 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
 
   // Redirect to sign-in if not authenticated, or to blogs if not admin
   useEffect(() => {
-    if (status === 'loading') return; // Still loading
-    if (!session) {
+    if (isLoading) return; // Still loading
+    if (!isAuthenticated) {
       router.push('/auth/signin');
       return;
     }
     
     // Redirect non-admin users to blogs page
-    const isAdmin = session?.user?.email === 'phil.cannata@yahoo.com';
     if (!isAdmin) {
       router.push('/blogs');
       return;
     }
-  }, [session, status, router]);
+  }, [isAuthenticated, isAdmin, isLoading, router]);
 
   // Load API keys and provider from localStorage on mount
   useEffect(() => {
@@ -166,7 +167,7 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
   };
 
   // Show loading state while checking authentication
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -178,7 +179,7 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
   }
 
   // Don't render if not authenticated (will redirect)
-  if (!session) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -216,9 +217,9 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
             </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
-              Welcome, {session.user?.email}
+              Welcome, {session?.user?.email}
             </span>
-            {session.user?.email === 'phil.cannata@yahoo.com' && (
+            {isAdmin && (
               <>
                 <button
                   onClick={() => router.push('/admin')}

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import sgMail from '@sendgrid/mail';
+import { ADMIN_EMAILS } from '../../lib/admin';
 
 // Email service configuration
 const emailConfig = {
@@ -642,9 +643,10 @@ export async function sendWelcomeEmail(subscriberEmail: string, subscriberName?:
 
 // Send admin notification when a new user verifies their email
 export async function sendAdminNewUserNotification(userEmail: string, userId: string) {
-  const adminEmail = 'phil.cannata@yahoo.com';
+  // Send notification to the first admin email (primary admin)
+  const primaryAdminEmail = ADMIN_EMAILS[0] || 'admin@localhost';
   
-  return await sendEmail(adminEmail, 'adminNewUserNotification', {
+  return await sendEmail(primaryAdminEmail, 'adminNewUserNotification', {
     userEmail,
     userId
   });

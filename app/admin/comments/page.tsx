@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useAdmin } from '../../lib/useAdmin';
 
 interface Comment {
   id: number;
@@ -29,8 +30,9 @@ interface CommentSummary {
 }
 
 const CommentsAdminPage: React.FC = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin();
   const [comments, setComments] = useState<Comment[]>([]);
   const [summary, setSummary] = useState<CommentSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,19 +41,16 @@ const CommentsAdminPage: React.FC = () => {
   const [currentFilter, setCurrentFilter] = useState<string>('all');
   const [processing, setProcessing] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = session?.user?.email === 'phil.cannata@yahoo.com';
-
   useEffect(() => {
-    if (status === 'loading') return;
+    if (isLoading) return;
     
-    if (!session || !isAdmin) {
+    if (!isAuthenticated || !isAdmin) {
       router.push('/auth/signin');
       return;
     }
 
     loadComments();
-  }, [session, status, isAdmin, router, currentFilter]);
+  }, [isAuthenticated, isAdmin, isLoading, router, currentFilter]);
 
   const loadComments = async () => {
     try {
@@ -163,7 +162,7 @@ const CommentsAdminPage: React.FC = () => {
     }
   };
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -171,7 +170,7 @@ const CommentsAdminPage: React.FC = () => {
     );
   }
 
-  if (!session || !isAdmin) {
+  if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

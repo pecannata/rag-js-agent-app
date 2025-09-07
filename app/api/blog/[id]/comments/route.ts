@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminEmail } from '../../../../../lib/admin';
 
 interface CommentSubmission {
   authorName: string;
@@ -226,7 +227,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const includeAll = searchParams.get('includeAll') === 'true';
     const userEmail = searchParams.get('userEmail');
-    const isAdmin = userEmail === 'phil.cannata@yahoo.com';
+    const isAdmin = isAdminEmail(userEmail);
     
     // Build query based on user permissions
     let statusFilter = "";

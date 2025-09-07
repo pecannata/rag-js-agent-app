@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import NodeCache from 'node-cache';
+import { NextRequest, NextResponse } from 'next/server'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import NodeCache from 'node-cache'
+import { isAdminEmail } from '../../../../lib/admin'
 
 const execAsync = promisify(exec);
 
@@ -459,7 +460,7 @@ export async function GET(
     // Check if user is admin (can view draft posts)
     const { searchParams } = new URL(request.url);
     const userEmail = searchParams.get('userEmail');
-    const isAdmin = userEmail === 'phil.cannata@yahoo.com';
+    const isAdmin = isAdminEmail(userEmail);
     
     console.log(`🔐 Admin access: ${isAdmin} (userEmail: ${userEmail})`);
     

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import RichTextEditor from '../components/RichTextEditor';
 import BlogBranchManager from '../components/BlogBranchManager';
+import { useAdmin } from '../lib/useAdmin';
 
 interface BlogPost {
   id: number;
@@ -120,7 +121,7 @@ const BlogsContent: React.FC = () => {
   
   // Admin filter state
   const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | 'all'>('published');
-  const isAdmin = session?.user?.email === 'phil.cannata@yahoo.com';
+  const { isAdmin } = useAdmin();
   
   // Blog editing states
   const [isEditing, setIsEditing] = useState(false);
@@ -506,7 +507,7 @@ const BlogsContent: React.FC = () => {
     await loadBranchCount(post.id);
     
     // Suggest creating a branch for version tracking if this is the first edit
-    if (isAdmin && !postBranchCounts[post.id]) {
+    if (isAdmin && !(postBranchCounts[post.id] || 0)) {
       setShowBranchSuggestion(true);
     }
   };
@@ -600,7 +601,7 @@ const BlogsContent: React.FC = () => {
         console.log('✅ Branch saved successfully:', data);
         
         // Update the selected branch with new data
-        setSelectedBranch(prev => prev ? {
+        setSelectedBranch((prev: any) => prev ? {
           ...prev,
           title: formData.title,
           content: formData.content,
@@ -614,7 +615,9 @@ const BlogsContent: React.FC = () => {
         setHasUnsavedChanges(false);
         
         // Reload branch count to update the branch manager UI
-        await loadBranchCount(editingPost.id);
+        if (editingPost) {
+          await loadBranchCount(editingPost.id);
+        }
         
         // Show success message
         alert(`Successfully saved to branch "${selectedBranch.branchName}"!`);
@@ -1710,12 +1713,12 @@ const BlogsContent: React.FC = () => {
                             setShowVersionManager(true);
                           }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity bg-green-500 hover:bg-green-600 text-white p-2 rounded-md text-sm relative"
-                          title={`Manage Versions${postBranchCounts[post.id] ? ` (${postBranchCounts[post.id]} branches)` : ''}`}
+                          title={`Manage Versions${(postBranchCounts[post.id] || 0) > 0 ? ` (${postBranchCounts[post.id] || 0} branches)` : ''}`}
                         >
                           🌿
-                          {postBranchCounts[post.id] > 0 && (
+                          {(postBranchCounts[post.id] || 0) > 0 && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                              {postBranchCounts[post.id]}
+                              {postBranchCounts[post.id] || 0}
                             </span>
                           )}
                         </button>

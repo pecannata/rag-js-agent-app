@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import bcrypt from 'bcryptjs'
+import { ADMIN_EMAILS } from './admin'
 
 interface User {
   id: string
@@ -28,7 +29,7 @@ function loadUsers(): User[] {
   ensureDataDir()
   
   if (!fs.existsSync(USERS_FILE)) {
-    // Create initial users file with test user and admin user (pre-verified for convenience)
+    // Create initial users file with test user and admin users (pre-verified for convenience)
     const initialUsers: User[] = [
       {
         id: '1',
@@ -37,16 +38,20 @@ function loadUsers(): User[] {
         createdAt: new Date().toISOString(),
         emailVerified: true, // Pre-verified test user
         approved: true // Pre-approved for testing
-      },
-      {
-        id: '2',
-        email: 'phil.cannata@yahoo.com',
+      }
+    ]
+    
+    // Add all admin users from centralized admin configuration
+    ADMIN_EMAILS.forEach((adminEmail, index) => {
+      initialUsers.push({
+        id: (index + 2).toString(),
+        email: adminEmail,
         password: '$2b$12$fSSrN2c9kU2iNu1wCXMQcOeQQu13/Ar17qtPJkIASho7opFgvbGNi', // 'password123'
         createdAt: new Date().toISOString(),
         emailVerified: true, // Pre-verified admin user
         approved: true // Admin is always approved
-      }
-    ]
+      })
+    })
     saveUsers(initialUsers)
     return initialUsers
   }

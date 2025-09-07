@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useAdmin } from '../../lib/useAdmin';
 
 interface CacheStats {
   totalKeys: number;
@@ -38,7 +38,7 @@ interface CacheStatsResponse {
 }
 
 export default function CacheAdminPage() {
-  const { data: session, status } = useSession();
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin();
   const [stats, setStats] = useState<CacheStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +48,11 @@ export default function CacheAdminPage() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session || session.user.email !== 'phil.cannata@yahoo.com') {
+    if (isLoading) return;
+    if (!isAuthenticated || !isAdmin) {
       redirect('/');
     }
-  }, [session, status]);
+  }, [isAuthenticated, isAdmin, isLoading]);
 
   const fetchStats = async () => {
     try {
@@ -112,7 +112,7 @@ export default function CacheAdminPage() {
     };
   }, [autoRefresh]);
 
-  if (status === 'loading' || loading) {
+  if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useAdmin } from '../lib/useAdmin';
 
 // Accordion Component
 const Accordion = ({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) => {
@@ -52,10 +53,11 @@ const InfoCard = ({ title, children, icon }: { title: string; children: React.Re
 );
 
 export default function SystemInfoPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin();
 
   // Show loading while checking authentication
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -67,7 +69,7 @@ export default function SystemInfoPage() {
   }
 
   // Redirect if not authenticated or not admin
-  if (!session?.user?.email || session.user.email !== 'phil.cannata@yahoo.com') {
+  if (!isAuthenticated || !isAdmin) {
     redirect('/');
   }
 

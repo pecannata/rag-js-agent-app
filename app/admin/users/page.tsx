@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useAdmin } from '../../lib/useAdmin'
+import { isAdminEmail } from '../../../lib/admin'
 
 interface User {
   id: string
@@ -13,8 +15,9 @@ interface User {
 }
 
 export default function UserManagement() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const router = useRouter()
+  const { isAdmin, isLoading, isAuthenticated } = useAdmin()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -22,16 +25,16 @@ export default function UserManagement() {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (status === 'loading') return
-    if (!session) {
+    if (isLoading) return
+    if (!isAuthenticated) {
       router.push('/auth/signin')
       return
     }
-    if (session.user?.email !== 'phil.cannata@yahoo.com') {
+    if (!isAdmin) {
       router.push('/') // Redirect non-admin users to home
       return
     }
-  }, [session, status, router])
+  }, [isAuthenticated, isAdmin, isLoading, router])
 
   // Load users
   useEffect(() => {
@@ -161,7 +164,7 @@ export default function UserManagement() {
   }
 
   // Show loading state
-  if (status === 'loading' || !session) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -279,7 +282,7 @@ export default function UserManagement() {
                               Approve
                             </button>
                           )}
-                          {user.approved && user.email !== 'phil.cannata@yahoo.com' && (
+                          {user.approved && !isAdminEmail(user.email) && (
                             <button
                               onClick={() => unapproveUser(user.email)}
                               className="text-yellow-600 hover:text-yellow-900"
