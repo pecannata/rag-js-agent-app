@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import BranchDiffViewer from './BranchDiffViewer';
 
 interface BlogBranch {
@@ -37,7 +36,6 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
   onBranchSwitch,
   onClose
 }) => {
-  const { data: session } = useSession();
   const [branches, setBranches] = useState<BlogBranch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
