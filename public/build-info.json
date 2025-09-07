@@ -1,17 +1,17 @@
 {
-  "version": "1.0.347",
+  "version": "1.0.353",
   "name": "rag-js-agent-app",
-  "buildTime": "2025-09-06T03:06:52.634Z",
-  "buildDate": "Sep 5, 2025",
-  "sourceVersion": "v1.0.346.090525",
+  "buildTime": "2025-09-06T18:04:59.569Z",
+  "buildDate": "Sep 6, 2025",
+  "sourceVersion": "v1.0.352.090625",
   "git": {
     "branch": "main",
-    "commit": "b32535938713ca0f2b181e19e4a8b655a6bf13fc",
-    "shortCommit": "b3253593",
-    "commitDate": "2025-09-05 20:56:44 -0500",
-    "commitMessage": "Removed the comment cahcing"
+    "commit": "fe8c2afa6d72202379f52039fafc755d108096fb",
+    "shortCommit": "fe8c2afa",
+    "commitDate": "2025-09-06 11:48:43 -0500",
+    "commitMessage": "Working on blog post cache"
   },
   "environment": "development",
   "ci": {},
-  "buildSignature": "1.0.346-b3253593-20250906-030652"
+  "buildSignature": "1.0.352-fe8c2afa-20250906-180459"
 }

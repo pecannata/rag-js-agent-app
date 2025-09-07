@@ -8,7 +8,6 @@ import Sidebar from './components/Sidebar';
 import Snippets from './components/Snippets';
 import Vectorize from './components/Vectorize';
 import MarkdownEditor from './components/MarkdownEditor';
-import BlogManager from './components/BlogManager';
 import StudioManager from './components/StudioManager';
 import { getVersionString, getCompactVersionInfo, VERSION_INFO } from './lib/version';
 
@@ -34,7 +33,7 @@ export default function Home() {
   const [serpApiKey, setSerpApiKey] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [sqlQuery, setSqlQuery] = useState('select * from emp join dept on emp.deptno = dept.deptno'); // Default SQL query
-const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | 'markdown' | 'blog' | 'studio'>('chat');
+const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | 'markdown' | 'studio'>('chat');
   const [initialMessage, setInitialMessage] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<'cohere' | 'ollama'>('cohere'); // Default to Cohere for deployment compatibility
   const [selectedModel, setSelectedModel] = useState<string>('qwen2.5:14b'); // Default model
@@ -360,19 +359,6 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
               </span>
             </button>
             <button
-              onClick={() => setActiveTab('blog')}
-              className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
-                activeTab === 'blog'
-                  ? 'border-indigo-500 text-indigo-600 bg-gradient-to-t from-indigo-50 to-indigo-25 shadow-md'
-                  : 'border-transparent text-gray-600 hover:text-indigo-500 hover:border-indigo-300 hover:bg-indigo-25'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-xl">📝</span>
-                <span className="font-bold">Blog</span>
-              </span>
-            </button>
-            <button
               onClick={() => setActiveTab('studio')}
               className={`px-8 py-4 text-lg font-semibold border-b-3 transition-all duration-200 transform hover:scale-105 ${
                 activeTab === 'studio'
@@ -412,10 +398,6 @@ const [activeTab, setActiveTab] = useState<'chat' | 'snippets' | 'vectorize' | '
             />
         ) : activeTab === 'markdown' ? (
           <MarkdownEditor 
-            apiKey={apiKey}
-          />
-        ) : activeTab === 'blog' ? (
-          <BlogManager 
             apiKey={apiKey}
           />
         ) : activeTab === 'studio' ? (

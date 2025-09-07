@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, useRef, memo, useCallback } from 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import RichTextEditor from '../components/RichTextEditor';
+import BlogBranchManager from '../components/BlogBranchManager';
 
 interface BlogPost {
   id: number;
@@ -61,6 +62,60 @@ const BlogsContent: React.FC = () => {
   const [openingModal, setOpeningModal] = useState(false);
   const isLoadingFromUrl = useRef(false);
   
+  // Load branch count for current post
+  const loadBranchCount = async (postId: number) => {
+    try {
+      const response = await fetch(`/api/blog/branches?postId=${postId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const branches = data.branches || [];
+        setBranchCount(branches.length);
+        setAvailableBranches(branches);
+        // Reset to main if no branches or current branch doesn't exist
+        if (branches.length === 0 || !branches.find((b: any) => b.branchId === selectedBranchId)) {
+          setSelectedBranchId('main');
+          setSelectedBranch(null);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load branch count:', error);
+    }
+  };
+  
+  // Load branch counts for all posts in the list
+  const loadAllBranchCounts = async (postIds: number[]) => {
+    console.log('🔍 Loading branch counts for posts:', postIds);
+    try {
+      const counts: Record<number, number> = {};
+      
+      // Load branch counts for all posts in parallel
+      const promises = postIds.map(async (postId) => {
+        try {
+          console.log(`📊 Fetching branches for post ${postId}...`);
+          const response = await fetch(`/api/blog/branches?postId=${postId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const branchCount = data.branches?.length || 0;
+            counts[postId] = branchCount;
+            console.log(`✅ Post ${postId} has ${branchCount} branches`);
+          } else {
+            console.warn(`❌ Failed to fetch branches for post ${postId}:`, response.status);
+            counts[postId] = 0;
+          }
+        } catch (error) {
+          console.error(`❌ Failed to load branch count for post ${postId}:`, error);
+          counts[postId] = 0;
+        }
+      });
+      
+      await Promise.all(promises);
+      console.log('🎯 Final branch counts:', counts);
+      setPostBranchCounts(counts);
+    } catch (error) {
+      console.error('Failed to load branch counts:', error);
+    }
+  };
+  
   // Removed comment caching to reduce upfront cost when opening posts
   
   // Admin filter state
@@ -74,6 +129,15 @@ const BlogsContent: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isFullScreenEditing, setIsFullScreenEditing] = useState(false);
+  
+  // Versioning state
+  const [showVersionManager, setShowVersionManager] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [branchCount, setBranchCount] = useState(0);
+  const [postBranchCounts, setPostBranchCounts] = useState<Record<number, number>>({});
+  const [showBranchSuggestion, setShowBranchSuggestion] = useState(false);
+  const [availableBranches, setAvailableBranches] = useState<any[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('main');
   
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -136,7 +200,9 @@ const BlogsContent: React.FC = () => {
         
         // Use status filter for admin, default to published for non-admin
         const statusParam = isAdmin ? statusFilter : 'published';
-        const response = await fetch(`/api/blog?status=${statusParam}&limit=3&includeContent=false`);
+        // Pass user email for admin access to draft posts
+        const userEmailParam = session?.user?.email ? `&userEmail=${encodeURIComponent(session.user.email)}` : '';
+        const response = await fetch(`/api/blog?status=${statusParam}&limit=3&includeContent=false${userEmailParam}`);
         
         // Log cache status from response headers
         const cacheStatus = response.headers.get('X-Cache-Status');
@@ -154,6 +220,14 @@ const BlogsContent: React.FC = () => {
               hasFullContent: false // No posts have full content initially
             }));
             setPosts(lazyPosts);
+            
+            // Load branch counts for admin users
+            if (isAdmin) {
+              const postIds = lazyPosts.map((post: any) => post.id).filter((id: any) => id);
+              if (postIds.length > 0) {
+                loadAllBranchCounts(postIds);
+              }
+            }
             
             // Removed comment preloading to reduce upfront cost
           } else {
@@ -201,7 +275,9 @@ const BlogsContent: React.FC = () => {
         
         // Use status filter for admin, default to published for non-admin
         const statusParam = isAdmin ? statusFilter : 'published';
-        const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false`);
+        // Pass user email for admin access to draft posts
+        const userEmailParam = session?.user?.email ? `&userEmail=${encodeURIComponent(session.user.email)}` : '';
+        const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false${userEmailParam}`);
         if (response.ok) {
           const data = await response.json();
           
@@ -421,6 +497,18 @@ const BlogsContent: React.FC = () => {
     setIsCreating(false);
     setIsEditing(true);
     setHasUnsavedChanges(false);
+    
+    // Reset branch selection to main when starting to edit
+    setSelectedBranchId('main');
+    setSelectedBranch(null);
+    
+    // Load branches for this post to populate the selector
+    await loadBranchCount(post.id);
+    
+    // Suggest creating a branch for version tracking if this is the first edit
+    if (isAdmin && !postBranchCounts[post.id]) {
+      setShowBranchSuggestion(true);
+    }
   };
   
   const handleFormChange = (field: string, value: string) => {
@@ -461,6 +549,81 @@ const BlogsContent: React.FC = () => {
     setError(null);
     
     try {
+      console.log('💾 Save started - Branch check:', selectedBranchId, selectedBranch?.branchId);
+      
+      // If publishing, always use main post API regardless of branch selection
+      if (publish) {
+        console.log('🚀 Publishing to main post (ignoring branch selection)');
+        // Use main post publish logic
+      } else if (selectedBranchId !== 'main' && selectedBranch && selectedBranch.branchId && !isCreating) {
+        console.log('🌿 Using branch save API for:', selectedBranch.branchName);
+        
+        const branchData = {
+          postId: editingPost?.id,
+          branchId: selectedBranch.branchId,
+          changes: {
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+            status: formData.status
+          }
+        };
+        
+        console.log('💾 Sending branch save request:', branchData);
+        
+        const response = await fetch('/api/blog/branches', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(branchData),
+        });
+        
+        console.log('💾 Branch save response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Branch save failed - Response:', errorText);
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || 'Unknown error' };
+          }
+          setError(`Failed to save branch: ${errorData.error || 'Unknown error'}`);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log('✅ Branch saved successfully:', data);
+        
+        // Update the selected branch with new data
+        setSelectedBranch(prev => prev ? {
+          ...prev,
+          title: formData.title,
+          content: formData.content,
+          excerpt: formData.excerpt,
+          tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          status: formData.status,
+          modifiedDate: new Date().toISOString()
+        } : null);
+        
+        // Clear unsaved changes flag
+        setHasUnsavedChanges(false);
+        
+        // Reload branch count to update the branch manager UI
+        await loadBranchCount(editingPost.id);
+        
+        // Show success message
+        alert(`Successfully saved to branch "${selectedBranch.branchName}"!`);
+        return;
+      } else {
+        console.log('📄 Using main post save API');
+      }
+      
+      // Normal post save logic
       const postData = {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
@@ -564,7 +727,9 @@ const BlogsContent: React.FC = () => {
     try {
       // Use current filter when refreshing
       const statusParam = isAdmin ? statusFilter : 'published';
-      const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false`);
+      // Pass user email for admin access to draft posts
+      const userEmailParam = session?.user?.email ? `&userEmail=${encodeURIComponent(session.user.email)}` : '';
+      const response = await fetch(`/api/blog?status=${statusParam}&includeContent=false${userEmailParam}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.posts) {
@@ -573,6 +738,14 @@ const BlogsContent: React.FC = () => {
             hasFullContent: false
           }));
           setPosts(lazyPosts);
+          
+          // Reload branch counts for admin users
+          if (isAdmin) {
+            const postIds = lazyPosts.map((post: any) => post.id).filter((id: any) => id);
+            if (postIds.length > 0) {
+              loadAllBranchCounts(postIds);
+            }
+          }
         }
       }
     } catch (error) {
@@ -590,19 +763,96 @@ const BlogsContent: React.FC = () => {
     setHasUnsavedChanges(false);
   };
   
+  // Handle branch switching via radio buttons
+  const handleBranchSelection = async (branchId: string) => {
+    try {
+      if (hasUnsavedChanges) {
+        if (!confirm('You have unsaved changes. Switching branches will lose these changes. Continue?')) {
+          return;
+        }
+      }
+      
+      console.log('🔄 Branch selection started:', branchId);
+      setSelectedBranchId(branchId);
+      
+      if (branchId === 'main') {
+        // Switch back to main post
+        setSelectedBranch(null);
+        if (editingPost) {
+          setFormData({
+            title: editingPost.title || '',
+            content: editingPost.content || '',
+            excerpt: editingPost.excerpt || '',
+            tags: (editingPost.tags || []).join(', '),
+            status: editingPost.status as any || 'draft',
+            scheduledDate: '',
+            isScheduled: false
+          });
+        }
+        console.log('🔄 Switched to main post');
+      } else {
+        // Switch to specific branch
+        console.log('🔍 Looking for branch:', branchId, 'in available branches:', availableBranches.map(b => `${b.branchId}:${b.branchName}`));
+        
+        if (!Array.isArray(availableBranches)) {
+          console.error('❌ availableBranches is not an array:', availableBranches);
+          setError('Branch data error. Please refresh the page.');
+          return;
+        }
+        
+        const branch = availableBranches.find(b => b && b.branchId === branchId);
+        if (branch && branch.branchId) {
+          setSelectedBranch(branch);
+          
+          // Load branch content into form - with safe fallbacks
+          setFormData({
+            title: branch.title || editingPost?.title || '',
+            content: branch.content || editingPost?.content || '',
+            excerpt: branch.excerpt || editingPost?.excerpt || '',
+            tags: branch.tags || (editingPost?.tags || []).join(', ') || '',
+            status: branch.status || editingPost?.status || 'draft',
+            scheduledDate: branch.scheduledDate || '',
+            isScheduled: branch.isScheduled || false
+          });
+          
+          console.log('🔄 Switched to branch:', branch.branchName, 'Type:', branch.branchType);
+        } else {
+          console.error('❌ Branch not found or invalid:', branchId, 'Available:', availableBranches.map(b => b ? `${b.branchId}:${b.branchName}` : 'null'));
+          setError(`Branch "${branchId}" not found. Please refresh and try again.`);
+          // Reset to main to prevent broken state
+          setSelectedBranchId('main');
+          return;
+        }
+      }
+      
+      setHasUnsavedChanges(false);
+      console.log('✅ Branch selection completed:', branchId);
+    } catch (error) {
+      console.error('❌ Error in branch selection:', error);
+      setError('Error switching branches: ' + error);
+    }
+  };
+  
+  // Handle branch switching from modal (keep for compatibility)
+  const handleBranchSwitch = (branch: any) => {
+    handleBranchSelection(branch.branchId);
+    setShowVersionManager(false);
+  };
+  
   // Track unsaved changes
   useEffect(() => {
-    if (editingPost) {
+    if (editingPost || selectedBranch) {
+      const baseData = selectedBranch || editingPost;
       const hasChanges = 
-        formData.title !== editingPost.title ||
-        formData.content !== editingPost.content ||
-        formData.excerpt !== editingPost.excerpt ||
-        formData.tags !== (editingPost.tags || []).join(', ') ||
-        formData.status !== editingPost.status;
+        formData.title !== (baseData?.title || '') ||
+        formData.content !== (baseData?.content || '') ||
+        formData.excerpt !== (baseData?.excerpt || '') ||
+        formData.tags !== (selectedBranch ? (baseData?.tags || '') : ((baseData as any)?.tags || []).join(', ')) ||
+        formData.status !== (baseData?.status || 'draft');
       
       setHasUnsavedChanges(hasChanges);
     }
-  }, [formData, editingPost]);
+  }, [formData, editingPost, selectedBranch]);
 
   const Modal = memo(({ post, onClose }: { post: BlogPost; onClose: () => void }) => {
     // Load comments normally without caching
@@ -1181,8 +1431,60 @@ const BlogsContent: React.FC = () => {
                     {hasUnsavedChanges && (
                       <span className="text-orange-600 text-sm">• Unsaved changes</span>
                     )}
+                    {/* Branch Indicator */}
+                    {selectedBranch && (
+                      <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-green-50 border border-green-200 rounded-full">
+                        <span className="text-green-700 text-sm font-medium">🌿 Working on branch:</span>
+                        <span className="text-green-800 text-sm font-semibold">{selectedBranch.branchName}</span>
+                        <span className={`px-2 py-0.5 text-xs rounded-full ${
+                          selectedBranch.branchType === 'main' ? 'bg-purple-100 text-purple-700' :
+                          selectedBranch.branchType === 'feature' ? 'bg-blue-100 text-blue-700' :
+                          selectedBranch.branchType === 'hotfix' ? 'bg-red-100 text-red-700' :
+                          selectedBranch.branchType === 'draft' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {selectedBranch.branchType}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setSelectedBranch(null);
+                            // Reset to main post content if available
+                            if (editingPost) {
+                              setFormData({
+                                title: editingPost.title || '',
+                                content: editingPost.content || '',
+                                excerpt: editingPost.excerpt || '',
+                                tags: (editingPost.tags || []).join(', '),
+                                status: editingPost.status as any || 'draft',
+                                scheduledDate: '',
+                                isScheduled: false
+                              });
+                            }
+                          }}
+                          className="text-green-600 hover:text-green-800 text-xs ml-1"
+                          title="Switch back to main post"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
+                    {/* Branch Switcher for existing posts */}
+                    {!isCreating && editingPost && (
+                      <button
+                        onClick={() => setShowVersionManager(true)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                        title="Manage branches and versions"
+                      >
+                        🌿 Branches
+                        {branchCount > 0 && (
+                          <span className="bg-green-400 text-green-900 px-2 py-0.5 rounded-full text-xs font-bold">
+                            {branchCount}
+                          </span>
+                        )}
+                      </button>
+                    )}
                     <button
                       onClick={() => setIsFullScreenEditing(!isFullScreenEditing)}
                       className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
@@ -1195,14 +1497,14 @@ const BlogsContent: React.FC = () => {
                       disabled={saving}
                       className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                     >
-                      💾 {saving ? 'Saving...' : 'Save Draft'}
+                      💾 {saving ? 'Saving...' : selectedBranchId !== 'main' ? `Save to ${availableBranches.find(b => b.branchId === selectedBranchId)?.branchName || 'Branch'}` : 'Save Draft'}
                     </button>
                     <button
                       onClick={() => handleSave(true)}
                       disabled={saving}
                       className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                     >
-                      🚀 {saving ? 'Publishing...' : 'Publish'}
+                      🚀 {saving ? 'Publishing...' : 'Publish to Main'}
                     </button>
                     <button
                       onClick={cancelEditing}
@@ -1213,6 +1515,75 @@ const BlogsContent: React.FC = () => {
                   </div>
                 </div>
                 
+                {/* Simple Branch Selector */}
+                {!isCreating && editingPost && (
+                  <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-700">💾 Save Target:</h4>
+                      <button
+                        onClick={() => setShowVersionManager(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
+                      >
+                        🌿 Manage Branches ({branchCount})
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {/* Main Post Option */}
+                      <label className="flex items-center gap-3 p-2 rounded border hover:bg-white transition-colors cursor-pointer">
+                        <input
+                          type="radio"
+                          name="branchSelection"
+                          value="main"
+                          checked={selectedBranchId === 'main'}
+                          onChange={() => handleBranchSelection('main')}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs font-medium">📄 Main Post</span>
+                          <span className="text-sm text-gray-600">Edit the original post content</span>
+                        </div>
+                      </label>
+                      
+                      {/* Branch Options */}
+                      {availableBranches.map((branch) => (
+                        <label key={branch.branchId} className="flex items-center gap-3 p-2 rounded border hover:bg-white transition-colors cursor-pointer">
+                          <input
+                            type="radio"
+                            name="branchSelection"
+                            value={branch.branchId}
+                            checked={selectedBranchId === branch.branchId}
+                            onChange={() => handleBranchSelection(branch.branchId)}
+                            className="text-green-600 focus:ring-green-500"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              branch.branchType === 'feature' ? 'bg-blue-100 text-blue-800' :
+                              branch.branchType === 'hotfix' ? 'bg-red-100 text-red-800' :
+                              branch.branchType === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                              branch.branchType === 'review' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              🌿 {branch.branchName}
+                            </span>
+                            <span className="text-sm text-gray-600">{branch.branchType}</span>
+                            {branch.modifiedDate && (
+                              <span className="text-xs text-gray-400">• Modified {new Date(branch.modifiedDate).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                      
+                      {/* No branches message */}
+                      {availableBranches.length === 0 && (
+                        <div className="text-center py-3 text-gray-500 text-sm">
+                          No branches created yet. Use "Manage Branches" to create your first branch.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
                 {/* Post Metadata Form */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <input
@@ -1220,24 +1591,44 @@ const BlogsContent: React.FC = () => {
                     placeholder="Post title..."
                     value={formData.title}
                     onChange={(e) => handleFormChange('title', e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      selectedBranch ? 'border-green-300 focus:ring-green-500' : ''
+                    }`}
                   />
                   <input
                     type="text"
                     placeholder="Tags (comma-separated)..."
                     value={formData.tags}
                     onChange={(e) => handleFormChange('tags', e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      selectedBranch ? 'border-green-300 focus:ring-green-500' : ''
+                    }`}
                   />
                 </div>
                 
                 {/* Rich Text Editor */}
-                <div className="border border-gray-300 rounded-md overflow-hidden">
+                <div className={`border rounded-md overflow-hidden ${
+                  selectedBranch ? 'border-green-300 shadow-sm' : 'border-gray-300'
+                }`}>
+                  {selectedBranch && (
+                    <div className="bg-green-50 border-b border-green-200 px-4 py-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-green-700 font-medium">🌿 Branch Editor Active</span>
+                          <span className="text-green-600">•</span>
+                          <span className="text-green-600">Editing "{selectedBranch.branchName}" branch</span>
+                        </div>
+                        <div className="text-xs text-green-600">
+                          Auto-save: {hasUnsavedChanges ? 'Changes pending...' : 'All changes saved to branch'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <RichTextEditor
                     value={formData.content}
                     onChange={handleEditorChange}
-                    height={isFullScreenEditing ? 'calc(90vh - 200px)' : 400}
-                    placeholder="Start writing your blog post..."
+                    height={isFullScreenEditing ? 'calc(90vh - 250px)' : selectedBranch ? 360 : 400}
+                    placeholder={selectedBranch ? `Writing in ${selectedBranch.branchName} branch...` : "Start writing your blog post..."}
                   />
                 </div>
               </div>
@@ -1307,6 +1698,25 @@ const BlogsContent: React.FC = () => {
                 <div key={post.id} className="group relative bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                   {session && (
                     <div className="absolute top-4 right-4 flex gap-2">
+                      {/* Versioning button for admin users */}
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPost(post);
+                            setShowVersionManager(true);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-green-500 hover:bg-green-600 text-white p-2 rounded-md text-sm relative"
+                          title={`Manage Versions${postBranchCounts[post.id] ? ` (${postBranchCounts[post.id]} branches)` : ''}`}
+                        >
+                          🌿
+                          {postBranchCounts[post.id] > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                              {postBranchCounts[post.id]}
+                            </span>
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1516,6 +1926,71 @@ const BlogsContent: React.FC = () => {
         </>
       )}
 
+      {/* Branch Suggestion Modal */}
+      {showBranchSuggestion && editingPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              🌿 Version Tracking Suggestion
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Would you like to create a branch to track your changes to "{editingPost.title}"? 
+              This will help you maintain version history and compare different iterations.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowBranchSuggestion(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                No, just edit directly
+              </button>
+              <button
+                onClick={() => {
+                  setShowBranchSuggestion(false);
+                  setShowVersionManager(true);
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                🌿 Create Branch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Version Manager Modal */}
+      {showVersionManager && editingPost?.id && (
+        <BlogBranchManager
+          postId={editingPost.id}
+          onBranchSwitch={handleBranchSwitch}
+          onClose={() => {
+            setShowVersionManager(false);
+            // Reload branch counts after closing
+            if (editingPost?.id) {
+              loadBranchCount(editingPost.id);
+              // Also refresh the count for this specific post in the list
+              const singlePostCount = async () => {
+                try {
+                  const response = await fetch(`/api/blog/branches?postId=${editingPost.id}`);
+                  if (response.ok) {
+                    const data = await response.json();
+                    const count = data.branches?.length || 0;
+                    setBranchCount(count);
+                    setPostBranchCounts(prev => ({
+                      ...prev,
+                      [editingPost.id]: count
+                    }));
+                  }
+                } catch (error) {
+                  console.error('Failed to refresh branch count:', error);
+                }
+              };
+              singlePostCount();
+            }
+          }}
+        />
+      )}
+      
       {/* Modal */}
       {showModal && selectedPost && (
         <Modal post={selectedPost} onClose={closeModal} />
