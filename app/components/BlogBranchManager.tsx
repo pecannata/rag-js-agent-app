@@ -69,6 +69,12 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
   });
 
   const [history, setHistory] = useState<any[]>([]);
+  
+  // Loading states for operations
+  const [deletingBranch, setDeletingBranch] = useState<string | null>(null);
+  const [switchingBranch, setSwitchingBranch] = useState<string | null>(null);
+  const [creatingBranch, setCreatingBranch] = useState(false);
+  const [mergingBranches, setMergingBranches] = useState(false);
 
   useEffect(() => {
     loadBranches();
@@ -114,6 +120,7 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
       return;
     }
 
+    setCreatingBranch(true);
     try {
       const response = await fetch('/api/blog/branches', {
         method: 'POST',
@@ -153,6 +160,8 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
       await loadHistory();
     } catch (err) {
       alert((err as Error).message);
+    } finally {
+      setCreatingBranch(false);
     }
   };
 
@@ -162,6 +171,7 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
       return;
     }
 
+    setMergingBranches(true);
     try {
       const response = await fetch('/api/blog/branches/merge', {
         method: 'POST',
@@ -193,6 +203,8 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
       }
     } catch (err) {
       alert((err as Error).message);
+    } finally {
+      setMergingBranches(false);
     }
   };
 
@@ -201,6 +213,9 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
       return;
     }
 
+    console.log('🗑️ Starting branch deletion:', branchId);
+    setDeletingBranch(branchId);
+    console.log('🗑️ Loading state set to:', branchId);
     try {
       const response = await fetch(`/api/blog/branches?postId=${postId}&branchId=${branchId}`, {
         method: 'DELETE',
@@ -211,10 +226,29 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
         throw new Error('Failed to delete branch');
       }
 
+      console.log('✅ Branch deletion API call successful');
       await loadBranches();
       await loadHistory();
+      console.log('🔄 Branch list and history reloaded');
     } catch (err) {
+      console.error('❌ Branch deletion failed:', err);
       alert((err as Error).message);
+    } finally {
+      console.log('🗑️ Clearing loading state');
+      setDeletingBranch(null);
+    }
+  };
+
+  const handleBranchSwitch = async (branch: BlogBranch) => {
+    setSwitchingBranch(branch.branchId);
+    try {
+      if (onBranchSwitch) {
+        await onBranchSwitch(branch);
+      }
+    } catch (err) {
+      console.error('Branch switch error:', err);
+    } finally {
+      setSwitchingBranch(null);
     }
   };
 
@@ -360,17 +394,24 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
                 
                 <button
                   onClick={() => setShowDiffViewer(true)}
-                  disabled={!selectedBranches.from || !selectedBranches.to}
-                  className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedBranches.from || !selectedBranches.to || loading}
+                  className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   👀 Compare
                 </button>
                 <button
                   onClick={() => setShowMergeModal(true)}
-                  disabled={!selectedBranches.from || !selectedBranches.to}
-                  className="bg-purple-500 text-white px-3 py-2 rounded text-sm hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedBranches.from || !selectedBranches.to || mergingBranches || loading}
+                  className="bg-purple-500 text-white px-3 py-2 rounded text-sm hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  🔀 Merge
+                  {mergingBranches ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                      Merging...
+                    </>
+                  ) : (
+                    "🔀 Merge"
+                  )}
                 </button>
               </div>
 
@@ -437,20 +478,41 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
                         <div className="flex items-center gap-1">
                           {onBranchSwitch && (
                             <button
-                              onClick={() => onBranchSwitch(branch)}
-                              className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                              title="Switch to this branch"
+                              onClick={() => handleBranchSwitch(branch)}
+                              disabled={switchingBranch === branch.branchId}
+                              className="p-2 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                              title={switchingBranch === branch.branchId ? "Switching..." : "Switch to this branch"}
                             >
-                              🔄
+                              {switchingBranch === branch.branchId ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border border-blue-500 border-t-transparent"></div>
+                              ) : (
+                                "🔄"
+                              )}
                             </button>
                           )}
                           {branch.isActive && branch.branchType !== 'main' && (
                             <button
                               onClick={() => handleDeleteBranch(branch.branchId, branch.branchName)}
-                              className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                              title="Delete branch"
+                              disabled={deletingBranch === branch.branchId}
+                              className={`p-2 transition-colors flex items-center justify-center min-w-[2rem] min-h-[2rem] ${
+                                deletingBranch === branch.branchId 
+                                  ? 'text-red-600 cursor-wait' 
+                                  : 'text-gray-400 hover:text-red-600 cursor-pointer'
+                              }`}
+                              title={deletingBranch === branch.branchId ? "Deleting..." : "Delete branch"}
                             >
-                              🗑️
+                              {deletingBranch === branch.branchId ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-500 border-t-transparent"></div>
+                              ) : (
+                                "🗑️"
+                              )}
+                              {/* Debug: Show current deletingBranch state */}
+                              {process.env.NODE_ENV === 'development' && (
+                                <div className="text-xs text-gray-500 absolute -top-8 left-0 bg-yellow-100 border px-1 rounded shadow z-10">
+                                  {deletingBranch === branch.branchId ? 'DELETING' : 'IDLE'}
+                                  <br />ID: {branch.branchId?.substring(0, 8)}
+                                </div>
+                              )}
                             </button>
                           )}
                         </div>
@@ -566,9 +628,17 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
                 </button>
                 <button
                   onClick={handleCreateBranch}
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  disabled={creatingBranch}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Create Branch
+                  {creatingBranch ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border border-white border-t-transparent"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Branch"
+                  )}
                 </button>
               </div>
             </div>
@@ -624,9 +694,17 @@ const BlogBranchManager: React.FC<BlogBranchManagerProps> = ({
                 </button>
                 <button
                   onClick={handleMergeBranches}
-                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                  disabled={mergingBranches}
+                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  🔀 Merge
+                  {mergingBranches ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border border-white border-t-transparent"></div>
+                      Merging...
+                    </>
+                  ) : (
+                    "🔀 Merge"
+                  )}
                 </button>
               </div>
             </div>

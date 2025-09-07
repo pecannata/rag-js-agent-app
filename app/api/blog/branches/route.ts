@@ -281,7 +281,7 @@ export async function DELETE(request: NextRequest) {
     );
     
     // Invalidate cache after deleting branch
-    branchAwareCache.invalidateBranch(postIdNum, branchId);
+    branchAwareCache.invalidatePost(postIdNum);
 
     return NextResponse.json({
       success

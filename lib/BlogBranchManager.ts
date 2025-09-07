@@ -453,18 +453,27 @@ export class BlogBranchManager {
    * Delete a branch (soft delete)
    */
   async deleteBranch(postId: number, branchId: string, deletedBy: string): Promise<boolean> {
+    console.log(`🗑️ BlogBranchManager.deleteBranch called:`, { postId, branchId, deletedBy });
+    
     if (branchId === 'main') {
       throw new Error('Cannot delete main branch');
     }
 
     const now = new Date();
+    // Use consistent timestamp format like other methods
+    const formatTimestamp = (date: Date) => {
+      return date.toISOString().replace('T', ' ').replace('Z', '').substring(0, 19);
+    };
+    
     const deleteQuery = `
       UPDATE blog_post_branches 
-      SET is_active = 0, modified_by = '${deletedBy}', modified_date = TIMESTAMP '${now.toISOString().slice(0, -1)}'
-      WHERE post_id = ${postId} AND branch_id = '${branchId}'
+      SET is_active = 0, modified_by = '${escapeSqlString(deletedBy)}', modified_date = TO_TIMESTAMP('${formatTimestamp(now)}', 'YYYY-MM-DD HH24:MI:SS')
+      WHERE post_id = ${postId} AND branch_id = '${escapeSqlString(branchId)}'
     `;
 
-    await this.executeQuery(deleteQuery);
+    console.log(`🗑️ Executing delete query:`, deleteQuery);
+    const result = await this.executeQuery(deleteQuery);
+    console.log(`🗑️ Delete query result:`, result);
 
     await this.logChange({
       postId,

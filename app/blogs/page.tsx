@@ -1392,7 +1392,10 @@ const BlogsContent: React.FC = () => {
                           console.log(`🔄 Status filter changed from ${statusFilter} to ${newFilter}`);
                           setStatusFilter(newFilter);
                         }}
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        disabled={loadingRecent}
+                        className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
+                          loadingRecent ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50' : ''
+                        }`}
                       >
                         <option value="published">Published Posts</option>
                         <option value="draft">Draft Posts</option>

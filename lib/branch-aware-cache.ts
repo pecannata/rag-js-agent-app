@@ -246,11 +246,16 @@ class BranchAwareCache {
   invalidateBranch(postId: number, branchId: string): void {
     const keysToDelete: string[] = [];
     
+    // Find cache keys that include the specific branch
     for (const key of this.cache.keys()) {
       if (key.includes(branchId) && key.includes(postId.toString())) {
         keysToDelete.push(key);
       }
     }
+    
+    // Also invalidate the branch list cache since it contains this branch
+    const branchListKey = this.generateKey('branches', postId);
+    keysToDelete.push(branchListKey);
     
     keysToDelete.forEach(key => this.cache.delete(key));
     
